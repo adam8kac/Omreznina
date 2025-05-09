@@ -10,4 +10,4 @@ NoSQL baza (Firebase) za hranjene uporabnikovih datotek✅
 IDE-ji posodobljeni n pripravljeni✅
 
 Diagram primerov uporabe:
-![Omreznina+ DPU](https://github.com/user-attachments/assets/ccd9806f-b0a9-4d9d-ace1-2ffcab586871)
+![Omreznina+ DPU (1)](https://github.com/user-attachments/assets/a45e504c-9bcd-4897-9801-cb341208ddd4)
