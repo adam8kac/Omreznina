@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.0-SNAPSHOT</version>
+		<version>3.2.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>feri.um.si</groupId>
@@ -79,14 +79,15 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</path>
-					</annotationProcessorPaths>
+				  <annotationProcessorPaths>
+					<path>
+					  <groupId>org.projectlombok</groupId>
+					  <artifactId>lombok</artifactId>
+					  <version>1.18.30</version>
+					</path>
+				  </annotationProcessorPaths>
 				</configuration>
-			</plugin>
+			  </plugin>			  
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

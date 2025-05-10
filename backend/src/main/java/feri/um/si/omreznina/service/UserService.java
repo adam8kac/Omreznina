@@ -17,6 +17,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+//Lahko bi poslal kar cel User objekt pa potem user.getAttribute pa preveril če je kaj null.... FIX!
     public void register(String firebaseUid, String email, String firstName, String lastName, String password) {
         if (email == null || password == null || userRepository.findByEmail(email).isPresent()) {
             return;
