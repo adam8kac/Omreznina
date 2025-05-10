@@ -1,7 +1,3 @@
-# Omreznina+
+# ⚡ Omrežnina+
 
-Baza "users" za hranjenje uporabnikovih prijavnih podatkov hostana preko Railway✅
-
-NoSQL baza (Firebase) za hranjene uporabnikovih datotek✅
-
-IDE-ji posodobljeni n pripravljeni✅
+**Omrežnina+** je spletna aplikacija, ki uporabnikom omogoča enostavno razumevanje stroškov električne energije in omrežnine. Rešitev pomaga analizirati in simulirati porabo ter izbrano priključno moč na podlagi realnih podatkov (položnice, izvozi iz mojelektro.si, OCR prepoznavanje računov ipd.).
