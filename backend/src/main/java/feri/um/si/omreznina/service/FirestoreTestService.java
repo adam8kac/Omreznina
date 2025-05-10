@@ -10,9 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+// At some point spremeni ime iz FirestoreTestService na FirestoreServicre
 @Service
 public class FirestoreTestService {
-    Firestore db = FirestoreClient.getFirestore();
+    private final Firestore db;
+
+    public FirestoreTestService(Firestore firestore) {
+        this.db = firestore;
+    }
 
     public List<String> getDatabaseName() {
         List<String> collectionNames = new ArrayList<>();
@@ -23,14 +28,15 @@ public class FirestoreTestService {
         return collectionNames;
     }
 
-//    Pridovi document pa potem value atributa "ime"
+    // Pridovi document pa potem value atributa "ime"
     public List<String> getDocuments() throws ExecutionException, InterruptedException {
-        ApiFuture<QuerySnapshot> query = db.collection("bilcic").get(); //pridobi vse dokumente v kolekciji
-        QuerySnapshot querySnapshot = query.get(); // to nardi da se tu zaostavi dokelr se ne dobijo vsi podatki lahko bi ibv oneliner z zgornjo vrstico
-        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments(); //seznam posameznih dokumentov
+        ApiFuture<QuerySnapshot> query = db.collection("bilcic").get(); // pridobi vse dokumente v kolekciji
+        QuerySnapshot querySnapshot = query.get(); // to nardi da se tu zaostavi dokelr se ne dobijo vsi podatki lahko
+                                                   // bi ibv oneliner z zgornjo vrstico
+        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments(); // seznam posameznih dokumentov
         List<String> docList = new ArrayList<>();
 
-        for(QueryDocumentSnapshot doc : documents) {
+        for (QueryDocumentSnapshot doc : documents) {
             docList.add(doc.getData().get("ime").toString());
         }
         return docList;
