@@ -25,7 +25,7 @@ public class FirestoreService {
         return collectionNames;
     }
 
-    // Pridovi document pa potem value atributa "ime"
+    // Pridobi document pa potem value atributa "ime"
     public List<String> getDocuments() throws ExecutionException, InterruptedException {
         ApiFuture<QuerySnapshot> query = db.collection("bilcic").get(); // pridobi vse dokumente v kolekciji
         QuerySnapshot querySnapshot = query.get(); // to nardi da se tu zaostavi dokelr se ne dobijo vsi podatki lahko
