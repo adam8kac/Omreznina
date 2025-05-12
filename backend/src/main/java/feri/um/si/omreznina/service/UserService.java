@@ -1,37 +1,102 @@
 package feri.um.si.omreznina.service;
 
-import com.google.type.DateTime;
+import feri.um.si.omreznina.exceptions.UserException;
 import feri.um.si.omreznina.model.User;
 import feri.um.si.omreznina.repository.UserRepository;
-import org.checkerframework.common.aliasing.qual.Unique;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    @Autowired
+    private BCryptPasswordEncoder encoder;
+
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder encoder) {
         this.userRepository = userRepository;
+        this.encoder = encoder;
     }
 
-//Lahko bi poslal kar cel User objekt pa potem user.getAttribute pa preveril če je kaj null.... FIX!
-    public void register(String firebaseUid, String email, String firstName, String lastName, String password) {
-        if (email == null || password == null || userRepository.findByEmail(email).isPresent()) {
-            return;
+    public void register(User user) throws UserException {
+
+        String email = user.getEmail();
+        String password = user.getPassword();
+
+        if (email == null || password == null || userRepository.findByEmail(email).isPresent()
+                || user.getId() != null) {
+            throw new UserException("Invalid user");
         }
 
-        User user = new User();
-        user.setFirebaseUid(firebaseUid);
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setPassword(password);
+        user.setPassword(hashPassword(password));
+        user.setFirebaseUid(generateFirebaseUid());
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
         userRepository.save(user);
+    }
+
+    public void updateProfile(User user) throws UserException {
+        Logger logger = Logger.getLogger(getClass().getName());
+
+        if (user == null || user.getId() == null) {
+            throw new UserException("Could not update null!");
+        }
+
+        User newUser = userRepository.findById(user.getId()).get();
+        boolean updated = false;
+
+        if (user.getEmail() != null && !newUser.getEmail().equals(user.getEmail())) {
+            newUser.setEmail(user.getEmail());
+            logger.log(Level.INFO, user.getEmail());
+            updated = true;
+        }
+        if (user.getFirstName() != null && !newUser.getFirstName().equals(user.getFirstName())) {
+            newUser.setFirstName(user.getFirstName());
+            logger.log(Level.INFO, user.getFirstName());
+
+            updated = true;
+        }
+        if (user.getLastName() != null && !newUser.getLastName().equals(user.getLastName())) {
+            newUser.setLastName(user.getLastName());
+            logger.log(Level.INFO, user.getLastName());
+            updated = true;
+        }
+        if (user.getPassword() != null && !encoder.matches(user.getPassword(), newUser.getPassword())) {
+            newUser.setPassword(hashPassword(user.getPassword()));
+            logger.log(Level.INFO, user.getPassword());
+            updated = true;
+        }
+
+        if (updated) {
+            newUser.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(newUser);
+        } else {
+            throw new UserException("Nothing changed");
+        }
+
+    }
+
+    private String generateFirebaseUid() {
+        String uid = UUID.randomUUID().toString();
+        if (userRepository.findByFirebaseUid(uid).isPresent()) {
+            return generateFirebaseUid();
+        }
+        return uid;
+    }
+
+    private String hashPassword(String password) throws UserException {
+        if (password != null) {
+            return encoder.encode(password);
+        }
+        throw new UserException("password can not be null");
     }
 }
