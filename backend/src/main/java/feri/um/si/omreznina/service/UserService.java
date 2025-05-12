@@ -46,31 +46,30 @@ public class UserService {
     public void updateProfile(User user) throws UserException {
         Logger logger = Logger.getLogger(getClass().getName());
 
-        if (user == null) {
+        if (user == null || user.getId() == null) {
             throw new UserException("Could not update null!");
         }
-        logger.log(Level.INFO, user.getPassword());
 
         User newUser = userRepository.findById(user.getId()).get();
         boolean updated = false;
 
-        if (!newUser.getEmail().equals(user.getEmail())) {
+        if (user.getEmail() != null && !newUser.getEmail().equals(user.getEmail())) {
             newUser.setEmail(user.getEmail());
             logger.log(Level.INFO, user.getEmail());
             updated = true;
         }
-        if (!newUser.getFirstName().equals(user.getFirstName())) {
+        if (user.getFirstName() != null && !newUser.getFirstName().equals(user.getFirstName())) {
             newUser.setFirstName(user.getFirstName());
             logger.log(Level.INFO, user.getFirstName());
 
             updated = true;
         }
-        if (!newUser.getLastName().equals(user.getLastName())) {
+        if (user.getLastName() != null && !newUser.getLastName().equals(user.getLastName())) {
             newUser.setLastName(user.getLastName());
             logger.log(Level.INFO, user.getLastName());
             updated = true;
         }
-        if (!encoder.matches(user.getPassword(), newUser.getPassword())) {
+        if (user.getPassword() != null && !encoder.matches(user.getPassword(), newUser.getPassword())) {
             newUser.setPassword(hashPassword(user.getPassword()));
             logger.log(Level.INFO, user.getPassword());
             updated = true;

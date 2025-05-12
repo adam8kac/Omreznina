@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/bill")
-public class FirestroeTestController {
+public class FirestoreTestController {
 
     @Autowired
     private FirestoreService service;
