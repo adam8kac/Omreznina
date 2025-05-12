@@ -29,7 +29,7 @@ public class FirestoreService {
     public List<String> getDocuments() throws ExecutionException, InterruptedException {
         ApiFuture<QuerySnapshot> query = db.collection("bilcic").get(); // pridobi vse dokumente v kolekciji
         QuerySnapshot querySnapshot = query.get(); // to nardi da se tu zaostavi dokelr se ne dobijo vsi podatki lahko
-                                                   // bi ibv oneliner z zgornjo vrstico
+                                                   // bi biv oneliner z zgornjo vrstico
         List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments(); // seznam posameznih dokumentov
         List<String> docList = new ArrayList<>();
 
