@@ -1,6 +1,6 @@
 package feri.um.si.omreznina.controller;
 
-import feri.um.si.omreznina.service.FirestoreTestService;
+import feri.um.si.omreznina.service.FirestoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,7 @@ import java.util.List;
 public class FirestroeTestController {
 
     @Autowired
-    private FirestoreTestService service;
+    private FirestoreService service;
 
     @GetMapping()
     public ResponseEntity<List<String>> getName() {

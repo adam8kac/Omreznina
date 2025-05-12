@@ -2,20 +2,17 @@ package feri.um.si.omreznina.service;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
-import com.google.firebase.cloud.FirestoreClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-// At some point spremeni ime iz FirestoreTestService na FirestoreServicre
 @Service
-public class FirestoreTestService {
+public class FirestoreService {
     private final Firestore db;
 
-    public FirestoreTestService(Firestore firestore) {
+    public FirestoreService(Firestore firestore) {
         this.db = firestore;
     }
 
