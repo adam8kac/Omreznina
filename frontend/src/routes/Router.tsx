@@ -19,7 +19,6 @@ const Form = Loadable(lazy(() => import('../views/forms/Form')));
 const Shadow = Loadable(lazy(() => import('../views/shadows/Shadow')));
 const UploadPage = Loadable(lazy(() => import('../views/forms/UploadForm')));
 
-
 // icons
 const Solar = Loadable(lazy(() => import('../views/icons/Solar')));
 
@@ -62,5 +61,8 @@ const Router = [
   },
 ];
 
-const router = createBrowserRouter(Router, { basename: '/MatDash' });
+const router = createBrowserRouter(Router, {
+  basename: import.meta.env.VITE_BASE_PATH || '/',
+});
+
 export default router;
