@@ -1,16 +1,16 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import type { FirebaseApp } from "firebase/app";
-import type { Auth } from "firebase/auth";
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAW3qZtjqE7Cuzit3Tc9xVdkkSfy5DNnsc",
-  authDomain: "omreznina-5ccf2.firebaseapp.com",
-  projectId: "omreznina-5ccf2",
-  storageBucket: "omreznina-5ccf2.firebasestorage.app",
-  messagingSenderId: "314421485150",
-  appId: "1:314421485150:web:f180bbbb18b78e4536decf",
-  measurementId: "G-C4KK8424QP",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
