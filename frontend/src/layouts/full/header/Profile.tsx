@@ -2,9 +2,22 @@
 import { Button, Dropdown } from "flowbite-react";
 import { Icon } from "@iconify/react";
 import user1 from "/src/assets/images/profile/user-1.jpg";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { signOut } from "firebase/auth";
+import { auth } from "src/firebase-config"; 
+
 
 const Profile = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/auth/login"); 
+    } catch (error: any) {
+      alert("Logout failed: " + error.message);
+    }
+  };
   return (
     <div className="relative group/menu">
       <Dropdown
@@ -49,11 +62,19 @@ const Profile = () => {
           My Task
         </Dropdown.Item>
         <div className="p-3 pt-0">
-        <Button as={Link}  size={'sm'}  to="/auth/login" className="mt-2 border border-primary text-primary bg-transparent hover:bg-lightprimary outline-none focus:outline-none">Logout</Button>
+        <Button
+          size="sm"
+          onClick={handleLogout}
+          className="mt-2 border border-primary text-primary bg-transparent hover:bg-lightprimary outline-none focus:outline-none"
+        >
+          Logout
+        </Button>
         </div>
       </Dropdown>
     </div>
   );
 };
+
+
 
 export default Profile;
