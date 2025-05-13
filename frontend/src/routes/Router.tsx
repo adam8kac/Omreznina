@@ -3,6 +3,7 @@
 import { lazy } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router';
 import Loadable from 'src/layouts/full/shared/loadable/Loadable';
+import ProtectedRoute from './ProtectedRoute'; 
 
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
@@ -30,7 +31,11 @@ const Error = Loadable(lazy(() => import('../views/auth/error/Error')));
 const Router = [
   {
     path: '/',
-    element: <FullLayout />,
+    element: (
+    <ProtectedRoute>
+      <FullLayout />
+    </ProtectedRoute>
+    ),
     children: [
       { path: '/', exact: true, element: <Dashboard /> },
       { path: '/ui/typography', exact: true, element: <Typography /> },
