@@ -21,13 +21,13 @@ const BoxedRegister = () => {
               <FullLogo />
             </div>
             <p className="text-sm text-center text-dark my-3">
-              Sign Up on MatDash
+              Registracija v Omrežnina+
             </p>
             <AuthRegister />
             <div className="flex gap-2 text-base text-ld font-medium mt-6 items-center justify-center">
-              <p>Already have an Account?</p>
+              <p>Že imate račun?</p>
               <Link to="/auth/login" className="text-primary text-sm font-medium">
-                Sign in
+                Prijava
               </Link>
             </div>
           </div>
