@@ -2,12 +2,16 @@ from parser import filter_files
 
 from fastapi import FastAPI
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 12345
 app = FastAPI()
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
 @app.get("/file-to-json")
-async def hello_endpoint():
+async def file_proceeser():
     result = filter_files()
     return result
 

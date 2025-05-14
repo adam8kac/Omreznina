@@ -1,5 +1,7 @@
 package feri.um.si.omreznina.service;
 
+import java.net.UnknownHostException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,8 +17,8 @@ public class FileServiceTest {
         this.restTemplate = restTemplate;
     }
 
-    public String makePythonCall() {
-        String url = "http://127.0.0.1:12345/file-to-json";
+    public String makePythonCall() throws UnknownHostException {
+        String url = "https://omreznina-parser-latest.onrender.com/file-to-json";
         return restTemplate.getForObject(url, String.class);
     }
 }
