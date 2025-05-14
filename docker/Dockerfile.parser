@@ -1,0 +1,10 @@
+FROM python:3.10.17-slim
+
+RUN pip install --no-cache-dir fastapi uvicorn pandas openpyxl
+
+VOLUME [ "/tmp" ]
+
+COPY python_helper/ .
+
+EXPOSE 12345
+
