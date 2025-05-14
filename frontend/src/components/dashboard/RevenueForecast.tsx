@@ -1,5 +1,4 @@
-// RevenueForecast.tsx
-import React, { useState } from "react";
+import _React, { useState } from "react";
 import { ApexOptions } from "apexcharts";
 import Chart from "react-apexcharts";
 
@@ -91,7 +90,7 @@ const RevenueForecast = () => {
       animations: { speed: 500 },
       toolbar: { show: false },
       events: {
-        dataPointSelection: (event, chartContext, config) => {
+        dataPointSelection: (_event, _chartContext, config) => {
           const monthKey = months[config.dataPointIndex];
           setSelectedMonth(monthKey);
         },
