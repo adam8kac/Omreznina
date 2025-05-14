@@ -6,6 +6,10 @@ import org.springframework.web.bind.annotation.RestController;
 import feri.um.si.omreznina.service.FileServiceTest;
 
 import org.springframework.http.HttpStatus;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,14 +22,24 @@ public class FileControllerTest {
     @Autowired
     private final FileServiceTest fileServiceTest;
 
+    private final Logger logger = Logger.getLogger(getClass().getName());
+
     public FileControllerTest(FileServiceTest fileServiceTest) {
         this.fileServiceTest = fileServiceTest;
     }
 
+    // To ne bo endpoint to je sam test če dela, ko bo fixno bo makePythonCall
+    // shranjen v firebase, get pa bo dobo iz firebase shranit pa se more kot
+    // USER_ID_FIRBEASE {...kar vrne python} kot en dokument
     @GetMapping("/")
     public ResponseEntity<String> getData() {
-        String response = fileServiceTest.makePythonCall();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        try {
+            String response = fileServiceTest.makePythonCall();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.warning(Level.SEVERE + ": " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }
