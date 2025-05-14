@@ -19,12 +19,12 @@ const Login = () => {
             <div className="mx-auto">
               <FullLogo />
             </div>
-            <p className="text-sm text-center text-dark my-3">Sign In on MatDash</p>
+            <p className="text-sm text-center text-dark my-3">Prijava v Omrežnina+</p>
             <AuthLogin />
             <div className="flex gap-2 text-base text-ld font-medium mt-6 items-center justify-center">
-              <p>New to Matdash?</p>
+              <p>Ste prvič na Omrežnina+?</p>
               <Link to="/auth/register" className="text-primary text-sm font-medium">
-                Create an account
+                Ustvarite račun
               </Link>
             </div>
           </div>
