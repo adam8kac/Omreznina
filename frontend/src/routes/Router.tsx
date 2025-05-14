@@ -28,15 +28,20 @@ const Register = Loadable(lazy(() => import('../views/auth/register/Register')))
 const SamplePage = Loadable(lazy(() => import('../views/sample-page/SamplePage')));
 const Error = Loadable(lazy(() => import('../views/auth/error/Error')));
 const ResetPassword = Loadable(lazy(() => import('../views/auth/reset/ResetPassword')));
+const VerifyInfo = Loadable(lazy(() => import('../views/auth/verify/VerifyInfo')));
+const AuthenticationHandler = Loadable(
+  lazy(() => import('../views/auth/AuthenticationHandler'))
+);
+
 
 
 const Router = [
   {
     path: '/',
     element: (
-    <ProtectedRoute>
-      <FullLayout />
-    </ProtectedRoute>
+      <ProtectedRoute>
+        <FullLayout />
+      </ProtectedRoute>
     ),
     children: [
       { path: '/', exact: true, element: <Dashboard /> },
@@ -46,8 +51,8 @@ const Router = [
       { path: '/ui/shadow', exact: true, element: <Shadow /> },
       { path: '/icons/solar', exact: true, element: <Solar /> },
       { path: '/sample-page', exact: true, element: <SamplePage /> },
-      { path: '*', element: <Navigate to="/auth/404" /> },
       { path: '/upload-invoice', exact: true, element: <UploadPage /> },
+      { path: '*', element: <Navigate to="/auth/404" /> },
     ],
   },
   {
@@ -56,15 +61,22 @@ const Router = [
     children: [
       { path: '/auth/login', element: <Login /> },
       { path: '/auth/register', element: <Register /> },
-      { path: '404', element: <Error /> },
+      { path: '/auth/reset-password', element: <ResetPassword /> },
       { path: '/auth/404', element: <Error /> },
-      { path: '*', element: <Navigate to="/auth/404" /> },
-      { path: '/auth/reset-password', element: <ResetPassword />
-}
+      { path: '/auth/action', element: <AuthenticationHandler />,},
 
     ],
   },
+  {
+    path: '/auth/verify-info',
+    element: <VerifyInfo />,
+  },
+  {
+    path: '*',
+    element: <Navigate to="/auth/404" />,
+  },
 ];
+
 
 const router = createBrowserRouter(Router, {
   basename: import.meta.env.VITE_BASE_PATH || '/',
