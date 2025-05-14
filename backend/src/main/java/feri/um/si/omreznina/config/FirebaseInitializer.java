@@ -17,7 +17,6 @@ import java.util.List;
 @Configuration
 @Profile("!test")
 public class FirebaseInitializer {
-//firestore inicializator
     @Bean
     public Firestore firestore() {
         return com.google.firebase.cloud.FirestoreClient.getFirestore();
