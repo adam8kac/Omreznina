@@ -17,7 +17,7 @@ public class FileServiceTest {
         this.restTemplate = restTemplate;
     }
 
-    public String makePythonCall() throws Exception {
+    public String makePythonCall() throws UnknownHostException {
         String url = "https://omreznina-parser-latest.onrender.com/file-to-json";
         return restTemplate.getForObject(url, String.class);
     }
