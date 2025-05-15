@@ -2,6 +2,10 @@ FROM python:3.10.17-slim
 
 RUN pip install --no-cache-dir fastapi uvicorn pandas openpyxl
 
+RUN mkdir -p /app/python_helper
+
+WORKDIR /app
+
 VOLUME [ "/tmp" ]
 
 COPY python_helper/ .

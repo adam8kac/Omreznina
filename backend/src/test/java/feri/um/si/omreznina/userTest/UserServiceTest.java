@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @SuppressWarnings("removal")
+@ActiveProfiles("test")
 public class UserServiceTest {
 
     @MockBean
