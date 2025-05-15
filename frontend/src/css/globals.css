@@ -177,6 +177,11 @@
   .sorting ul li button:hover {
     @apply hover:text-primary
   }
+  .fade-mask {
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  }
+
 
 
 
