@@ -1,0 +1,46 @@
+name: E2E Tests with Cypress
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --force
+
+      - name: Build project
+        run: npm run build
+
+      - name: Start Vite preview server
+        run: npm run preview &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for Vite to be ready
+        uses: jakejarvis/wait-action@v0.1.1
+        with:
+          url: 'http://localhost:4173'
+          timeout: 30
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          wait-on: 'http://localhost:4173'
+          wait-on-timeout: 60
