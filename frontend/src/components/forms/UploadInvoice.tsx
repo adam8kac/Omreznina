@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Label, TextInput, Button, FileInput } from 'flowbite-react';
+import { Label, TextInput, Button, FileInput, Accordion } from 'flowbite-react';
+import instructions1 from '../../assets/images/instructions/instructions1.png';
+import instructions2 from '../../assets/images/instructions/instructions2.png';
+
 
 const UploadInvoice: React.FC = () => {
   const [invoiceName, setInvoiceName] = useState('');
@@ -88,6 +91,40 @@ const UploadInvoice: React.FC = () => {
           </div>
         </div>
       </form>
+
+      <div className="mt-8">
+        <Accordion collapseAll>
+          <Accordion.Panel>
+            <Accordion.Title>
+              Kako prenesti izpis iz mojelektro.si?
+            </Accordion.Title>
+            <Accordion.Content>
+              <ol className="list-decimal pl-5 text-sm space-y-2">
+                <li>Prijavi se v sistem <a href="https://mojelektro.si" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">mojelektro.si</a>.</li>
+                <li>Izberi meni <strong>Merilna mesta / merilne točke</strong>.</li>
+                <li>Na seznamu klikni na merilno točko, za katero želiš račun.</li>
+                <li>Iz zgornjega menija izberi <strong>Dnevna stanja</strong>.</li>
+                <li>V izbirniku obdobja izberi <strong>Prejšnji mesec</strong> in klikni <strong>Potrdi</strong>.</li>
+                <li>Klikni <strong>Izvozi Excel</strong> ali <strong>Izvozi CSV</strong> za prenos datoteke.</li>
+                <li>Ko je datoteka prenesena, jo naloži v zgornji obrazec.</li>
+              </ol>
+
+              <div className="mt-4 space-y-4">
+                <img
+                  src={instructions1}
+                  alt="Koraki 1–2"
+                  className="rounded-md border shadow-sm"
+                />
+                <img
+                  src={instructions2}
+                  alt="Koraki 3–6"
+                  className="rounded-md border shadow-sm"
+                />
+              </div>
+            </Accordion.Content>
+          </Accordion.Panel>
+        </Accordion>
+      </div>
     </div>
   );
 };
