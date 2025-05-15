@@ -1,122 +1,66 @@
 package feri.um.si.omreznina.userTest;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Optional;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import feri.um.si.omreznina.OmrezninaApplication;
 import feri.um.si.omreznina.config.FirebaseTestConfig;
-import feri.um.si.omreznina.model.User;
-import feri.um.si.omreznina.repository.UserRepository;
+import feri.um.si.omreznina.service.UserService;
 
 @SpringBootTest(classes = { OmrezninaApplication.class, FirebaseTestConfig.class })
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@SuppressWarnings("removal")
 public class UserControllerIntegrationTest {
 
         @Autowired
         private MockMvc mockMvc;
 
-        private final ObjectMapper objectMapper = new ObjectMapper();
-
-        @MockitoBean
-        private BCryptPasswordEncoder encoder;
-
-        @MockitoBean
-        private UserRepository userRepository;
+        @MockBean
+        private UserService userService;
 
         @Test
-        void testUserUpdate_success() throws Exception {
-                User user = new User();
-                user.setId(1);
-                user.setEmail("test@email.com");
-                user.setPassword("password");
-                user.setFirstName("Test");
-                user.setLastName("User");
+        void testUploadFile_success() throws Exception {
+                MockMultipartFile file = new MockMultipartFile(
+                                "file", "data.xlsx",
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
 
-                Mockito.when(userRepository.findById(1))
-                                .thenReturn(Optional.of(user));
+                mockMvc.perform(multipart("/user/upload-file")
+                                .file(file)
+                                .param("uid", "abc123"))
+                                .andExpect(status().isOk())
+                                .andExpect(content().string("Document added successfuly"));
 
-                mockMvc.perform(MockMvcRequestBuilders.put("/user/update")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(user)))
-                                .andExpect(status().isCreated())
-                                .andExpect(content().string("User updated"));
+                verify(userService, times(1)).processAndStoreFile(file, "abc123");
         }
 
         @Test
-        void testUserUpdate_fail() throws Exception {
-                User user = new User();
-                user.setEmail("test@email.com");
-                user.setPassword("pass");
-                user.setFirstName("Name");
-                user.setLastName("Surname");
+        void testUploadFile_failure() throws Exception {
+                MockMultipartFile file = new MockMultipartFile(
+                                "file", "data.xlsx",
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
 
-                mockMvc.perform(MockMvcRequestBuilders.put("/user/update")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(user)))
+                doThrow(new RuntimeException("Something went wrong"))
+                                .when(userService).processAndStoreFile(file, "abc123");
+
+                mockMvc.perform(multipart("/user/upload-file")
+                                .file(file)
+                                .param("uid", "abc123"))
                                 .andExpect(status().isBadRequest())
-                                .andExpect(content().string("Could not update null!"));
-        }
-
-        @Test
-        void testUserRegistration_Successful() throws Exception {
-                User user = new User();
-                user.setEmail("test@email.com");
-                user.setPassword("pass123");
-                user.setFirstName("Janez");
-                user.setLastName("Novak");
-
-                Mockito.when(userRepository.findByEmail("test@email.com"))
-                                .thenReturn(Optional.empty());
-
-                Mockito.when(userRepository.save(Mockito.any(User.class)))
-                                .thenReturn(user);
-
-                mockMvc.perform(MockMvcRequestBuilders.post("/user/register")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(user)))
-                                .andExpect(status().isCreated())
-                                .andExpect(content().string("User created"));
-        }
-
-        @Test
-        void testUserRegistration_Fail() throws Exception {
-                User existingUser = new User();
-                existingUser.setEmail("test@email.com");
-
-                User user = new User();
-                user.setEmail("test@email.com");
-                user.setPassword("pass123");
-                user.setFirstName("Janez");
-                user.setLastName("Novak");
-
-                Mockito.when(userRepository.findByEmail("test@email.com"))
-                                .thenReturn(Optional.of(existingUser));
-
-                Mockito.when(userRepository.save(Mockito.any(User.class)))
-                                .thenReturn(user);
-
-                mockMvc.perform(MockMvcRequestBuilders.post("/user/register")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(new ObjectMapper().writeValueAsString(user)))
-                                .andExpect(status().isBadRequest())
-                                .andExpect(content().string("Invalid user"));
+                                .andExpect(content().string("Could not save document"));
         }
 
 }

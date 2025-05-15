@@ -3,6 +3,12 @@ import os
 from collections import defaultdict
 
 def filter_files():
+    print("=== DEBUG ===")
+    print("Working directory:", os.getcwd())
+    print("Files in ./:", os.listdir("."))
+    print("Files in /app/python_helper:", os.listdir("/app/python_helper"))
+    print("==============")
+    
     files = os.listdir(".")
     FILE_ENDINGS = ["csv", "xlsx", "xlsm", "xlsb", "xltx", "xltm", "xls", "xlt", "xlw"]
 
