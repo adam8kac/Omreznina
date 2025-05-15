@@ -24,6 +24,7 @@
     "flowbite-react": "^0.10.2",
     "formik": "^2.4.5",
     "formik-mui": "^5.0.0-alpha.0",
+    "framer-motion": "^12.11.4",
     "gray-matter": "^4.0.3",
     "i18next": "^23.5.1",
     "lodash": "^4.17.21",
