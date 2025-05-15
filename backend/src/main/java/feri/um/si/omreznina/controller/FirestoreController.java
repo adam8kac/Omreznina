@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/bill")
-public class FirestoreTestController {
+public class FirestoreController {
 
     private final Logger logger = Logger.getLogger(getClass().getName());
 
@@ -32,7 +32,7 @@ public class FirestoreTestController {
         try {
             return ResponseEntity.ok(service.getDocuments());
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // pomembno!
+            Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to fetch documents", e);

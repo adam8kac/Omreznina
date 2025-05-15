@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from collections import defaultdict
 
 def filter_files():
     files = os.listdir(".")
@@ -53,6 +54,8 @@ def process_file(file: pd.DataFrame):
     df_copy = file.copy()
     first_index_month = str(file.index[0]).split("-")[1]
     # print("prvi mesec:", first_index_month)
+
+    structured_obj = defaultdict(dict)
     
     delta_values = calulate_delta(df_copy)
     # print(delta_values)
@@ -60,22 +63,36 @@ def process_file(file: pd.DataFrame):
     json_obj = {}
     for index, row in file.iterrows():
         index_split = str(index).split("-")
+        year, month, day = index_split
+        month_key = f"{year}-{month}"
+       
+        if month != first_index_month:
+            continue
+
+        if month_key not in json_obj:
+            json_obj[month_key] = {}
+
+        day_data = {}
+
         if index_split[1] != first_index_month:
             # print(index)
             file.drop(index=index, inplace=True)
         else:
             # print(index)
             for column_name in file.columns:
-                if str(index) not in json_obj:
-                    json_obj[str(index)] = {}
-
-                json_obj[str(index)][column_name.lower()] =  row[column_name]
+                value = row[column_name]
+                # če hočemo odstranit vrendosti 0 pri prejeti/oddani energiji odkomentiraj(težave mogoče da če pride do nejasnosti podatkov da kje manjka kaka vrednost je lahko zaradi tega) ~ 3kb razlike v velikosti jsona če damo 0 stran
+                # if isinstance(value, (int, float)) and value == 0:  
+                #     continue
+                day_data[column_name.lower()] = value
 
             for col_name, series in delta_values.items():
-                    delta = series.get(index)
-                    if not pd.isna(delta):
-                        key = col_name.lower()
-                        json_obj[str(index)][key] = round(delta, 3)
+                delta = series.get(index)
+                if delta is not None and not pd.isna(delta):
+                    key = col_name.lower()
+                    day_data[key] = round(delta, 3)
+
+        json_obj[month_key][str(index)] = day_data
 
     return json_obj
 

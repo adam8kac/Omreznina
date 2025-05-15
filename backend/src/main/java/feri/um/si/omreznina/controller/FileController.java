@@ -3,7 +3,7 @@ package feri.um.si.omreznina.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import feri.um.si.omreznina.service.FileServiceTest;
+import feri.um.si.omreznina.service.FileService;
 
 import org.springframework.http.HttpStatus;
 
@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 // to gre v userja pol
 @RestController
 @RequestMapping("/file")
-public class FileControllerTest {
+public class FileController {
 
     @Autowired
-    private final FileServiceTest fileServiceTest;
+    private final FileService fileServiceTest;
 
     private final Logger logger = Logger.getLogger(getClass().getName());
 
-    public FileControllerTest(FileServiceTest fileServiceTest) {
+    public FileController(FileService fileServiceTest) {
         this.fileServiceTest = fileServiceTest;
     }
 

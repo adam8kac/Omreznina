@@ -3,30 +3,41 @@ package feri.um.si.omreznina.userTest;
 import feri.um.si.omreznina.exceptions.UserException;
 import feri.um.si.omreznina.model.User;
 import feri.um.si.omreznina.repository.UserRepository;
+import feri.um.si.omreznina.service.FileService;
+import feri.um.si.omreznina.service.FirestoreService;
 import feri.um.si.omreznina.service.UserService;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@SuppressWarnings("removal")
 public class UserServiceTest {
 
+    @MockBean
     private UserRepository userRepository;
-    private BCryptPasswordEncoder encoder;
-    private UserService userService;
 
-    @BeforeEach
-    public void setup() {
-        userRepository = mock(UserRepository.class);
-        encoder = mock(BCryptPasswordEncoder.class);
-        userService = new UserService(userRepository, encoder);
-    }
+    @MockBean
+    private BCryptPasswordEncoder encoder;
+
+    @MockBean
+    private FileService fileService;
+
+    @MockBean
+    private FirestoreService firestoreService;
+
+    @Autowired
+    private UserService userService;
 
     @Test
     public void testRegister_userAlreadyExists() {
@@ -43,7 +54,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testRegister_successful() {
+    public void testRegister_successful() throws UserException {
         User user = new User();
         user.setEmail("test@email.com");
         user.setPassword("password");
@@ -51,52 +62,34 @@ public class UserServiceTest {
         when(userRepository.findByEmail("test@email.com")).thenReturn(Optional.empty());
         when(encoder.encode("password")).thenReturn("hashedPassword");
 
-        try {
-            userService.register(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        userService.register(user);
 
         assertEquals("hashedPassword", user.getPassword());
         verify(userRepository).save(user);
     }
 
     @Test
-    public void testUpdateProfile_userNotFound() {
-        User user = new User(); // id == null
+    void testProcessAndStoreFile_success() throws Exception {
+        String uid = "testUser";
+        String jsonResponse = """
+                    [
+                        {
+                            "2023-01": {"a": 1},
+                            "2023-02": {"b": 2}
+                        }
+                    ]
+                """;
 
-        UserException exception = assertThrows(UserException.class, () -> {
-            userService.updateProfile(user);
-        });
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file", "test.json", "application/json", "irrelevant".getBytes());
 
-        assertEquals("Could not update null!", exception.getMessage());
+        when(fileService.makePythonCall()).thenReturn(jsonResponse);
+
+        userService.processAndStoreFile(multipartFile, uid);
+
+        verify(fileService).saveFile(multipartFile);
+        verify(fileService).makePythonCall();
+        verify(fileService).removeFile(multipartFile);
+        verify(firestoreService).saveDocumentToCollection(eq(uid), any());
     }
-
-@Test
-public void testUpdateProfile_successful() throws Exception {
-    User updatedUser = new User();
-    updatedUser.setId(1);
-    updatedUser.setFirstName("New");
-    updatedUser.setLastName("Name");
-    updatedUser.setEmail("new@email.com");
-
-    User existingUser = new User();
-    existingUser.setId(1);
-    existingUser.setFirstName("Old");
-    existingUser.setLastName("OldSurname");
-    existingUser.setEmail("old@email.com");
-
-    when(userRepository.findById(1)).thenReturn(Optional.of(existingUser));
-
-    userService.updateProfile(updatedUser);
-
-    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-    verify(userRepository).save(userCaptor.capture());
-    User savedUser = userCaptor.getValue();
-
-    assertEquals("New", savedUser.getFirstName());
-    assertEquals("Name", savedUser.getLastName());
-    assertEquals("new@email.com", savedUser.getEmail());
-}
-
 }

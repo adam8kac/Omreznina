@@ -7,4 +7,3 @@ VOLUME [ "/tmp" ]
 COPY python_helper/ .
 
 EXPOSE 12345
-
