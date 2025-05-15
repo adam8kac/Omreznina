@@ -5,6 +5,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.UserRecord;
+
+import feri.um.si.omreznina.exceptions.UserException;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +30,12 @@ public class UserService {
         this.firestoreService = firestoreService;
     }
 
-    public void processAndStoreFile(MultipartFile file, String uid) {
+    public void processAndStoreFile(MultipartFile file, String uid) throws UserException{
+
+        if (!isUserVerified(uid)) {
+            throw new UserException(uid + " does not have  verified email!");
+        }
+
         try {
             String response = fileService.sendFileToParser(file);
 
@@ -38,6 +48,16 @@ public class UserService {
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "File processing failed", e);
+        }
+    }
+
+    private boolean isUserVerified(String uid) {
+        try {
+            UserRecord user = FirebaseAuth.getInstance().getUser(uid);
+            return user.isEmailVerified();
+        } catch (FirebaseAuthException e) {
+            logger.log(Level.WARNING, "User does not exist");
+            return false;
         }
     }
 

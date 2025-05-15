@@ -65,9 +65,12 @@ public class FirestoreService {
                         .document(yearMonth)
                         .set(data)
                         .get();
-                logger.log(Level.INFO, "Saved doc for user: " + uid);
+                logger.log(Level.INFO, "Document saved!");
             }
         } catch (CancellationException | ExecutionException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             logger.warning(e.toString());
         }
     }
