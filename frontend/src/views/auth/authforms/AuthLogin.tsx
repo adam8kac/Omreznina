@@ -1,6 +1,13 @@
 import { Button, Checkbox, Label, Modal, TextInput } from "flowbite-react";
 import { useState } from "react";
-import { signInWithEmailAndPassword, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  sendEmailVerification,
+} from "firebase/auth";
 import { useNavigate } from "react-router";
 import { auth } from "src/firebase-config";
 import { Icon } from "@iconify/react";
@@ -14,39 +21,59 @@ const AuthLogin = () => {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
 
-  // MODAL
   const [openModal, setOpenModal] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetStatus, setResetStatus] = useState("");
+
+  const [showResendVerify, setShowResendVerify] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
     setInfo("");
+    setShowResendVerify(false);
+
+    if (!email.trim()) {
+      setError("Vnesite svoj email naslov.");
+      return;
+    }
+    if (!password.trim()) {
+      setError("Vnesite svoje geslo.");
+      return;
+    }
 
     try {
       await setPersistence(
         auth,
         rememberMe ? browserLocalPersistence : browserSessionPersistence
       );
-      await signInWithEmailAndPassword(auth, email, password);
+
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.emailVerified) {
+        setError("Email naslov še ni potrjen.");
+        setShowResendVerify(true);
+        return;
+      }
+
       navigate("/");
     } catch (error: any) {
       if (error.code === "auth/user-not-found") {
-        setError("Uporabnik ne obstaja.");
+        setError("Uporabnik s tem emailom ne obstaja.");
       } else if (error.code === "auth/wrong-password") {
-        setError("Napačno geslo.");
+        setError("Geslo ni pravilno.");
       } else if (error.code === "auth/too-many-requests") {
-        setError("Preveč poskusov prijave. Počakajte nekaj časa.");
+        setError("Preveč neuspešnih poskusov. Počakajte nekaj časa.");
       } else {
-        setError("Napačno uporabniško ime ali geslo.");
+        setError("Napaka pri prijavi. Preverite podatke.");
       }
     }
   };
 
   const handlePasswordReset = async () => {
-    if (!resetEmail) {
-      setResetStatus("Vnesite email.");
+    if (!resetEmail.trim()) {
+      setResetStatus("Vnesite email naslov za ponastavitev.");
       return;
     }
 
@@ -57,14 +84,29 @@ const AuthLogin = () => {
       if (error.code === "auth/user-not-found") {
         setResetStatus("Uporabnik s tem emailom ne obstaja.");
       } else {
-        setResetStatus("Napaka pri pošiljanju povezave za ponastavitev.");
+        setResetStatus("Napaka pri pošiljanju povezave.");
       }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        await sendEmailVerification(currentUser);
+        setInfo("Verifikacijski email je bil ponovno poslan.");
+        setShowResendVerify(false);
+      } else {
+        setError("Ni prijavljenega uporabnika za pošiljanje potrditve.");
+      }
+    } catch (error) {
+      setError("Napaka pri pošiljanju verifikacijskega emaila.");
     }
   };
 
   return (
     <>
-      {/* Password Reset Modal */}
+      {/* Modal za pozabljeno geslo */}
       <Modal
         show={openModal}
         onClose={() => {
@@ -76,19 +118,20 @@ const AuthLogin = () => {
         <Modal.Header>Pozabljeno geslo</Modal.Header>
         <Modal.Body>
           <div className="space-y-4">
-            <Label htmlFor="resetEmail" value="Vnesi email naslov" />
+            <Label htmlFor="resetEmail" value="Email naslov" />
             <TextInput
               id="resetEmail"
               type="email"
               value={resetEmail}
               onChange={(e) => setResetEmail(e.target.value)}
-              placeholder="ime@primer.si"
-              required
+              placeholder="email@primer.com"
             />
             {resetStatus && (
               <p
                 className={`text-sm ${
-                  resetStatus.includes("poslana") ? "text-green-600" : "text-red-600"
+                  resetStatus.includes("poslana")
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
                 {resetStatus}
@@ -104,17 +147,15 @@ const AuthLogin = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Login Form */}
+      {/* Login forma */}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <Label htmlFor="email" value="Email" className="mb-2 block" />
           <TextInput
             id="email"
             type="email"
-            sizing="md"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
             className="form-control form-rounded-xl"
           />
         </div>
@@ -124,10 +165,8 @@ const AuthLogin = () => {
           <TextInput
             id="password"
             type={showPassword ? "text" : "password"}
-            sizing="md"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
             className="form-control form-rounded-xl pr-10"
           />
           <span
@@ -160,6 +199,21 @@ const AuthLogin = () => {
 
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
         {info && <p className="text-green-600 text-sm mb-4">{info}</p>}
+
+        {showResendVerify && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-700">
+              Niste prejeli potrditvenega emaila?
+            </p>
+            <Button
+              onClick={handleResendVerification}
+              size="xs"
+              className="mt-2"
+            >
+              Pošlji ponovno potrditveni email
+            </Button>
+          </div>
+        )}
 
         <Button
           type="submit"
