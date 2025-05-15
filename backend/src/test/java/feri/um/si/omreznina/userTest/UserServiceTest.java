@@ -1,102 +1,89 @@
 package feri.um.si.omreznina.userTest;
 
 import feri.um.si.omreznina.exceptions.UserException;
-import feri.um.si.omreznina.model.User;
-import feri.um.si.omreznina.repository.UserRepository;
+import feri.um.si.omreznina.service.FileService;
+import feri.um.si.omreznina.service.FirestoreService;
 import feri.um.si.omreznina.service.UserService;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.mockito.MockedStatic;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Optional;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.UserRecord;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@SuppressWarnings("removal")
+@ActiveProfiles("test")
 public class UserServiceTest {
 
-    private UserRepository userRepository;
-    private BCryptPasswordEncoder encoder;
-    private UserService userService;
+    @MockBean
+    private FileService fileService;
 
-    @BeforeEach
-    public void setup() {
-        userRepository = mock(UserRepository.class);
-        encoder = mock(BCryptPasswordEncoder.class);
-        userService = new UserService(userRepository, encoder);
-    }
+    @MockBean
+    private FirestoreService firestoreService;
 
     @Test
-    public void testRegister_userAlreadyExists() {
-        User user = new User();
-        user.setEmail("test@email.com");
+    void success_verified_user() throws Exception {
+        String uid = "verifiedUser";
+        String jsonResponse = "[{\"2023-01\":{\"a\":1}}]";
 
-        when(userRepository.findByEmail("test@email.com")).thenReturn(Optional.of(user));
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "irrelevant".getBytes());
 
-        UserException exception = assertThrows(UserException.class, () -> {
-            userService.register(user);
-        });
+        UserRecord mockRecord = mock(UserRecord.class);
+        when(mockRecord.isEmailVerified()).thenReturn(true);
 
-        assertEquals("Invalid user", exception.getMessage());
-    }
+        try (MockedStatic<FirebaseAuth> mockedStatic = mockStatic(FirebaseAuth.class)) {
+            FirebaseAuth firebaseAuthMock = mock(FirebaseAuth.class);
+            when(firebaseAuthMock.getUser(uid)).thenReturn(mockRecord);
+            mockedStatic.when(FirebaseAuth::getInstance).thenReturn(firebaseAuthMock);
 
-    @Test
-    public void testRegister_successful() {
-        User user = new User();
-        user.setEmail("test@email.com");
-        user.setPassword("password");
+            when(fileService.sendFileToParser(file)).thenReturn(jsonResponse);
 
-        when(userRepository.findByEmail("test@email.com")).thenReturn(Optional.empty());
-        when(encoder.encode("password")).thenReturn("hashedPassword");
+            UserService userService = new UserService(fileService, firestoreService);
+            userService.processAndStoreFile(file, uid);
 
-        try {
-            userService.register(user);
-        } catch (Exception e) {
-            e.printStackTrace();
+            verify(firestoreService, times(1)).saveDocumentToCollection(eq(uid), any());
         }
-
-        assertEquals("hashedPassword", user.getPassword());
-        verify(userRepository).save(user);
     }
 
     @Test
-    public void testUpdateProfile_userNotFound() {
-        User user = new User(); // id == null
+    void fail_not_verified_user() throws Exception {
+        String uid = "notVerifiedUser";
 
-        UserException exception = assertThrows(UserException.class, () -> {
-            userService.updateProfile(user);
-        });
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "irrelevant".getBytes());
 
-        assertEquals("Could not update null!", exception.getMessage());
+        UserRecord mockRecord = mock(UserRecord.class);
+        when(mockRecord.isEmailVerified()).thenReturn(false);
+
+        try (MockedStatic<FirebaseAuth> mockedStatic = mockStatic(FirebaseAuth.class)) {
+            FirebaseAuth firebaseAuthMock = mock(FirebaseAuth.class);
+            when(firebaseAuthMock.getUser(uid)).thenReturn(mockRecord);
+            mockedStatic.when(FirebaseAuth::getInstance).thenReturn(firebaseAuthMock);
+
+            UserService userService = new UserService(fileService, firestoreService);
+
+            try {
+                userService.processAndStoreFile(file, uid);
+                fail("Expected UserException was not thrown");
+            } catch (UserException e) {
+                assertTrue(e.getMessage().contains("does not have  verified email"));
+            }
+        }
     }
-
-@Test
-public void testUpdateProfile_successful() throws Exception {
-    User updatedUser = new User();
-    updatedUser.setId(1);
-    updatedUser.setFirstName("New");
-    updatedUser.setLastName("Name");
-    updatedUser.setEmail("new@email.com");
-
-    User existingUser = new User();
-    existingUser.setId(1);
-    existingUser.setFirstName("Old");
-    existingUser.setLastName("OldSurname");
-    existingUser.setEmail("old@email.com");
-
-    when(userRepository.findById(1)).thenReturn(Optional.of(existingUser));
-
-    userService.updateProfile(updatedUser);
-
-    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-    verify(userRepository).save(userCaptor.capture());
-    User savedUser = userCaptor.getValue();
-
-    assertEquals("New", savedUser.getFirstName());
-    assertEquals("Name", savedUser.getLastName());
-    assertEquals("new@email.com", savedUser.getEmail());
-}
 
 }

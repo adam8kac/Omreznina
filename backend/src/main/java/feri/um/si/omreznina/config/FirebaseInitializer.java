@@ -26,17 +26,19 @@ public class FirebaseInitializer {
     public void initfirebase() throws IOException {
         List<FirebaseApp> apps = FirebaseApp.getApps();
 
-        if (apps == null || apps.isEmpty()) {
-            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("serviceAccountKey.json");
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
-            FirebaseApp.initializeApp(options);
-        } else {
-            System.out.println("Found " + apps.getFirst() + " Firebase apps");
+        if (apps != null && !apps.isEmpty()) {
+            for (FirebaseApp app : apps) {
+                app.delete();
+            }
         }
 
+        InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("serviceAccountKey.json");
+
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build();
+
+        FirebaseApp.initializeApp(options);
     }
+
 }

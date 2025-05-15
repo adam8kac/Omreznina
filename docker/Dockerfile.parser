@@ -1,6 +1,10 @@
 FROM python:3.10.17-slim
 
-RUN pip install --no-cache-dir fastapi uvicorn pandas openpyxl
+RUN pip install --no-cache-dir fastapi uvicorn pandas openpyxl python-multipart
+
+RUN mkdir -p /app/python_helper
+
+WORKDIR /app
 
 VOLUME [ "/tmp" ]
 
@@ -8,3 +12,4 @@ COPY python_helper/ .
 
 EXPOSE 12345
 
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "12345"]

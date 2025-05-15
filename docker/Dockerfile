@@ -4,8 +4,8 @@ VOLUME [ "/tmp" ]
 
 WORKDIR /app
 
-COPY backend/target/omreznina-0.0.1-SNAPSHOT.war app.war 
+COPY backend/target/omreznina-0.0.1-SNAPSHOT.jar app.jar 
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "./app.war"]
+ENTRYPOINT ["java", "-jar", "./app.jar"]
