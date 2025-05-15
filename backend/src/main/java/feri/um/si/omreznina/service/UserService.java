@@ -56,7 +56,7 @@ public class UserService {
             UserRecord user = FirebaseAuth.getInstance().getUser(uid);
             return user.isEmailVerified();
         } catch (FirebaseAuthException e) {
-            logger.log(Level.WARNING, "User does not exist");
+            logger.log(Level.SEVERE, "User does not exist");
             return false;
         }
     }
