@@ -52,6 +52,7 @@
     "@types/react-helmet": "^6.1.11",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
+    "cypress": "^14.3.3",
     "eslint": "latest",
     "eslint-config-next": "latest",
     "gh-pages": "^6.3.0",
