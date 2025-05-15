@@ -2,10 +2,14 @@ import { Navigate, useLocation } from 'react-router';
 import { useAuth } from 'src/contexts/AuthContext';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   const publicRoutes = ["/auth/verify-info", "/auth/reset-password", "/auth/action"];
+
+  if (loading) {
+    return null; 
+  }
 
   if (!user && !publicRoutes.includes(location.pathname)) {
     return <Navigate to="/auth/login" replace />;

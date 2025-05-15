@@ -37,6 +37,12 @@ const AuthLogin = () => {
       setError("Vnesite svoj email naslov.");
       return;
     }
+
+    if (!email.includes("@")) {
+      setError("Email mora vsebovati znak '@'.");
+      return;
+    }
+
     if (!password.trim()) {
       setError("Vnesite svoje geslo.");
       return;
@@ -70,6 +76,7 @@ const AuthLogin = () => {
       }
     }
   };
+
 
   const handlePasswordReset = async () => {
     if (!resetEmail.trim()) {
@@ -106,7 +113,7 @@ const AuthLogin = () => {
 
   return (
     <>
-      {/* Modal za pozabljeno geslo */}
+
       <Modal
         show={openModal}
         onClose={() => {
@@ -147,13 +154,13 @@ const AuthLogin = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Login forma */}
+
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <Label htmlFor="email" value="Email" className="mb-2 block" />
           <TextInput
             id="email"
-            type="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="form-control form-rounded-xl"

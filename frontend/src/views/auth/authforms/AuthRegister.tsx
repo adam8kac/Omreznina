@@ -41,6 +41,11 @@ const AuthRegister = () => {
       return;
     }
 
+    if (!email.includes("@")) {
+      setError("Email mora vsebovati znak '@'.");
+      return;
+    }
+
     const passwordError = validatePassword(password);
     if (passwordError) {
       setError(passwordError);
@@ -57,6 +62,7 @@ const AuthRegister = () => {
       const user = userCredential.user;
 
       await updateProfile(user, { displayName: name });
+      auth.languageCode = 'sl';
 
       await sendEmailVerification(user, {
         url: "https://omreznina.netlify.app/auth/verify-info",
@@ -70,20 +76,19 @@ const AuthRegister = () => {
     } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
         setError("Email je že v uporabi.");
-      } else if (error.code === "auth/invalid-email") {
-        setError("Email ni veljaven.");
       } else {
-        setError("Napaka pri registraciji: " + error.message);
+        setError("Napaka pri registraciji");
       }
     }
   };
-
 
   const handleResendVerification = async () => {
     try {
       const user = auth.currentUser;
 
       if (user && !user.emailVerified) {
+        auth.languageCode = 'sl';
+
         await sendEmailVerification(user, {
           url: "https://omreznina.netlify.app/auth/verify-info",
           handleCodeInApp: false,
@@ -96,7 +101,6 @@ const AuthRegister = () => {
       setError("Napaka pri ponovnem pošiljanju emaila.");
     }
   };
-
 
   return (
     <form onSubmit={handleSubmit}>
@@ -115,7 +119,7 @@ const AuthRegister = () => {
         <Label htmlFor="email" value="Email naslov" />
         <TextInput
           id="email"
-          type="email"
+          type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="form-control form-rounded-xl"
