@@ -2,9 +2,10 @@ name: E2E Tests with Cypress
 
 on:
   push:
-    branches: [main]
+    branches:
+      - "**"
   pull_request:
-    branches: [main]
+    types: [opened, synchronize, reopened]
 
 jobs:
   cypress-run:
