@@ -21,10 +21,12 @@ jobs:
         working-directory: backend
         run: mvn clean package -DskipTests
 
-      - name: Build Image
+      - name: Write Firebase credentials to file
         run: |
-          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > ./firebase.json
-          docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
+          printf '%s' "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > firebase.json
+
+      - name: Build Image
+        run: docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
 
       - name: Push Image
         run: |
