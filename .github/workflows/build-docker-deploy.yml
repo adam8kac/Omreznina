@@ -18,6 +18,7 @@ jobs:
           java-version: '21'
 
       - name: Build JAR
+        working-directory: backend
         run: mvn clean package -DskipTests
 
       - name: Build Image
