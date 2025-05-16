@@ -33,7 +33,6 @@ const Register = () => {
   return (
     <div style={gradientStyle} className="relative overflow-hidden h-screen flex items-center justify-center px-4">
       <div className="flex w-full max-w-6xl items-center relative">
-        {/* Leva stran z besedilom */}
         <div className="hidden md:flex flex-col justify-center gap-6 w-1/2 px-8">
           <h2 className="text-2xl font-semibold text-dark mb-2">Kaj ponujamo?</h2>
           <p className="text-md text-gray-700">
@@ -58,8 +57,6 @@ const Register = () => {
             </div>
           </div>
         </div>
-
-        {/* Žica na sredini */}
         <div className="hidden md:flex flex-col items-center justify-center px-4 relative" style={{ height: "300px" }}>
           <div
             ref={wireRef}
@@ -82,8 +79,6 @@ const Register = () => {
             </div>
           </div>
         </div>
-
-        {/* Registracijska forma */}
         <div className="flex justify-center items-center w-full md:w-1/2 px-6">
           <div className="rounded-xl shadow-md bg-white dark:bg-darkgray p-6 w-full max-w-md border-none">
             <div className="flex flex-col gap-2 w-full">
