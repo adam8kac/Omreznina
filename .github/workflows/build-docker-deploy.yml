@@ -28,3 +28,6 @@ jobs:
         run: |
           docker login -u adam8kac -p ${{ secrets.DOCKER_TOKEN }} 
           docker push adam8kac/omreznina-app:latest
+
+      - name: Deploy Build
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_TOKEN }}

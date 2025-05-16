@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -32,7 +34,14 @@ public class FirebaseInitializer {
             }
         }
 
-        InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("serviceAccountKey.json");
+        String firebaseJson = System.getenv("GOOGLE_CREDENTIALS_JSON");
+        InputStream serviceAccount;
+
+        if (firebaseJson != null) {
+            serviceAccount = new ByteArrayInputStream(firebaseJson.getBytes(StandardCharsets.UTF_8));
+        } else {
+            serviceAccount = getClass().getClassLoader().getResourceAsStream("serviceAccountKey.json");
+        }
 
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
