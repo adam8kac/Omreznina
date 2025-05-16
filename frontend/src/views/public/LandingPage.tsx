@@ -73,23 +73,19 @@ const LandingPage = () => {
             <br />
         <h1 className="text-4xl sm:text-5xl font-extrabold text-primary mb-4">Omrežnina+</h1>
 
-
-
-
         </div>
+{!isMobile && (
+  <div className="absolute top-[220px] left-1/2 transform -translate-x-1/2 z-0 h-[calc(100%-320px)] flex flex-col items-center pointer-events-none">
+    <div className="w-[3px] bg-gray-200 rounded-full h-full overflow-hidden relative">
+      <div
+        className="absolute top-0 left-0 w-full bg-gradient-to-b from-yellow-400 to-blue-600 animate-pulse"
+        style={{ height: `${scrollProgress}%` }}
+      />
+    </div>
+    <Icon icon="solar:zap-bold" className="text-yellow-400 mt-2 w-2 h-2 animate-pulse" />
+  </div>
+)}
 
-
-      {!isMobile && (
-        <div className="absolute top-[220px] left-1/2 transform -translate-x-1/2 z-0 h-[calc(100%-320px)] flex flex-col items-center pointer-events-none">
-          <div className="w-[3px] bg-gray-200 rounded-full h-full overflow-hidden relative">
-            <div
-              className="absolute top-0 left-0 w-full bg-gradient-to-b from-yellow-400 to-blue-600 animate-pulse"
-              style={{ height: `${scrollProgress}%` }}
-            />
-          </div>
-          <Icon icon="solar:zap-bold" className="text-yellow-400 mt-4 w-6 h-6 animate-pulse" />
-        </div>
-      )}
 
       <main className="max-w-6xl mx-auto py-20 px-4 space-y-32 relative z-10">
         <section className="flex flex-col md:grid md:grid-cols-3 gap-8 items-center text-center md:text-left">
