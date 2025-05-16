@@ -18,6 +18,8 @@ const Table = Loadable(lazy(() => import('../views/tables/Table')));
 const Form = Loadable(lazy(() => import('../views/forms/Form')));
 const Shadow = Loadable(lazy(() => import('../views/shadows/Shadow')));
 const UploadPage = Loadable(lazy(() => import('../views/forms/UploadForm')));
+const UploadReciept = Loadable(lazy(() => import('../views/forms/UploadRecieptForm')));
+
 
 // icons
 const Solar = Loadable(lazy(() => import('../views/icons/Solar')));
@@ -53,6 +55,7 @@ const Router = [
       { path: '/icons/solar', exact: true, element: <Solar /> },
       { path: '/sample-page', exact: true, element: <SamplePage /> },
       { path: '/upload-invoice', exact: true, element: <UploadPage /> },
+      { path: '/upload-reciept', exact: true, element: <UploadReciept /> },
       { path: '*', element: <Navigate to="/auth/404" /> },
     ],
   },
