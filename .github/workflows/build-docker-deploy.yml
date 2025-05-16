@@ -18,7 +18,7 @@ jobs:
           java-version: '21'
 
       - name: Build JAR
-        run: ./mvnw clean package -DskipTests
+        run: mvn clean package -DskipTests
 
       - name: Build Image
         run: docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
