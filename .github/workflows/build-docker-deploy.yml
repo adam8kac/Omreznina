@@ -22,7 +22,9 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Build Image
-        run: docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
+        run: |
+          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > ./firebase.json
+          docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
 
       - name: Push Image
         run: |
