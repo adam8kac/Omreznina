@@ -1,0 +1,30 @@
+name: publish and deploy
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  publish_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build JAR
+        working-directory: backend
+        run: mvn clean package -DskipTests
+
+      - name: Build Image
+        run: docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
+
+      - name: Push Image
+        run: |
+          docker login -u adam8kac -p ${{ secrets.DOCKER_TOKEN }} 
+          docker push adam8kac/omreznina-app:latest
