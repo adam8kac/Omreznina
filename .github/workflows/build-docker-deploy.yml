@@ -21,9 +21,9 @@ jobs:
         working-directory: backend
         run: mvn clean package -DskipTests
 
-      - name: Write Firebase credentials to file
+      - name: Decode Firebase credentials to file
         run: |
-          printf '%s' "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > firebase.json
+          echo "${{ secrets.GOOGLE_CREDENTIALS_BASE64 }}" | base64 -d > firebase.json
 
       - name: Build Image
         run: docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
