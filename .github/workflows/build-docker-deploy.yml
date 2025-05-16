@@ -11,7 +11,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - name: build image
-        run: docker build ../../ -t adam8kac/omreznina-app:latest -f ../../docker/Dockerfile
+        run: docker build -t adam8kac/omreznina-app:latest -f ./docker/Dockerfile .
       - name: push image
         run: |
           docker login -u adam8kac -p ${{ secrets.DOCKER_TOKEN }} \
