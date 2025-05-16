@@ -21,8 +21,6 @@ const UploadPage = Loadable(lazy(() => import('../views/forms/UploadForm')));
 
 // icons
 const Solar = Loadable(lazy(() => import('../views/icons/Solar')));
-//public
-const LandingPage = Loadable(lazy(() => import('../views/public/LandingPage')));
 
 // authentication
 const Login = Loadable(lazy(() => import('../views/auth/login/Login')));
@@ -38,10 +36,7 @@ const AuthenticationHandler = Loadable(
 
 
 const Router = [
-  {
-    path: '/landing',
-    element: <LandingPage />,
-  },
+
   {
     path: '/',
     element: (
