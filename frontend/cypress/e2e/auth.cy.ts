@@ -92,7 +92,7 @@ it('Napaka: napačen email', () => {
   cy.wait(200);
 
   cy.get('body').then(($body) => {
-    const customError = $body.find('p').filter((i, el) =>
+    const customError = $body.find('p').filter((_, el) =>
       !!el.textContent?.includes("Email mora vsebovati znak '@'.")
     );
 
