@@ -17,7 +17,7 @@ const AuthRegister = () => {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [showResend, setShowResend] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Novo stanje
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validatePassword = (pwd: string): string | null => {
     if (pwd.length < 6) return "Geslo mora imeti vsaj 6 znakov.";
@@ -28,7 +28,7 @@ const AuthRegister = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isSubmitting) return; // ✅ Prepreči dvojni klik
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     setError("");
@@ -89,7 +89,7 @@ const AuthRegister = () => {
         setError("Napaka pri registraciji.");
       }
     } finally {
-      setIsSubmitting(false); // ✅ Vedno sprosti gumb
+      setIsSubmitting(false);
     }
   };
 
