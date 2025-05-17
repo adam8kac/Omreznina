@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Label, Button, FileInput, Accordion } from 'flowbite-react';
+import { Label, TextInput, Button, FileInput, Accordion } from 'flowbite-react';
 import instructions1 from '../../assets/images/instructions/instructions1.png';
 import instructions2 from '../../assets/images/instructions/instructions2.png';
 
 
-const UploadInvoice: React.FC = () => {
-  const [invoiceName, setInvoiceName] = useState('');
-  const [invoiceDate, setInvoiceDate] = useState('');
+const UploadReciept: React.FC = () => {
+  const [recieptName, setRecieptName] = useState('');
+  const [recieptDate, setRecieptDate] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,26 +18,49 @@ const UploadInvoice: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!file || !invoiceName || !invoiceDate) {
+    if (!file || !recieptName || !recieptDate) {
       alert('Izpolni vsa polja in izberi datoteko.');
       return;
     }
 
-    console.log('Ime računa:', invoiceName);
-    console.log('Datum računa:', invoiceDate);
+    console.log('Ime računa:', recieptName);
+    console.log('Datum računa:', recieptDate);
     console.log('Datoteka:', file);
 
     alert('Račun uspešno naložen!');
-    setInvoiceName('');
-    setInvoiceDate('');
+    setRecieptName('');
+    setRecieptDate('');
     setFile(null);
   };
 
   return (
     <div className="rounded-xl dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
-      <h5 className="card-title text-xl font-semibold mb-4">Ročno nalaganje izpiska iz MojElektro.si</h5>
+      <h5 className="card-title text-xl font-semibold mb-4">Ročno nalaganje računa</h5>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
+          <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
+            <div>
+              <Label htmlFor="invoiceName" value="Naziv računa" className="mb-1 block" />
+              <TextInput
+                id="Obračunsko obdobje"
+                type="text"
+                placeholder="Npr. Marec 2025"
+                value={recieptName}
+                onChange={(e) => setRecieptName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="invoiceDate" value="Datum" className="mb-1 block" />
+              <TextInput
+                id="invoiceDate"
+                type="date"
+                value={recieptDate}
+                onChange={(e) => setRecieptDate(e.target.value)}
+                required
+              />
+            </div>
+          </div>
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
             <div>
               <Label htmlFor="fileInput" value="Izberi datoteko" className="mb-1 block" />
@@ -56,11 +79,11 @@ const UploadInvoice: React.FC = () => {
           </div>
           <div className="col-span-12 flex gap-3 mt-2">
             <Button type="submit" color="primary">
-              Naloži csv ali excel
+              Naloži račun
             </Button>
             <Button type="reset" color="gray" onClick={() => {
-              setInvoiceName('');
-              setInvoiceDate('');
+              setRecieptName('');
+              setRecieptDate('');
               setFile(null);
             }}>
               Prekliči
@@ -106,4 +129,4 @@ const UploadInvoice: React.FC = () => {
   );
 };
 
-export default UploadInvoice;
+export default UploadReciept;

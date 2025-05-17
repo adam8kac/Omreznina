@@ -37,10 +37,16 @@ const SidebarContent: MenuItem[] = [
     heading: "UTILITIES",
     children: [
       {
-        name: "Naloži račun",
+        name: "Naloži izpisek",
         icon: "solar:cloud-upload-linear",
         id: uniqueId(),
         url: "/upload-invoice",
+      },
+      {
+        name: "Naloži račun",
+        icon: "tabler:file-upload",
+        id: uniqueId(),
+        url: "/upload-reciept",
       },
       {
         name: "Typography",

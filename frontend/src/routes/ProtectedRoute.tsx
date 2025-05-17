@@ -12,8 +12,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
 
   if (!user && !publicRoutes.includes(location.pathname)) {
-    //return <Navigate to="/auth/login" replace />;
-    return <Navigate to="/landing" replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   if (user && !user.emailVerified && !publicRoutes.includes(location.pathname)) {

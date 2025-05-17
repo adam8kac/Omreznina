@@ -17,6 +17,7 @@ const AuthRegister = () => {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [showResend, setShowResend] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Novo stanje
 
   const validatePassword = (pwd: string): string | null => {
     if (pwd.length < 6) return "Geslo mora imeti vsaj 6 znakov.";
@@ -27,33 +28,41 @@ const AuthRegister = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmitting) return; // ✅ Prepreči dvojni klik
+
+    setIsSubmitting(true);
     setError("");
     setInfo("");
     setShowResend(false);
 
     if (!name.trim()) {
       setError("Vnesite svoje ime.");
+      setIsSubmitting(false);
       return;
     }
 
     if (!email.trim()) {
       setError("Vnesite email naslov.");
+      setIsSubmitting(false);
       return;
     }
 
     if (!email.includes("@")) {
       setError("Email mora vsebovati znak '@'.");
+      setIsSubmitting(false);
       return;
     }
 
     const passwordError = validatePassword(password);
     if (passwordError) {
       setError(passwordError);
+      setIsSubmitting(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Gesli se ne ujemata.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -77,8 +86,10 @@ const AuthRegister = () => {
       if (error.code === "auth/email-already-in-use") {
         setError("Email je že v uporabi.");
       } else {
-        setError("Napaka pri registraciji");
+        setError("Napaka pri registraciji.");
       }
+    } finally {
+      setIsSubmitting(false); // ✅ Vedno sprosti gumb
     }
   };
 
@@ -172,8 +183,8 @@ const AuthRegister = () => {
         </div>
       )}
 
-      <Button color="primary" type="submit" className="w-full">
-        Registracija
+      <Button color="primary" type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Pošiljanje..." : "Registracija"}
       </Button>
     </form>
   );
