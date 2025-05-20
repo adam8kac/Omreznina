@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { MonthRecord } from './utils/fetchUserMonthlyData';
 
-// const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-const api = axios.create({ baseURL: 'http://localhost:8080/' });
+const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
 
 // klcie springa da dobi podatke enega dokumenta
 export const getDocumentData = async (uid: string, docId: string): Promise<Record<string, MonthRecord>> => {
