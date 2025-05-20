@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Label, Button, FileInput, Accordion } from 'flowbite-react';
 import instructions1 from '../../assets/images/instructions/instructions1.png';
 import instructions2 from '../../assets/images/instructions/instructions2.png';
