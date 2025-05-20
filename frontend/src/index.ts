@@ -1,21 +1,36 @@
 import axios from 'axios';
 import { MonthRecord } from './utils/fetchUserMonthlyData';
 
-const api = axios.create({ baseURL: 'http://localhost:8080/' });
+const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
 
-export const getDocumentData = async (
-	uid: string,
-	docId: string,
-): Promise<Record<string, MonthRecord>> => {
-	const data = await api.get('documents/data?uid=' + uid + '&docId=' + docId);
-	const response = data.data;
+// klcie springa da dobi podatke enega dokumenta
+export const getDocumentData = async (uid: string, docId: string): Promise<Record<string, MonthRecord>> => {
+  const data = await api.get('documents/data?uid=' + uid + '&docId=' + docId);
+  const response = data.data;
 
-	return response;
+  return response;
 };
 
+// klice springa da dobi userjeve docse(idje)
 export const getUserDocIds = async (uid: string): Promise<Array<string>> => {
-	const data = await api.get('documents/documents?uid=' + uid);
-	const response = data.data;
+  const data = await api.get('documents/documents?uid=' + uid);
+  const response = data.data;
 
-	return response;
+  return response;
+};
+
+// klic na springa da lahko nalozi tiste mesecne pdoatke
+export const uploadMonthlyFile = async (data: FormData) => {
+  try {
+    const response = await api.post('user/upload-file', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+    alert('Napaka pri nalaganju.');
+  }
 };
