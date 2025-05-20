@@ -5,6 +5,13 @@ import Chart from 'react-apexcharts';
 import { Icon } from '@iconify/react';
 import { getDocumentData, getUserDocIds } from 'src/index';
 import { ApexOptions } from 'apexcharts';
+import { MonthRecord } from 'src/utils/fetchUserMonthlyData';
+
+type MonthData = MonthRecord & {
+  totalDejanska: number;
+  totalPoraba: number;
+  totalSolar: number;
+};
 
 const formatMonth = (key: string) => {
   const [year, month] = key.split('-');
@@ -16,7 +23,7 @@ const MonthlyConsumptionChart = () => {
   const [uid, setUid] = useState<string | null>(null);
   const [months, setMonths] = useState<string[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [monthlyData, setMonthlyData] = useState<any>({});
+  const [monthlyData, setMonthlyData] = useState<Record<string, MonthData>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
@@ -28,42 +35,40 @@ const MonthlyConsumptionChart = () => {
 
   useEffect(() => {
     if (!uid) return;
+
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const ids = await getUserDocIds(uid);
         setMonths(ids);
 
-        const result: Record<string, any> = {};
+        const result: Record<string, MonthData> = {};
 
         for (const id of ids) {
-          const doc = await getDocumentData(uid, id);
+          const docMap = await getDocumentData(uid, id);
+          const doc = docMap[id];
+          if (!doc || !doc.dni) continue;
+
           let totalPoraba = 0;
           let totalSolar = 0;
-          const dni: Record<string, { poraba: number; solar: number }> = {};
 
-          for (const [date, value] of Object.entries(doc)) {
-            const v = value as any;
-            const dan = date.split('-')[2];
-            const poraba = Math.abs(v['poraba et'] ?? 0);
-            const solar = v['delta oddana delovna energija et'] ?? 0;
-
-            totalPoraba += poraba;
-            totalSolar += solar;
-            dni[dan] = { poraba, solar };
+          for (const entry of Object.values(doc.dni)) {
+            totalPoraba += entry.poraba ?? 0;
+            totalSolar += entry.solar ?? 0;
           }
 
           result[id] = {
-            dni,
-            totalPoraba,
-            totalSolar,
-            totalDejanska: totalPoraba - totalSolar,
+            dni: doc.dni,
+            totalDejanska: parseFloat((totalPoraba - totalSolar).toFixed(3)),
+            totalPoraba: parseFloat(totalPoraba.toFixed(3)),
+            totalSolar: parseFloat(totalSolar.toFixed(3)),
           };
         }
 
         setMonthlyData(result);
-        setSelectedMonth(Object.keys(result)[0] ?? null);
+        setSelectedMonth(ids[0] || null);
       } catch (e) {
+        console.error(e);
         setHasError(true);
       } finally {
         setIsLoading(false);
@@ -74,9 +79,7 @@ const MonthlyConsumptionChart = () => {
   }, [uid]);
 
   const getSortedDayKeys = (dniObj: Record<string, any>) =>
-    Object.keys(dniObj)
-      .map((k) => k)
-      .sort((a, b) => Number(a) - Number(b));
+    Object.keys(dniObj).sort((a, b) => Number(a) - Number(b));
 
   const optionsBarChart: ApexOptions = {
     chart: { animations: { speed: 500 }, toolbar: { show: false } },
@@ -97,7 +100,10 @@ const MonthlyConsumptionChart = () => {
     yaxis: {
       labels: { formatter: (val) => `${val} kWh` },
     },
-    tooltip: { theme: 'dark' },
+    tooltip: {
+      theme: 'dark',
+      y: { formatter: (val: number) => `${val.toFixed(2)} kWh` },
+    },
     legend: { show: true },
   };
 
@@ -115,7 +121,10 @@ const MonthlyConsumptionChart = () => {
     yaxis: {
       labels: { formatter: (val) => `${val} kWh` },
     },
-    tooltip: { theme: 'dark' },
+    tooltip: {
+      theme: 'dark',
+      y: { formatter: (val: number) => `${val.toFixed(2)} kWh` },
+    },
     legend: { show: true },
   };
 

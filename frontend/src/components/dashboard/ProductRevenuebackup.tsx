@@ -9,7 +9,7 @@ import product4 from "/src/assets/images/products/dash-prd-4.jpg";
 import SimpleBar from "simplebar-react";
 
 
-const ProductRevenue = () => {
+const ProductRevenuebackup = () => {
   const ProductTableData = [
     {
       img: product1,
@@ -104,4 +104,4 @@ const ProductRevenue = () => {
   );
 };
 
-export default ProductRevenue;
+export default ProductRevenuebackup;
