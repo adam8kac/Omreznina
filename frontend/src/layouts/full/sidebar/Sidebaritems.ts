@@ -34,6 +34,17 @@ const SidebarContent: MenuItem[] = [
     ],
   },
   {
+    heading: "SIMULACIJA",
+    children: [
+      {
+        name: "Simulacija porabe",
+        icon: "solar:calculator-linear",
+        id: uniqueId(),
+        url: "/simulate-power",
+      },
+    ],
+  },
+  {
     heading: "UTILITIES",
     children: [
       {
