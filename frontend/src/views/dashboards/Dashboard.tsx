@@ -3,15 +3,14 @@ import BlogCards from 'src/components/dashboard/BlogCards';
 import DailyActivity from 'src/components/dashboard/DailyActivity';
 import NewCustomers from 'src/components/dashboard/NewCustomers';
 import { NewRevenueForecast } from 'src/components/dashboard/NewRevenueForecast';
-import ProductRevenue from 'src/components/dashboard/ProductRevenue';
-import { RevenueForecast } from 'src/components/dashboard/RevenueForecast';
 import TotalIncome from 'src/components/dashboard/TotalIncome';
+import MonthlyConsumptionChart from 'src/components/dashboard/MonthlyConsumptionChart';
 
 const Dashboard = () => {
 	return (
 		<div className="grid grid-cols-12 gap-30">
 			<div className="lg:col-span-8 col-span-12">
-				<RevenueForecast />
+				<MonthlyConsumptionChart />
 			</div>
 			<div className="lg:col-span-8 col-span-12">
 				<NewRevenueForecast />
@@ -25,9 +24,6 @@ const Dashboard = () => {
 						<TotalIncome />
 					</div>
 				</div>
-			</div>
-			<div className="lg:col-span-8 col-span-12">
-				<ProductRevenue />
 			</div>
 			<div className="lg:col-span-4 col-span-12 flex">
 				<DailyActivity />

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getDocumentData, getUserDocIds } from 'src/index';
-import { MonthRecord } from 'src/utils/fetchUserMonthlyData';
+import { getDocumentData, getUserDocIds, MonthRecord } from 'src/index';
 
 // Vrne vse podatke v dokumetno inj doda tatum ki je kljuc v Recordu<datum, podatki> --> da ga v zapis
 const getData = async (uid: string, docId: string): Promise<MonthRecord[]> => {

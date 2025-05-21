@@ -1,25 +1,33 @@
 import axios from 'axios';
-import { MonthRecord } from './utils/fetchUserMonthlyData';
 
 const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
 
-// klcie springa da dobi podatke enega dokumenta
-export const getDocumentData = async (uid: string, docId: string): Promise<Record<string, MonthRecord>> => {
-  const data = await api.get('firestore/data?uid=' + uid + '&docId=' + docId);
-  const response = data.data;
+// ⬇️ TIPI PODATKOV
+export interface DayRecord {
+  poraba: number; // poraba iz omrežja (negativna ali pozitivna)
+  solar: number;  // solarna proizvodnja (pozitivna)
+}
 
-  return response;
+export interface MonthRecord {
+  dni: Record<string, DayRecord>;
+  totalPoraba: number;
+  totalSolar: number;
+}
+
+// ⬇️ API FUNKCIJE
+export const getDocumentData = async (
+  uid: string,
+  docId: string
+): Promise<Record<string, MonthRecord>> => {
+  const res = await api.get(`documents/data?uid=${uid}&docId=${docId}`);
+  return res.data;
 };
 
-// klice springa da dobi userjeve docse(idje)
-export const getUserDocIds = async (uid: string): Promise<Array<string>> => {
-  const data = await api.get('firestore/documents?uid=' + uid);
-  const response = data.data;
-
-  return response;
+export const getUserDocIds = async (uid: string): Promise<string[]> => {
+  const res = await api.get(`documents/documents?uid=${uid}`);
+  return res.data;
 };
 
-// klic na springa da lahko nalozi tiste mesecne pdoatke
 export const uploadMonthlyFile = async (data: FormData) => {
   try {
     const response = await api.post('user/upload-file', data, {
@@ -33,6 +41,7 @@ export const uploadMonthlyFile = async (data: FormData) => {
     console.log(error);
     alert('Napaka pri nalaganju.');
   }
+
 };
 
 //simulacija klici
@@ -53,3 +62,4 @@ export const simulateUsage = async (request: SimulationRequest): Promise<any> =>
 	const res = await api.post('/api/simulation/simulate', request);
 	return res.data;
 };
+
