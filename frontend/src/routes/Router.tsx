@@ -14,6 +14,7 @@ const Dashboard = Loadable(lazy(() => import('../views/dashboards/Dashboard')));
 
 // utilities
 const SimulatePower = Loadable(lazy(() => import('../views/simulation/SimulatePower')));
+const NetworkFee = Loadable(lazy(() => import('../views/simulation/NetworkFee')));
 const Typography = Loadable(lazy(() => import('../views/typography/Typography')));
 const Table = Loadable(lazy(() => import('../views/tables/Table')));
 const Form = Loadable(lazy(() => import('../views/forms/Form')));
@@ -50,6 +51,7 @@ const Router = [
     children: [
       { path: '/', exact: true, element: <Dashboard /> },
       { path: '/simulate-power', exact: true, element: <SimulatePower /> },
+      { path: '/network-fee', exact: true, element: <NetworkFee /> },
       { path: '/ui/typography', exact: true, element: <Typography /> },
       { path: '/ui/table', exact: true, element: <Table /> },
       { path: '/ui/form', exact: true, element: <Form /> },

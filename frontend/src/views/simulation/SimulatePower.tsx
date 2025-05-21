@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
-import {getAvailableDevices,simulateUsage,SimulationRequest} from 'src/index';
+import { getAvailableDevices, simulateUsage, SimulationRequest } from 'src/index';
 import Chart from 'react-apexcharts';
 import { MdIron } from 'react-icons/md';
-import {FaTv, FaLaptop, FaFan, FaSnowflake,FaShower, FaTshirt, FaPlug, FaUtensils, FaDesktop, FaFrown, FaSmile} from 'react-icons/fa';
+import {FaTv,FaLaptop,FaFan,FaSnowflake,FaShower,FaTshirt,FaPlug,FaUtensils,FaDesktop,FaFrown,FaSmile} from 'react-icons/fa';
+import { Accordion } from 'flowbite-react';
+import instructions1 from '../../assets/images/instructions/instructions1.png';
+import instructions3 from '../../assets/images/instructions/instructions3.png';
 
 const deviceIcons: Record<string, JSX.Element> = {
   'Sušilni stroj': <FaTshirt />, 'Bojler': <FaShower />, 'Električni štedilnik': <FaUtensils />,
@@ -126,14 +129,44 @@ export const SimulatePower = () => {
         </div>
       )}
 
-      {result?.maybeActivatedDevices && result.maybeActivatedDevices.length > 0 && (
+      <div className="mt-8 bg-white p-4 rounded-xl">
+        <Accordion collapseAll>
+          <Accordion.Panel>
+            <Accordion.Title>Kaj pomeni obračunska moč?</Accordion.Title>
+            <Accordion.Content>
+              <p className="text-sm text-gray-700">
+                Obračunska moč je količina električne moči, ki jo uporabnik zagotovi, da bo potrebna za napajanje svojih naprav
+                v določenem časovnem bloku. Če uporabnik preseže to dogovorjeno moč, lahko plača višjo omrežninsko tarifo.
+                Zato je simulacija porabe uporabna za preverjanje, ali izbrane naprave presegajo dogovorjeno moč.
+              </p>
+              <p className="mt-4 text-sm text-gray-600">
+                Na spodnjih slikah si lahko ogledate postopek, kako preveriti svojo obračunsko moč na portalu{' '}  
+				<a
+                    href="https://mojelektro.si"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                     mojelektro.si
+                  </a>:
+              </p>
+              <div className="mt-4 space-y-4">
+                <img src={instructions1} alt="Koraki 1–2" className="rounded-md border shadow-sm" />
+                <img src={instructions3} alt="Koraki 3–6" className="rounded-md border shadow-sm" />
+              </div>
+            </Accordion.Content>
+          </Accordion.Panel>
+	  	</Accordion>
+
+    	</div>
+		      {true && (
         <div className="mt-6 text-purple-600 text-sm text-center">
           <p className="font-medium">
             Pozor: Možen je samodejni vklop naprav kot je npr. toplotna črpalka (~2 kW).
           </p>
         </div>
       )}
-    </div>
+      </div>
   );
 };
 
