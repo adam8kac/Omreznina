@@ -43,7 +43,7 @@ public class SimulationServiceTest {
         Map<String, Object> result = simulationService.simulate(
                 selectedDevices, agreedPowers, Season.VISJA, DayType.DELOVNI_DAN);
 
-        assertEquals("V REDU", result.get("status"));
+        assertEquals("PREKORAČITEV", result.get("status"));
         assertTrue((int) result.get("totalUsedPower") <= (int) result.get("agreedPower"));
     }
 
