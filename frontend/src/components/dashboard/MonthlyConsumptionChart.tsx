@@ -75,7 +75,7 @@ const MonthlyConsumptionChart = () => {
         setMonthlyData(parsed);
         setSelectedMonth(allKeys[0] ?? null);
       } catch (e) {
-        console.error('❌ Napaka pri fetchu:', e);
+        console.error('Napaka pri fetchu:', e);
         setHasError(true);
       } finally {
         setIsLoading(false);
