@@ -19,46 +19,78 @@ import java.util.logging.Logger;
 @Service
 public class UserService {
 
-    private final Logger logger = Logger.getLogger(getClass().getName());
+	private final Logger logger = Logger.getLogger(getClass().getName());
 
-    private FileService fileService;
+	private FileService fileService;
 
-    FirestoreService firestoreService;
+	FirestoreService firestoreService;
 
-    public UserService(FileService fileService, FirestoreService firestoreService) {
-        this.fileService = fileService;
-        this.firestoreService = firestoreService;
-    }
+	public UserService(FileService fileService, FirestoreService firestoreService) {
+		this.fileService = fileService;
+		this.firestoreService = firestoreService;
+	}
 
-    public void processAndStoreFile(MultipartFile file, String uid) throws UserException{
+	public void processAndStoreUserData(MultipartFile file, String uid) throws UserException {
+		String pythonMethod = "processAndStoreUserData";
 
-        if (!isUserVerified(uid)) {
-            throw new UserException(uid + " does not have  verified email!");
-        }
+		if (!isUserVerified(uid)) {
+			throw new UserException(uid + " does not have  verified email!");
+		}
 
-        try {
-            String response = fileService.sendFileToParser(file);
+		processAndStoreFile(file, uid, pythonMethod);
 
-            ObjectMapper mapper = new ObjectMapper();
-            List<Map<String, Object>> parsed = mapper.readValue(response, new TypeReference<>() {
-            });
+	}
 
-            for (Map<String, Object> doc : parsed) {
-                firestoreService.saveDocumentToCollection(uid, doc);
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "File processing failed", e);
-        }
-    }
+	public void processAndStoreMaxPowerConsumption(MultipartFile file, String uid) throws UserException {
+		String pythonMethod = "procesAndStoreMaxPowerConsumption";
 
-    private boolean isUserVerified(String uid) {
-        try {
-            UserRecord user = FirebaseAuth.getInstance().getUser(uid);
-            return user.isEmailVerified();
-        } catch (FirebaseAuthException e) {
-            logger.log(Level.SEVERE, "User does not exist");
-            return false;
-        }
-    }
+		if (!isUserVerified(uid)) {
+			throw new UserException(uid + " does not have  verified email!");
+		}
+
+		processAndStoreFile(file, uid, pythonMethod);
+
+	}
+
+	private void processAndStoreFile(MultipartFile file, String uid, String typeOfFile) {
+		String response = null;
+
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+
+			if ("processAndStoreUserData".equals(typeOfFile)) {
+				response = fileService.sendFileToParser(file);
+
+				List<Map<String, Object>> parsed = mapper.readValue(response, new TypeReference<>() {
+				});
+
+				for (Map<String, Object> doc : parsed) {
+					firestoreService.saveDocumentToCollection(uid, doc);
+				}
+			} else {
+				response = fileService.uploadMaxPowerConsumed(file);
+
+				Map<String, Map<String, Map<String, Object>>> parsed = mapper.readValue(
+						response, new TypeReference<>() {
+						});
+
+				firestoreService.saveSingleDocument(uid, "poraba", parsed);
+			}
+		} catch (
+
+		Exception e) {
+			logger.log(Level.SEVERE, "File processing failed", e);
+		}
+	}
+
+	private boolean isUserVerified(String uid) {
+		try {
+			UserRecord user = FirebaseAuth.getInstance().getUser(uid);
+			return user.isEmailVerified();
+		} catch (FirebaseAuthException e) {
+			logger.log(Level.SEVERE, "User does not exist");
+			return false;
+		}
+	}
 
 }

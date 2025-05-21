@@ -1,0 +1,15 @@
+FROM python:3.10.17-slim
+
+RUN pip install --no-cache-dir fastapi uvicorn pandas openpyxl python-multipart
+
+RUN mkdir -p /app/python_helper
+
+WORKDIR /app
+
+VOLUME [ "/tmp" ]
+
+COPY prekoracitev_helper/ .
+
+EXPOSE 54321
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "54321"]
