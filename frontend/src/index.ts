@@ -41,4 +41,25 @@ export const uploadMonthlyFile = async (data: FormData) => {
     console.log(error);
     alert('Napaka pri nalaganju.');
   }
+
+};
+
+//simulacija klici
+export const getAvailableDevices = async (): Promise<string[]> => {
+	const res = await api.get('/api/simulation/available-devices');
+	return res.data;
+};
+
+//simulacija
+export interface SimulationRequest {
+	selectedDevices: string[];
+	agreedPowers: Record<number, number>;
+	season: 'VISJA' | 'NIZJA';
+	dayType: 'DELOVNI_DAN' | 'DELA_PROST_DAN';
 }
+
+export const simulateUsage = async (request: SimulationRequest): Promise<any> => {
+	const res = await api.post('/api/simulation/simulate', request);
+	return res.data;
+};
+
