@@ -2,10 +2,10 @@ import axios from 'axios';
 
 const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
 
-// ⬇️ TIPI PODATKOV
+
 export interface DayRecord {
-  poraba: number; // poraba iz omrežja (negativna ali pozitivna)
-  solar: number;  // solarna proizvodnja (pozitivna)
+  poraba: number;
+  solar: number;
 }
 
 export interface MonthRecord {
@@ -14,17 +14,16 @@ export interface MonthRecord {
   totalSolar: number;
 }
 
-// ⬇️ API FUNKCIJE
 export const getDocumentData = async (
   uid: string,
   docId: string
 ): Promise<Record<string, MonthRecord>> => {
-  const res = await api.get(`documents/data?uid=${uid}&docId=${docId}`);
+  const res = await api.get(`firestore/data?uid=${uid}&docId=${docId}`);
   return res.data;
 };
 
 export const getUserDocIds = async (uid: string): Promise<string[]> => {
-  const res = await api.get(`documents/documents?uid=${uid}`);
+  const res = await api.get(`firestore/documents?uid=${uid}`);
   return res.data;
 };
 
@@ -50,7 +49,6 @@ export const getAvailableDevices = async (): Promise<string[]> => {
 	return res.data;
 };
 
-//simulacija
 export interface SimulationRequest {
 	selectedDevices: string[];
 	agreedPowers: Record<number, number>;

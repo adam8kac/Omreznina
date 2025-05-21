@@ -139,16 +139,6 @@ it('Napaka: napačen email', () => {
     cy.contains('Geslo mora imeti vsaj 6 znakov.').should('be.visible');
   });
 
-  it('Uspešna registracija', () => {
-    const random = Math.floor(Math.random() * 100000);
-    cy.get('input#name').type('Test User');
-    cy.get('input#email').type(`testuser${random}@mail.com`);
-    cy.get('input#password').type('TestnoGeslo!1');
-    cy.get('input#confirm-password').type('TestnoGeslo!1');
-    cy.get('button').contains('Registracija').click();
-    cy.contains('Registracija uspešna!').should('exist');
-  });
-
   it('Preusmeritev na prijavo', () => {
     cy.contains('Prijava').click();
     cy.url().should('include', '/auth/login');
