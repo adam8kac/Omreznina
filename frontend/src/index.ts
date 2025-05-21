@@ -5,7 +5,7 @@ const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/'
 
 // klcie springa da dobi podatke enega dokumenta
 export const getDocumentData = async (uid: string, docId: string): Promise<Record<string, MonthRecord>> => {
-  const data = await api.get('documents/data?uid=' + uid + '&docId=' + docId);
+  const data = await api.get('firestore/data?uid=' + uid + '&docId=' + docId);
   const response = data.data;
 
   return response;
@@ -13,7 +13,7 @@ export const getDocumentData = async (uid: string, docId: string): Promise<Recor
 
 // klice springa da dobi userjeve docse(idje)
 export const getUserDocIds = async (uid: string): Promise<Array<string>> => {
-  const data = await api.get('documents/documents?uid=' + uid);
+  const data = await api.get('firestore/documents?uid=' + uid);
   const response = data.data;
 
   return response;

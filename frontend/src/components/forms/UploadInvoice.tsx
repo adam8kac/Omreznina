@@ -3,7 +3,7 @@ import { Label, Button, FileInput, Accordion } from 'flowbite-react';
 import instructions1 from '../../assets/images/instructions/instructions1.png';
 import instructions2 from '../../assets/images/instructions/instructions2.png';
 
-import { uploadMonthlyFile } from 'src/index';
+import { getUserDocIds, uploadMonthlyFile } from 'src/index';
 import { auth } from 'src/firebase-config';
 
 const UploadInvoice: React.FC = () => {
@@ -34,11 +34,18 @@ const UploadInvoice: React.FC = () => {
       if (!uid) {
         console.log('Uid notavalible');
       }
+
+      const numOfDocsBefore = (await getUserDocIds(uid as string)).length;
       fromData.append('uid', uid);
 
       await uploadMonthlyFile(fromData);
+      const numOfDocsAfter = (await getUserDocIds(uid as string)).length;
 
-      alert('Račun uspešno naložen!');
+      if (numOfDocsAfter > numOfDocsBefore) {
+        alert('Račun uspešno naložen!');
+      } else {
+        alert('Ne gre');
+      }
 
       setFile(null);
       if (fileInputRef.current) {
