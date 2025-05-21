@@ -2,16 +2,19 @@ import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { Spinner, Select } from 'flowbite-react';
 import Chart from 'react-apexcharts';
-import { Icon } from '@iconify/react';
-import { getDocumentData, getUserDocIds } from 'src/index';
 import { ApexOptions } from 'apexcharts';
-import { MonthRecord } from 'src/utils/fetchUserMonthlyData';
+import { getDocumentData, getUserDocIds } from 'src/index';
 
-type MonthData = MonthRecord & {
-  totalDejanska: number;
+interface DayRecord {
+  poraba: number;
+  solar: number;
+}
+
+interface ParsedMonth {
   totalPoraba: number;
   totalSolar: number;
-};
+  dni: Array<[string, DayRecord]>;
+}
 
 const formatMonth = (key: string) => {
   const [year, month] = key.split('-');
@@ -23,7 +26,7 @@ const MonthlyConsumptionChart = () => {
   const [uid, setUid] = useState<string | null>(null);
   const [months, setMonths] = useState<string[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [monthlyData, setMonthlyData] = useState<Record<string, MonthData>>({});
+  const [monthlyData, setMonthlyData] = useState<Record<string, ParsedMonth>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
@@ -39,36 +42,42 @@ const MonthlyConsumptionChart = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const ids = await getUserDocIds(uid);
-        setMonths(ids);
+        const docIds = await getUserDocIds(uid);
+        const parsed: Record<string, ParsedMonth> = {};
 
-        const result: Record<string, MonthData> = {};
+        for (const docId of docIds) {
+          const rawResponse = await getDocumentData(uid, docId);
+          console.log(`📦 getDocumentData(${docId}):`, rawResponse);
 
-        for (const id of ids) {
-          const docMap = await getDocumentData(uid, id);
-          const doc = docMap[id];
-          if (!doc || !doc.dni) continue;
+          const rawMonth = rawResponse[0];
+          if (!rawMonth) continue;
 
-          let totalPoraba = 0;
-          let totalSolar = 0;
+          const dni: Array<[string, DayRecord]> = [];
 
-          for (const entry of Object.values(doc.dni)) {
-            totalPoraba += entry.poraba ?? 0;
-            totalSolar += entry.solar ?? 0;
+          for (const [dan, podatki] of Object.entries(rawMonth)) {
+            const poraba = (podatki as any)['delta prejeta delovna energija et'] ?? 0;
+            const solar = (podatki as any)['delta oddana delovna energija et'] ?? 0;
+            dni.push([dan, { poraba, solar }]);
           }
 
-          result[id] = {
-            dni: doc.dni,
-            totalDejanska: parseFloat((totalPoraba - totalSolar).toFixed(3)),
+          const totalPoraba = dni.reduce((acc, [, r]) => acc + r.poraba, 0);
+          const totalSolar = dni.reduce((acc, [, r]) => acc + r.solar, 0);
+
+          parsed[docId] = {
             totalPoraba: parseFloat(totalPoraba.toFixed(3)),
             totalSolar: parseFloat(totalSolar.toFixed(3)),
+            dni,
           };
         }
 
-        setMonthlyData(result);
-        setSelectedMonth(ids[0] || null);
+        console.log('✅ Parsed podatki:', parsed);
+
+        const allKeys = Object.keys(parsed);
+        setMonths(allKeys);
+        setMonthlyData(parsed);
+        setSelectedMonth(allKeys[0] ?? null);
       } catch (e) {
-        console.error(e);
+        console.error('❌ Napaka pri fetchu:', e);
         setHasError(true);
       } finally {
         setIsLoading(false);
@@ -78,14 +87,10 @@ const MonthlyConsumptionChart = () => {
     fetchData();
   }, [uid]);
 
-  const getSortedDayKeys = (dniObj: Record<string, any>) =>
-    Object.keys(dniObj).sort((a, b) => Number(a) - Number(b));
-
   const optionsBarChart: ApexOptions = {
     chart: { animations: { speed: 500 }, toolbar: { show: false } },
-    colors: ['#10b981', '#f87171', '#3b82f6'],
+    colors: ['#10b981', '#facc15', '#3b82f6'],
     dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2 },
     plotOptions: {
       bar: {
         columnWidth: '40%',
@@ -94,8 +99,6 @@ const MonthlyConsumptionChart = () => {
     },
     xaxis: {
       categories: months.map(formatMonth),
-      axisBorder: { show: false },
-      axisTicks: { show: false },
     },
     yaxis: {
       labels: { formatter: (val) => `${val} kWh` },
@@ -114,7 +117,7 @@ const MonthlyConsumptionChart = () => {
     xaxis: {
       categories:
         selectedMonth && monthlyData[selectedMonth]
-          ? getSortedDayKeys(monthlyData[selectedMonth].dni).map((day) => `${selectedMonth}-${day}`)
+          ? monthlyData[selectedMonth].dni.map(([dan]) => dan)
           : [],
       labels: { rotate: -45 },
     },
@@ -129,7 +132,7 @@ const MonthlyConsumptionChart = () => {
   };
 
   return (
-    <div className="rounded-xl dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
+    <div className="rounded-xl dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full">
       {isLoading ? (
         <div className="flex justify-center items-center h-40">
           <Spinner aria-label="Nalaganje..." size="xl" />
@@ -158,37 +161,51 @@ const MonthlyConsumptionChart = () => {
           <Chart
             options={optionsBarChart}
             series={[
-              { name: 'Dejanska poraba (kWh)', data: months.map((m) => monthlyData[m]?.totalDejanska ?? 0) },
-              { name: 'Oddana solarna (kWh)', data: months.map((m) => monthlyData[m]?.totalSolar ?? 0) },
-              { name: 'Prejeta energija (kWh)', data: months.map((m) => monthlyData[m]?.totalPoraba ?? 0) },
+              {
+                name: 'Dejanska poraba (kWh)',
+                data: months.map(
+                  (m) =>
+                    (monthlyData[m]?.totalPoraba ?? 0) -
+                    (monthlyData[m]?.totalSolar ?? 0)
+                ),
+              },
+              {
+                name: 'Oddana solarna (kWh)',
+                data: months.map((m) => monthlyData[m]?.totalSolar ?? 0),
+              },
+              {
+                name: 'Prejeta energija (kWh)',
+                data: months.map((m) => monthlyData[m]?.totalPoraba ?? 0),
+              },
             ]}
             type="bar"
             height="315px"
             width="100%"
           />
 
-          {selectedMonth && monthlyData[selectedMonth] && Object.keys(monthlyData[selectedMonth].dni).length > 0 ? (
+          {selectedMonth && monthlyData[selectedMonth] ? (
             <>
               {monthlyData[selectedMonth].totalSolar > 0 && (
                 <div className="flex items-center gap-2 text-yellow-500 mt-6 mb-4">
-                  <Icon icon="mdi:weather-sunny" height={24} />
-                  <span>Sončna elektrarna zaznana</span>
+                  ☀️ Sončna elektrarna zaznana
                 </div>
               )}
-              <h5 className="card-title mb-4">Poraba po dnevih za {formatMonth(selectedMonth)}</h5>
+              <h5 className="card-title mb-4">
+                Poraba po dnevih za {formatMonth(selectedMonth)}
+              </h5>
               <Chart
                 options={optionsDailyChart}
                 series={[
                   {
                     name: 'Poraba (kWh)',
-                    data: getSortedDayKeys(monthlyData[selectedMonth].dni).map(
-                      (day) => monthlyData[selectedMonth].dni[day]?.poraba ?? 0,
+                    data: monthlyData[selectedMonth].dni.map(
+                      ([, entry]) => entry.poraba
                     ),
                   },
                   {
                     name: 'Solar (kWh)',
-                    data: getSortedDayKeys(monthlyData[selectedMonth].dni).map(
-                      (day) => monthlyData[selectedMonth].dni[day]?.solar ?? 0,
+                    data: monthlyData[selectedMonth].dni.map(
+                      ([, entry]) => entry.solar
                     ),
                   },
                 ]}
