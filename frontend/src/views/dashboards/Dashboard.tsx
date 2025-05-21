@@ -2,7 +2,6 @@ import { Link } from 'react-router';
 import BlogCards from 'src/components/dashboard/BlogCards';
 import DailyActivity from 'src/components/dashboard/DailyActivity';
 import NewCustomers from 'src/components/dashboard/NewCustomers';
-import { NewRevenueForecast } from 'src/components/dashboard/NewRevenueForecast';
 import TotalIncome from 'src/components/dashboard/TotalIncome';
 import MonthlyConsumptionChart from 'src/components/dashboard/MonthlyConsumptionChart';
 
@@ -11,9 +10,6 @@ const Dashboard = () => {
 		<div className="grid grid-cols-12 gap-30">
 			<div className="lg:col-span-8 col-span-12">
 				<MonthlyConsumptionChart />
-			</div>
-			<div className="lg:col-span-8 col-span-12">
-				<NewRevenueForecast />
 			</div>
 			<div className="lg:col-span-4 col-span-12">
 				<div className="grid grid-cols-12 h-full items-stretch">
