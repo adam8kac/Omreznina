@@ -42,6 +42,12 @@ const SidebarContent: MenuItem[] = [
         id: uniqueId(),
         url: "/simulate-power",
       },
+      {
+        name: "Omrežnina",
+        icon: "solar:chart-2-linear",
+        id: uniqueId(),
+        url: "/network-fee",
+      },
     ],
   },
   {
