@@ -47,16 +47,16 @@ public class SimulationServiceTest {
 	// 	assertTrue((int) result.get("totalUsedPower") <= (int) result.get("agreedPower"));
 	// }
 
-	// @Test
-	// void testSimulate_withOveruse() {
-	// 	List<String> selectedDevices = List.of("Sušilni stroj", "Bojler");
-	// 	Map<Integer, Integer> agreedPowers = Map.of(1, 5000);
+	@Test
+	void testSimulate_withOveruse() {
+		List<String> selectedDevices = List.of("Sušilni stroj", "Bojler");
+		Map<Integer, Integer> agreedPowers = Map.of(1, 5000);
 
-	// 	Map<String, Object> result = simulationService.simulate(
-	// 			selectedDevices, agreedPowers, Season.VISJA, DayType.DELOVNI_DAN);
+		Map<String, Object> result = simulationService.simulate(
+				selectedDevices, agreedPowers, Season.VISJA, DayType.DELOVNI_DAN);
 
-	// 	assertEquals("PREKORAČITEV", result.get("status")); 
-	// 	assertTrue((int) result.get("totalUsedPower") > (int) result.get("agreedPower")); 
-	// }
+		assertEquals("PREKORAČITEV", result.get("status")); 
+		assertTrue((int) result.get("totalUsedPower") > (int) result.get("agreedPower")); 
+	}
 
 }

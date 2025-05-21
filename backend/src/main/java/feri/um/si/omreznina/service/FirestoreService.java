@@ -74,7 +74,7 @@ public class FirestoreService {
 							.set(monthData)
 							.get();
 
-					logger.info("Saved " + uid + "/" + docId + "/" + year + "/" + month);
+					logger.info("Saved document for user");
 				}
 			}
 		} catch (InterruptedException | ExecutionException e) {
