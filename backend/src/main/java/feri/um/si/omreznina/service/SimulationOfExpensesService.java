@@ -85,7 +85,7 @@ public class SimulationOfExpensesService {
         if (isIn(now, "07:00", "14:00") || isIn(now, "16:00", "20:00")) return 1;
         if (isIn(now, "06:00", "07:00") || isIn(now, "14:00", "16:00") || isIn(now, "20:00", "22:00")) return 2;
         if (isIn(now, "00:00", "06:00")) return 3;
-        if (isIn(now, "22:00", "24:00")) return 4;
+        if (isIn(now, "22:00", "00:00")) return 4;
         return 5;
     }
 }
