@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'http://localhost:8080/' });
+const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
 
 // ⬇️ TIPI PODATKOV
 export interface DayRecord {
@@ -27,3 +27,18 @@ export const getUserDocIds = async (uid: string): Promise<string[]> => {
   const res = await api.get(`documents/documents?uid=${uid}`);
   return res.data;
 };
+
+export const uploadMonthlyFile = async (data: FormData) => {
+  try {
+    const response = await api.post('user/upload-file', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+    alert('Napaka pri nalaganju.');
+  }
+}
