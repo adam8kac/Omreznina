@@ -19,12 +19,12 @@ export const getDocumentData = async (
   uid: string,
   docId: string
 ): Promise<Record<string, MonthRecord>> => {
-  const res = await api.get(`documents/data?uid=${uid}&docId=${docId}`);
+  const res = await api.get(`firestore/data?uid=${uid}&docId=${docId}`);
   return res.data;
 };
 
 export const getUserDocIds = async (uid: string): Promise<string[]> => {
-  const res = await api.get(`documents/documents?uid=${uid}`);
+  const res = await api.get(`firestore/documents?uid=${uid}`);
   return res.data;
 };
 
