@@ -19,10 +19,22 @@ public class UserController {
 	private UserService userService;
 
 	@PostMapping("/upload-file")
-	@Operation(summary = "Naloži datoteko", description = "Uporabnik lahko preko tega Endpointa naloži datoteko tipa XLSX ali pa CSV, sprejme parameter file: MultipartFile(datoteka ki jo naloži uporabnik), UID: string, ki je enak uporabnikovem ID-ju v FirebaseAuth, datoteko nato pošlje python helperju, ki jo sprocesira in vrne odatke v obliki pripravljeni za shranjevanje v bazo")
+	@Operation(summary = "Naloži datoteko dnevnih stanj", description = "Uporabnik lahko preko tega Endpointa naloži datoteko tipa XLSX ali pa CSV, sprejme parameter file: MultipartFile(datoteka ki jo naloži uporabnik), UID: string, ki je enak uporabnikovem ID-ju v FirebaseAuth, datoteko nato pošlje python helperju, ki jo sprocesira in vrne odatke v obliki pripravljeni za shranjevanje v bazo")
 	public ResponseEntity<String> uploadFile(@RequestPart("file") MultipartFile file, @RequestParam("uid") String uid) {
 		try {
-			userService.processAndStoreFile(file, uid);
+			userService.processAndStoreUserData(file, uid);
+			return ResponseEntity.ok().body("Document added successfuly");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body("Could not save document");
+		}
+	}
+
+	@PostMapping("/upload-power-consumption")
+	@Operation(summary = "Naloži datoteko prekoracitev", description = "Uporabnik lahko preko tega Endpointa naloži datoteko tipa XLSX ali pa CSV, sprejme parameter file: MultipartFile(datoteka ki jo naloži uporabnik), UID: string, ki je enak uporabnikovem ID-ju v FirebaseAuth, datoteko nato pošlje python helperju, ki jo sprocesira in vrne odatke v obliki pripravljeni za shranjevanje v bazo")
+	public ResponseEntity<String> uploadPowerConsumption(@RequestPart("file") MultipartFile file,
+			@RequestParam("uid") String uid) {
+		try {
+			userService.processAndStoreMaxPowerConsumption(file, uid);
 			return ResponseEntity.ok().body("Document added successfuly");
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body("Could not save document");

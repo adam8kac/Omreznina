@@ -1,4 +1,5 @@
 package feri.um.si.omreznina.simulation;
+
 import feri.um.si.omreznina.controller.SimulationOfExpensesController;
 import feri.um.si.omreznina.service.SimulationOfExpensesService;
 import org.junit.jupiter.api.Test;
@@ -16,23 +17,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(SimulationOfExpensesController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@SuppressWarnings("removal")
 public class SimulationControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    @MockBean
-    private SimulationOfExpensesService simulationService;
+	@MockBean
+	private SimulationOfExpensesService simulationService;
 
-    @Test
-    void testGetAvailableDevices_success() throws Exception {
-        List<String> devices = List.of("TV", "Sušilni stroj");
+	@Test
+	void testGetAvailableDevices_success() throws Exception {
+		List<String> devices = List.of("TV", "Sušilni stroj");
 
-        when(simulationService.getAvailableDevices()).thenReturn(devices);
+		when(simulationService.getAvailableDevices()).thenReturn(devices);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/simulation/available-devices"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0]").value("TV"))
-                .andExpect(jsonPath("$[1]").value("Sušilni stroj"));
-    }
+		mockMvc.perform(MockMvcRequestBuilders.get("/api/simulation/available-devices"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0]").value("TV"))
+				.andExpect(jsonPath("$[1]").value("Sušilni stroj"));
+	}
 }

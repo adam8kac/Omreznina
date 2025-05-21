@@ -18,24 +18,35 @@ import feri.um.si.omreznina.helper.MultipartInputStreamFileResource;
 @Service
 public class FileService {
 
-    @Autowired
-    private final RestTemplate restTemplate;
+	@Autowired
+	private final RestTemplate restTemplate;
 
-    public FileService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+	public FileService(RestTemplate restTemplate) {
+		this.restTemplate = restTemplate;
+	}
 
-    public String sendFileToParser(MultipartFile file) throws IOException {
-        String url = "https://omreznina-parser-latest.onrender.com/upload-file"; 
+	public String sendFileToParser(MultipartFile file) throws IOException {
+		String url = "https://omreznina-parser-latest.onrender.com/upload-file";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		return upoladFile(file, url);
+	}
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", new MultipartInputStreamFileResource(file.getInputStream(), file.getOriginalFilename()));
+	public String uploadMaxPowerConsumed(MultipartFile file) throws IOException {
+		String url = "https://prekoracitev-helper.onrender.com/upload-file-dogovorjena-moc";
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+		return upoladFile(file, url);
+	}
 
-        return restTemplate.postForObject(url, requestEntity, String.class);
-    }
+	private String upoladFile(MultipartFile file, String url) throws IOException {
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("file", new MultipartInputStreamFileResource(file.getInputStream(), file.getOriginalFilename()));
+
+		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+		return restTemplate.postForObject(url, requestEntity, String.class);
+	}
 }
