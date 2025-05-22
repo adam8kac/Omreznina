@@ -1,8 +1,6 @@
 package feri.um.si.omreznina.model;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
 public class ManualInvoice {

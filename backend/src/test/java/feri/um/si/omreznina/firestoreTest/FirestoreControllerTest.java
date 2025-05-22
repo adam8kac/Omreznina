@@ -15,8 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -108,4 +107,23 @@ public class FirestoreControllerTest {
 						.content(json))
 				.andExpect(status().isOk());
 	}
+
+	@Test
+	void manualInvoiceEndpoint_fails() throws Exception {
+		ManualInvoice invoice = new ManualInvoice();
+		invoice.setUid("TestUser");
+		invoice.setMonth("2025-04");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		String json = objectMapper.writeValueAsString(invoice);
+
+		doThrow(new RuntimeException("Simulated fail")).when(firestoreService).saveManualInvoice(any());
+
+		mockMvc.perform(post("/firestore/manual")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(json))
+				.andExpect(status().is5xxServerError())
+				.andExpect(content().string(org.hamcrest.Matchers.containsString("Napaka")));
+	}
+
 }
