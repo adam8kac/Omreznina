@@ -1,5 +1,7 @@
 import { FaInfoCircle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { Accordion } from 'flowbite-react';
+import { Link } from 'react-router';
 
 const blockColors: Record<number, string> = {
   1: 'bg-[#003A63]',
@@ -54,7 +56,6 @@ const NetworkFee = () => {
         <HourRing title="Nižja sezona: Delovni dan (mar–okt)" blocks={nizjaDelovni} />
         <HourRing title="Nižja sezona: Dela prost dan (mar–okt)" blocks={nizjaProst} />
       </div>
-
       <div className="mt-6">
         <p className="font-medium text-gray-800 flex items-center gap-2">
           <FaInfoCircle /> Časovni bloki (1 = najvišja tarifa, 5 = najnižja tarifa):
@@ -64,6 +65,26 @@ const NetworkFee = () => {
             <div key={b} className={`w-10 h-5 rounded ${blockColors[b as keyof typeof blockColors]}`} title={`Blok ${b}`} />
           ))}
         </div>
+      <div className="mt-8 bg-white p-4 rounded-xl">
+        <Accordion collapseAll>
+          <Accordion.Panel>
+            <Accordion.Title>Priporočilo za nižje stroške</Accordion.Title>
+            <Accordion.Content>
+              <p className="text-sm text-gray-700">
+                Vaše električne naprave naj delujejo v času manjše električne tarife (med tednom od 22. do 6. ure ter ob vikendih in praznikih cel dan). 
+                Z uporabo naprav v manjši tarifi boste znižali mesečne stroške in pripomogli k zmanjšanju obremenitev električnega omrežja v času višjih dnevnih tarifnih postavk. 
+              </p>
+              <p className="mt-4 text-sm text-gray-600">
+                Za simulacijo porabe si lahko ogledate stran {' '}  
+              <Link to="/simulate-power" className="text-blue-600 underline">
+                simulacija porabe
+              </Link>.
+              </p>
+            </Accordion.Content>
+          </Accordion.Panel>
+	  	</Accordion>
+
+    	</div>
       </div>
     </div>
   );

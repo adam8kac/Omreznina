@@ -1,8 +1,5 @@
 package feri.um.si.omreznina.controller;
-
 import feri.um.si.omreznina.service.SimulationOfExpensesService;
-import feri.um.si.omreznina.service.SimulationOfExpensesService.DayType;
-import feri.um.si.omreznina.service.SimulationOfExpensesService.Season;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +9,6 @@ import java.util.*;
 @RequestMapping("/api/simulation")
 @CrossOrigin
 public class SimulationOfExpensesController {
-
     @Autowired
     private SimulationOfExpensesService simulationService;
 
@@ -34,7 +30,8 @@ public class SimulationOfExpensesController {
     public static class SimulationRequest {
         public List<String> selectedDevices;
         public Map<Integer, Integer> agreedPowers;
-        public Season season;
-        public DayType dayType;
+        public SimulationOfExpensesService.Season season;
+        public SimulationOfExpensesService.DayType dayType;
     }
+
 }

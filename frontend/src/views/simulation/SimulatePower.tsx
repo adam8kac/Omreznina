@@ -30,27 +30,48 @@ export const SimulatePower = () => {
     getAvailableDevices().then(setAvailableDevices);
   }, []);
 
-  const handleSimulate = async () => {
-    const request: SimulationRequest = {
-      selectedDevices: selectedDevices,
-      agreedPowers: {
-        1: 5000,
-        2: 4000,
-        3: 3500,
-        4: 3000,
-        5: 2000
-      },
-      season: 'VISJA',
-      dayType: 'DELOVNI_DAN'
+useEffect(() => {
+  const timeout = setTimeout(() => {
+    const simulate = async () => {
+      if (selectedDevices.length === 0) {
+        setResult(null);
+        return;
+      }
+
+      const request: SimulationRequest = {
+        selectedDevices,
+        agreedPowers: {
+          1: 5000,
+          2: 4000,
+          3: 3500,
+          4: 3000,
+          5: 2000
+        },
+        season: 'VISJA',
+        dayType: 'DELOVNI_DAN'
+      };
+
+      const simResult = await simulateUsage(request);
+      setResult(simResult);
     };
 
-    const simResult = await simulateUsage(request);
-    setResult(simResult);
-  };
+    simulate();
+  }, 300); 
+
+  return () => clearTimeout(timeout); 
+}, [selectedDevices]);
+
 
   return (
     <div className="p-4 space-y-4">
       <h2 className="text-xl font-semibold">Izberi naprave</h2>
+      <p className="text-gray-700">
+        Izberite naprave, katerih porabo želite simulirati. Na podlagi izbranih naprav in dogovorjene moči bo prikazan rezultat simulacije.
+        <p className="text-gray-500">
+          Preizkusi različne kombinacije naprav in preveri, ali presegaš dogovorjeno moč.
+        </p>
+        <br />
+      </p>  
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {availableDevices.filter(device => devicePowerMap[device] !== undefined).map((device) => (
           <button
@@ -74,12 +95,6 @@ export const SimulatePower = () => {
         ))}
       </div>
 
-      <button
-        onClick={handleSimulate}
-        className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition"
-      >
-        Simuliraj porabo
-      </button>
 
       {result && (
         <div className={`p-4 rounded-xl mt-6 flex flex-col md:flex-row justify-center items-center gap-8 ${result.status === 'PREKORAČITEV' ? 'bg-red-100 border border-red-300' : 'bg-white shadow-md'}`}>
@@ -128,7 +143,6 @@ export const SimulatePower = () => {
           </div>
         </div>
       )}
-
       {true && (
         <div className="mt-6 text-purple-600 text-sm text-center">
           <p className="font-medium">
@@ -136,7 +150,6 @@ export const SimulatePower = () => {
           </p>
         </div>
       )}
-
       <div className="mt-8 bg-white p-4 rounded-xl">
         <Accordion collapseAll>
           <Accordion.Panel>
@@ -149,7 +162,7 @@ export const SimulatePower = () => {
               </p>
               <p className="mt-4 text-sm text-gray-600">
                 Na spodnjih slikah si lahko ogledate postopek, kako preveriti svojo obračunsko moč na portalu{' '}  
-				<a
+				          <a
                     href="https://mojelektro.si"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -167,7 +180,7 @@ export const SimulatePower = () => {
 	  	</Accordion>
 
     	</div>
-
+		      
       </div>
   );
 };
