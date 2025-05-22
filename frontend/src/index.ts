@@ -57,7 +57,7 @@ export const uploadMonthlyFile = async (data: FormData) => {
 
 //simulacija klici
 export const getAvailableDevices = async (): Promise<string[]> => {
-	const res = await api.get('/api/simulation/available-devices');
+	const res = await api.get('api/simulation/available-devices');
 	return res.data;
 };
 
@@ -69,18 +69,11 @@ export interface SimulationRequest {
 }
 
 export const simulateUsage = async (request: SimulationRequest): Promise<any> => {
-	const res = await api.post('/api/simulation/simulate', request);
+	const res = await api.post('api/simulation/simulate', request);
 	return res.data;
 };
 
-export async function uploadManualInvoice(invoice: ManualInvoice) {
-  const res = await fetch('http://localhost:8080/firestore/manual', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(invoice),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.text(); 
-}
+export const uploadManualInvoice = async (request: ManualInvoice): Promise<any> => {
+	const res = await api.post('firestore/manual', request);
+	return res.data;
+};

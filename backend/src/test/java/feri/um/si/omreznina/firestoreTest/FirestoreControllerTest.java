@@ -1,18 +1,24 @@
 package feri.um.si.omreznina.firestoreTest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feri.um.si.omreznina.controller.FirestoreController;
+import feri.um.si.omreznina.model.ManualInvoice;
 import feri.um.si.omreznina.service.FirestoreService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(FirestoreController.class)
@@ -77,5 +83,29 @@ public class FirestoreControllerTest {
 				.param("uid", uid)
 				.param("docId", docId))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void manualInvoiceEndpoint_works() throws Exception {
+		ManualInvoice invoice = new ManualInvoice();
+		invoice.setUid("TestUser");
+		invoice.setMonth("2025-04");
+		invoice.setTotalAmount(10);
+		invoice.setEnergyCost(2);
+		invoice.setNetworkCost(3);
+		invoice.setSurcharges(1);
+		invoice.setPenalties(0.5);
+		invoice.setVat(2.5);
+		invoice.setNote("Test opomba");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		String json = objectMapper.writeValueAsString(invoice);
+
+		doNothing().when(firestoreService).saveManualInvoice(any());
+
+		mockMvc.perform(post("/firestore/manual")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(json))
+				.andExpect(status().isOk());
 	}
 }
