@@ -14,6 +14,18 @@ export interface MonthRecord {
   totalSolar: number;
 }
 
+export interface ManualInvoice {
+  uid: string;
+  month: string;         
+  totalAmount: number;
+  energyCost: number;
+  networkCost: number;
+  surcharges: number;
+  penalties: number;
+  vat: number;
+  note?: string;
+}
+
 export const getDocumentData = async (
   uid: string,
   docId: string
@@ -61,5 +73,14 @@ export const simulateUsage = async (request: SimulationRequest): Promise<any> =>
 	return res.data;
 };
 
-
-
+export async function uploadManualInvoice(invoice: ManualInvoice) {
+  const res = await fetch('http://localhost:8080/firestore/manual', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(invoice),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.text(); 
+}
