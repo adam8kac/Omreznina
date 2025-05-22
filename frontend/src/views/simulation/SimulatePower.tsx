@@ -129,6 +129,14 @@ export const SimulatePower = () => {
         </div>
       )}
 
+      {true && (
+        <div className="mt-6 text-purple-600 text-sm text-center">
+          <p className="font-medium">
+            Pozor: Možen je samodejni vklop naprav kot je npr. toplotna črpalka (~2 kW).
+          </p>
+        </div>
+      )}
+
       <div className="mt-8 bg-white p-4 rounded-xl">
         <Accordion collapseAll>
           <Accordion.Panel>
@@ -159,13 +167,7 @@ export const SimulatePower = () => {
 	  	</Accordion>
 
     	</div>
-		      {true && (
-        <div className="mt-6 text-purple-600 text-sm text-center">
-          <p className="font-medium">
-            Pozor: Možen je samodejni vklop naprav kot je npr. toplotna črpalka (~2 kW).
-          </p>
-        </div>
-      )}
+
       </div>
   );
 };
