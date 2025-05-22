@@ -1,15 +1,13 @@
 package feri.um.si.omreznina.service;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 
+import feri.um.si.omreznina.model.ManualInvoice;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -142,6 +140,29 @@ public class FirestoreService {
 			logger.warning(e.getClass().getSimpleName() + " while fetching collection by UID: " + e.getMessage());
 			return null;
 		}
+	}
+
+	public void saveManualInvoice(ManualInvoice invoice) throws Exception {
+
+		Map<String, Object> data = new HashMap<>();
+		data.put("month", invoice.getMonth());
+		data.put("totalAmount", invoice.getTotalAmount());
+		data.put("energyCost", invoice.getEnergyCost());
+		data.put("networkCost", invoice.getNetworkCost());
+		data.put("surcharges", invoice.getSurcharges());
+		data.put("penalties", invoice.getPenalties());
+		data.put("vat", invoice.getVat());
+		data.put("note", invoice.getNote());
+		data.put("uploadTime", Timestamp.now());
+
+		String[] parts = invoice.getMonth().split("-");
+
+		db.collection(invoice.getUid())
+				.document("racuni")
+				.collection(parts[0])
+				.document(parts[1])
+				.set(data)
+				.get();
 	}
 
 }
