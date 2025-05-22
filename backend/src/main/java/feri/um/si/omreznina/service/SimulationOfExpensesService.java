@@ -1,8 +1,9 @@
 package feri.um.si.omreznina.service;
-import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
-
+import feri.um.si.omreznina.model.TimeBlock;
 
 @Service
 public class SimulationOfExpensesService {
@@ -10,6 +11,7 @@ public class SimulationOfExpensesService {
     public enum Season { VISJA, NIZJA }
     public enum DayType { DELOVNI_DAN, DELA_PROST_DAN }
 
+    @Getter
     public static class Device {
         public String name;
         public int powerW;
@@ -23,6 +25,7 @@ public class SimulationOfExpensesService {
     }
 
     private static final Map<String, Device> predefinedDevices = new LinkedHashMap<>();
+
     static {
         predefinedDevices.put("Sušilni stroj", new Device("Sušilni stroj", 4000, false));
         predefinedDevices.put("Bojler", new Device("Bojler", 3500, false));
@@ -40,52 +43,50 @@ public class SimulationOfExpensesService {
         predefinedDevices.put("Toplotna črpalka", new Device("Toplotna črpalka", 2000, true));
     }
 
+    private final TimeBlockService timeBlockService;
+
+    public SimulationOfExpensesService(TimeBlockService timeBlockService) {
+        this.timeBlockService = timeBlockService;
+    }
+
     public List<String> getAvailableDevices() {
         return new ArrayList<>(predefinedDevices.keySet());
     }
 
-    public Map<String, Object> simulate(List<String> selectedDeviceNames, Map<Integer, Integer> agreedPowers,
-                                        Season season, DayType dayType) {
-        List<Device> selectedDevices = new ArrayList<>();
-        for (String name : selectedDeviceNames) {
-            Device device = predefinedDevices.get(name);
-            if (device != null) selectedDevices.add(device);
-        }
+    public Map<String, Object> simulate(List<String> selectedDeviceNames,
+                                        Map<Integer, Integer> agreedPowers,
+                                        Season season,
+                                        DayType dayType) {
 
-        int currentBlock = getCurrentTimeBlock(LocalTime.now(), season, dayType);
-        int agreed = agreedPowers.getOrDefault(currentBlock, 0);
+        List<Device> selectedDevices = selectedDeviceNames.stream()
+                .map(predefinedDevices::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        int total = selectedDevices.stream()
+        TimeBlock currentTimeBlock = timeBlockService.getCurrentTimeBlock();
+        int currentBlockId = currentTimeBlock.getBlockNumber();
+
+        int agreedPower = agreedPowers.getOrDefault(currentBlockId, 0);
+
+        int totalUsedPower = selectedDevices.stream()
                 .filter(d -> !d.isExceptional)
                 .mapToInt(d -> d.powerW)
                 .sum();
 
-        List<String> exceptional = new ArrayList<>();
-        selectedDevices.stream()
-                .filter(d -> d.isExceptional)
-                .forEach(d -> exceptional.add(d.name + " (" + d.powerW + "W)"));
+        List<String> exceptionalDevices = selectedDevices.stream()
+                .filter(Device::isExceptional)
+                .map(d -> d.name + " (" + d.powerW + "W)")
+                .collect(Collectors.toList());
 
         Map<String, Object> result = new HashMap<>();
-        result.put("currentBlock", currentBlock);
-        result.put("agreedPower", agreed);
-        result.put("totalUsedPower", total);
-        result.put("status", total > agreed ? "PREKORAČITEV" : "V REDU");
-        result.put("exceptionalDevices", exceptional);
+        result.put("currentBlock", currentBlockId);
+        result.put("agreedPower", agreedPower);
+        result.put("totalUsedPower", totalUsedPower);
+        result.put("status", totalUsedPower > agreedPower ? "PREKORAČITEV" : "V REDU");
+        result.put("exceptionalDevices", exceptionalDevices);
+        result.put("season", season.name());
+        result.put("dayType", dayType.name());
 
         return result;
-    }
-
-    private boolean isIn(LocalTime now, String start, String end) {
-        LocalTime s = LocalTime.parse(start);
-        LocalTime e = LocalTime.parse(end);
-        return !now.isBefore(s) && now.isBefore(e);
-    }
-
-    private int getCurrentTimeBlock(LocalTime now, Season season, DayType dayType) {
-        if (isIn(now, "07:00", "14:00") || isIn(now, "16:00", "20:00")) return 1;
-        if (isIn(now, "06:00", "07:00") || isIn(now, "14:00", "16:00") || isIn(now, "20:00", "22:00")) return 2;
-        if (isIn(now, "00:00", "06:00")) return 3;
-        if (isIn(now, "22:00", "00:00")) return 4;
-        return 5;
     }
 }
