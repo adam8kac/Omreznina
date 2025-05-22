@@ -179,17 +179,6 @@ const MonthlyConsumptionChart = () => {
         <>
           <div className="mb-6 flex items-center gap-4">
             <h5 className="card-title">Prikaz mesečne porabe</h5>
-            <Select
-              value={selectedMonth ?? ''}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="max-w-[200px]"
-            >
-              {months.map((month) => (
-                <option key={month} value={month}>
-                  {formatMonth(month)}
-                </option>
-              ))}
-            </Select>
           </div>
 
           <Chart
@@ -223,11 +212,21 @@ const MonthlyConsumptionChart = () => {
                   ☀️ Sončna elektrarna zaznana
                 </div>
               )}
-
-              <h5 className="card-title mb-2">
-                Poraba po dnevih za {formatMonth(selectedMonth)}
-              </h5>
-
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">
+                  Poraba po dnevih za mesec {formatMonth(selectedMonth)}
+                </h2>
+              <Select
+                value={selectedMonth ?? ''}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="max-w-[200px]">
+                {months.map((month) => (
+                  <option key={month} value={month}>
+                    {formatMonth(month)}
+                  </option>
+                ))}
+              </Select>
+              </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Modra linija prikazuje vašo dejansko porabo iz omrežja, rumena pa oddano energijo iz
                 sončne elektrarne.
