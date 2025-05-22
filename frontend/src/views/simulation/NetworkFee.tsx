@@ -73,7 +73,6 @@ const NetworkFee = () => {
               <p className="text-sm text-gray-700">
                 Vaše električne naprave naj delujejo v času manjše električne tarife (med tednom od 22. do 6. ure ter ob vikendih in praznikih cel dan). 
                 Z uporabo naprav v manjši tarifi boste znižali mesečne stroške in pripomogli k zmanjšanju obremenitev električnega omrežja v času višjih dnevnih tarifnih postavk. 
-                Za simulacijo porabe si lahko ogledate stran:
               </p>
               <p className="mt-4 text-sm text-gray-600">
                 Za simulacijo porabe si lahko ogledate stran {' '}  
