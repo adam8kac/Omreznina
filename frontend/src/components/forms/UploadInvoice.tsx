@@ -8,7 +8,7 @@ import { auth } from 'src/firebase-config';
 
 const UploadInvoice: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
-  const keyId = auth.config.apiKey; //Dont worry vse štima
+  const keyId = auth.config.apiKey;
   const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
   const fileInputRef = useRef<HTMLInputElement>(null);
 

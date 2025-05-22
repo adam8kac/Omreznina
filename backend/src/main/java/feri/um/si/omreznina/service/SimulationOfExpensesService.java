@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SimulationOfExpensesService {
-
-    public enum Season { VISJA, NIZJA }
-    public enum DayType { DELOVNI_DAN, DELA_PROST_DAN }
+//
+//    public enum Season { VISJA, NIZJA }
+//    public enum DayType { DELOVNI_DAN, DELA_PROST_DAN }
 
     public static class Device {
         public String name;
