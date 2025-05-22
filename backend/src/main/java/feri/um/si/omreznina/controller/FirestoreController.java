@@ -1,15 +1,13 @@
 package feri.um.si.omreznina.controller;
 
+import feri.um.si.omreznina.model.ManualInvoice;
 import feri.um.si.omreznina.service.FirestoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -59,6 +57,18 @@ public class FirestoreController {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to fetch documents", e);
 			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@PostMapping("/manual")
+	public ResponseEntity<String> saveManualInvoice(@RequestBody ManualInvoice invoice) {
+		try {
+			service.saveManualInvoice(invoice);
+			System.out.println(invoice);
+			return ResponseEntity.ok("Račun uspešno shranjen.");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Napaka pri shranjevanju računa", e);
+			return ResponseEntity.status(500).body("Napaka: " + e.getMessage());
 		}
 	}
 }

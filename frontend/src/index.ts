@@ -14,6 +14,18 @@ export interface MonthRecord {
   totalSolar: number;
 }
 
+export interface ManualInvoice {
+  uid: string;
+  month: string;         
+  totalAmount: number;
+  energyCost: number;
+  networkCost: number;
+  surcharges: number;
+  penalties: number;
+  vat: number;
+  note?: string;
+}
+
 export const getDocumentData = async (
   uid: string,
   docId: string
@@ -45,7 +57,7 @@ export const uploadMonthlyFile = async (data: FormData) => {
 
 //simulacija klici
 export const getAvailableDevices = async (): Promise<string[]> => {
-	const res = await api.get('/api/simulation/available-devices');
+	const res = await api.get('api/simulation/available-devices');
 	return res.data;
 };
 
@@ -57,9 +69,11 @@ export interface SimulationRequest {
 }
 
 export const simulateUsage = async (request: SimulationRequest): Promise<any> => {
-	const res = await api.post('/api/simulation/simulate', request);
+	const res = await api.post('api/simulation/simulate', request);
 	return res.data;
 };
 
-
-
+export const uploadManualInvoice = async (request: ManualInvoice): Promise<any> => {
+	const res = await api.post('firestore/manual', request);
+	return res.data;
+};
