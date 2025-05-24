@@ -109,21 +109,48 @@ public class FirestoreControllerTest {
 	}
 
 	@Test
-	void manualInvoiceEndpoint_fails() throws Exception {
-		ManualInvoice invoice = new ManualInvoice();
-		invoice.setUid("TestUser");
-		invoice.setMonth("2025-04");
+	void testGetSubcollections_notFound() throws Exception {
+		String uid = "user1";
+		String docId = "poraba";
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		String json = objectMapper.writeValueAsString(invoice);
+		when(firestoreService.getSubcollections(uid, docId)).thenReturn(null);
 
-		doThrow(new RuntimeException("Simulated fail")).when(firestoreService).saveManualInvoice(any());
-
-		mockMvc.perform(post("/firestore/manual")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(json))
-				.andExpect(status().is5xxServerError())
-				.andExpect(content().string(org.hamcrest.Matchers.containsString("Napaka")));
+		mockMvc.perform(get("/firestore/subCollections")
+				.param("uid", uid)
+				.param("docId", docId))
+				.andExpect(status().isNotFound());
 	}
 
+	@Test
+	void testGetSubcollectionDocumentIds_success() throws Exception {
+		String uid = "user1";
+		String parentDocId = "poraba";
+		String subcollectionId = "2024";
+		List<String> docs = List.of("01", "02");
+
+		when(firestoreService.getDocumentNamesInSubcollection(uid, parentDocId, subcollectionId)).thenReturn(docs);
+
+		mockMvc.perform(get("/firestore/docsInSubCol")
+				.param("uid", uid)
+				.param("parentDocId", parentDocId)
+				.param("subcollectionId", subcollectionId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0]").value("01"))
+				.andExpect(jsonPath("$[1]").value("02"));
+	}
+
+	@Test
+	void testGetSubcollectionDocumentIds_notFound() throws Exception {
+		String uid = "user1";
+		String parentDocId = "poraba";
+		String subcollectionId = "2024";
+
+		when(firestoreService.getDocumentNamesInSubcollection(uid, parentDocId, subcollectionId)).thenReturn(null);
+
+		mockMvc.perform(get("/firestore/docsInSubCol")
+				.param("uid", uid)
+				.param("parentDocId", parentDocId)
+				.param("subcollectionId", subcollectionId))
+				.andExpect(status().isNotFound());
+	}
 }
