@@ -80,7 +80,7 @@ public class FirestoreController {
 			@RequestParam(required = false) String subColDocId) {
 		try {
 			Map<String, Object> data = service.getDocumentData(uid, docId, subColId, subColDocId);
-			if (data == null) {
+			if (data.isEmpty()) {
 				return ResponseEntity.notFound().build();
 			}
 			return ResponseEntity.ok(data);

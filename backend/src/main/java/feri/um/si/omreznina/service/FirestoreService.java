@@ -8,6 +8,7 @@ import feri.um.si.omreznina.model.ManualInvoice;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -45,10 +46,9 @@ public class FirestoreService {
 	}
 
 	public List<String> getDocumentNamesInSubcollection(
-			String userId, 
+			String userId,
 			String parentDocId,
-			String subcollectionId 
-	) {
+			String subcollectionId) {
 		List<String> docNames = new ArrayList<>();
 		try {
 			CollectionReference ref = db
@@ -184,10 +184,14 @@ public class FirestoreService {
 			if (docSnap.exists()) {
 				return docSnap.getData();
 			}
-		} catch (Exception e) {
-			logger.warning("Error fetching document: " + e.getMessage());
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.warning("Failed to fetch documents: " + e.getMessage());
+			return Collections.emptyMap();
 		}
-		return null;
+		return Collections.emptyMap();
 	}
 
 	// pridboi podatke znotraj kolekcije ali ap podkolekcije
