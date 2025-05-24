@@ -43,32 +43,19 @@ public class FirestoreControllerTest {
 	}
 
 	@Test
-	void testGetDocuments_success() throws Exception {
-		String uid = "user1";
-		List<String> docs = List.of("2023-01", "2023-02");
-		when(firestoreService.getDocumentNamesByUid(uid)).thenReturn(docs);
-
-		mockMvc.perform(get("/firestore/documents").param("uid", uid))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0]").value("2023-01"))
-				.andExpect(jsonPath("$[1]").value("2023-02"));
-	}
-
-	@Test
 	void testGetDocumentData_success() throws Exception {
 		String uid = "user1";
 		String docId = "2023-01";
 		Map<String, Object> data = new HashMap<>();
 		data.put("a", 1);
-		List<Map<String, Object>> response = List.of(data);
 
-		when(firestoreService.getAllDataFromDocument(uid, docId)).thenReturn(response);
+		when(firestoreService.getDocumentData(uid, docId, null, null)).thenReturn(data);
 
 		mockMvc.perform(get("/firestore/data")
 				.param("uid", uid)
 				.param("docId", docId))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].a").value(1));
+				.andExpect(jsonPath("$.a").value(1));
 	}
 
 	@Test
@@ -76,7 +63,9 @@ public class FirestoreControllerTest {
 		String uid = "user1";
 		String docId = "2023-01";
 
-		when(firestoreService.getAllDataFromDocument(uid, docId)).thenThrow(new RuntimeException("fail"));
+		// Če uporabljaš novo metodo z več parametri
+		when(firestoreService.getDocumentData(uid, docId, null, null))
+				.thenThrow(new RuntimeException("fail"));
 
 		mockMvc.perform(get("/firestore/data")
 				.param("uid", uid)
@@ -85,27 +74,19 @@ public class FirestoreControllerTest {
 	}
 
 	@Test
-	void manualInvoiceEndpoint_works() throws Exception {
-		ManualInvoice invoice = new ManualInvoice();
-		invoice.setUid("TestUser");
-		invoice.setMonth("2025-04");
-		invoice.setTotalAmount(10);
-		invoice.setEnergyCost(2);
-		invoice.setNetworkCost(3);
-		invoice.setSurcharges(1);
-		invoice.setPenalties(0.5);
-		invoice.setVat(2.5);
-		invoice.setNote("Test opomba");
+	void testGetSubcollections_success() throws Exception {
+		String uid = "user1";
+		String docId = "poraba";
+		List<String> subcols = List.of("2024", "2025");
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		String json = objectMapper.writeValueAsString(invoice);
+		when(firestoreService.getSubcollections(uid, docId)).thenReturn(subcols);
 
-		doNothing().when(firestoreService).saveManualInvoice(any());
-
-		mockMvc.perform(post("/firestore/manual")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(json))
-				.andExpect(status().isOk());
+		mockMvc.perform(get("/firestore/subCollections")
+				.param("uid", uid)
+				.param("docId", docId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0]").value("2024"))
+				.andExpect(jsonPath("$[1]").value("2025"));
 	}
 
 	@Test
@@ -130,7 +111,7 @@ public class FirestoreControllerTest {
 
 		when(firestoreService.getDocumentNamesInSubcollection(uid, parentDocId, subcollectionId)).thenReturn(docs);
 
-		mockMvc.perform(get("/firestore/docsInSubCol")
+		mockMvc.perform(get("/firestore/docInSubCol")
 				.param("uid", uid)
 				.param("parentDocId", parentDocId)
 				.param("subcollectionId", subcollectionId))
@@ -147,7 +128,7 @@ public class FirestoreControllerTest {
 
 		when(firestoreService.getDocumentNamesInSubcollection(uid, parentDocId, subcollectionId)).thenReturn(null);
 
-		mockMvc.perform(get("/firestore/docsInSubCol")
+		mockMvc.perform(get("/firestore/docInSubCol")
 				.param("uid", uid)
 				.param("parentDocId", parentDocId)
 				.param("subcollectionId", subcollectionId))

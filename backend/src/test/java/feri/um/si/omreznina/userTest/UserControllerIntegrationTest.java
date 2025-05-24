@@ -67,8 +67,10 @@ public class UserControllerIntegrationTest {
 
 	public void shouldUploadPowerConsumptionSuccessfully() throws Exception {
 		MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
+		String data = "dfhvsdhgvf";
 
-		Mockito.doNothing().when(userService).processAndStoreMaxPowerConsumption(Mockito.any(), Mockito.eq("test-uid"));
+		Mockito.doNothing().when(userService).processAndStoreMaxPowerConsumption(Mockito.any(), data,
+				Mockito.eq("test-uid"));
 
 		mockMvc.perform(multipart("/user/upload-power-consumption")
 				.file(file)
@@ -82,7 +84,7 @@ public class UserControllerIntegrationTest {
 		MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
 
 		Mockito.doThrow(new RuntimeException("fail")).when(userService)
-				.processAndStoreMaxPowerConsumption(Mockito.any(), Mockito.eq("test-uid"));
+				.processAndStoreMaxPowerConsumption(Mockito.any(), Mockito.anyString(), Mockito.eq("test-uid"));
 
 		mockMvc.perform(multipart("/user/upload-power-consumption")
 				.file(file)

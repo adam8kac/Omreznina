@@ -36,20 +36,19 @@ public class FirestoreController {
 		}
 	}
 
-	// vse dokumente v kolekciji
 	@GetMapping("/documents")
-	@Operation(summary = "Pridobi vse uporabnikove dokumente", description = "Prejme uporabnikov id(uid: string) kot parameter, nato vrne vse njegove dokumente v obliki List<String>.")
-	public ResponseEntity<List<String>> getDoc(@RequestParam String uid) {
+	@Operation(summary = "Pridobi vse kolekcije ki jih ima user", description = "Prejme uid kot aprameter in vrne vse kolekcije ki jih ima uporabnik")
+	public ResponseEntity<List<String>> getUsersCollections(@RequestParam String uid) {
 		try {
-			return ResponseEntity.ok(service.getDocumentNamesByUid(uid));
+			return ResponseEntity.ok(service.getUserCollections(uid));
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to fetch documents", e);
+			logger.log(Level.SEVERE, "Failed to fetch users collections", e);
 			return ResponseEntity.badRequest().build();
 		}
 	}
 
 	// pdokolekcije znotraj dokumenta (racun/poraba>podkolekcije)
-	@GetMapping("/subCollections")
+	@GetMapping("/subcollections")
 	public ResponseEntity<List<String>> getSubcollections(
 			@RequestParam String uid,
 			@RequestParam String docId) {
@@ -81,12 +80,12 @@ public class FirestoreController {
 			@RequestParam(required = false) String subColDocId) {
 		try {
 			Map<String, Object> data = service.getDocumentData(uid, docId, subColId, subColDocId);
-			if (data.isEmpty()) {
+			if (data == null) {
 				return ResponseEntity.notFound().build();
 			}
 			return ResponseEntity.ok(data);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to fetch documents", e);
+			logger.log(Level.SEVERE, "Failed to fetch document", e);
 			return ResponseEntity.badRequest().build();
 		}
 	}

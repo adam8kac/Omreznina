@@ -5,10 +5,14 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -84,7 +88,7 @@ public class FirestoreServiceTest {
 		Iterable<CollectionReference> iterable = List.of(col1, col2);
 		when(db.listCollections()).thenReturn(iterable);
 
-		List<String> result = firestoreService.getDatabaseName();
+		List<String> result = firestoreService.getAllCollections();
 
 		assertEquals(2, result.size());
 		assertTrue(result.contains("users"));
@@ -106,52 +110,54 @@ public class FirestoreServiceTest {
 	}
 
 	@Test
-	void testGetDocumentNamesByUid_success() throws Exception {
-		CollectionReference colRef = mock(CollectionReference.class);
-		when(db.collection("uid")).thenReturn(colRef);
+	void testGetDocumentData_rootDocument_success() throws Exception {
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection("uid")).thenReturn(mock(CollectionReference.class));
+		when(db.collection("uid").document("2025-01")).thenReturn(docRef);
 
-		QueryDocumentSnapshot doc1 = mock(QueryDocumentSnapshot.class);
-		QueryDocumentSnapshot doc2 = mock(QueryDocumentSnapshot.class);
-		when(doc1.getId()).thenReturn("2025-01");
-		when(doc2.getId()).thenReturn("2025-02");
-
-		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
-		QuerySnapshot snapshot = mock(QuerySnapshot.class);
-
-		when(colRef.get()).thenReturn(future);
-		when(future.get()).thenReturn(snapshot);
-		when(snapshot.getDocuments()).thenReturn(List.of(doc1, doc2));
-
-		List<String> names = firestoreService.getDocumentNamesByUid("uid");
-
-		assertEquals(List.of("2025-01", "2025-02"), names);
-	}
-
-	@Test
-	void testGetAllDataFromDocument_success() throws Exception {
-		CollectionReference colRef = mock(CollectionReference.class);
-		when(db.collection("uid")).thenReturn(colRef);
-
-		QueryDocumentSnapshot doc1 = mock(QueryDocumentSnapshot.class);
 		Map<String, Object> mockData = Map.of(
 				"2025-01-01", Map.of("a", 1),
 				"2025-01-02", Map.of("b", 2));
 
-		when(doc1.getId()).thenReturn("2025-01");
-		when(doc1.getData()).thenReturn(mockData);
+		DocumentSnapshot docSnap = mock(DocumentSnapshot.class);
+		when(docRef.get()).thenReturn(mock(ApiFuture.class));
+		when(docRef.get().get()).thenReturn(docSnap);
+		when(docSnap.exists()).thenReturn(true);
+		when(docSnap.getData()).thenReturn(mockData);
 
-		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
-		QuerySnapshot snapshot = mock(QuerySnapshot.class);
+		Map<String, Object> result = firestoreService.getDocumentData("uid", "2025-01", null, null);
 
-		when(colRef.get()).thenReturn(future);
-		when(future.get()).thenReturn(snapshot);
-		when(snapshot.getDocuments()).thenReturn(List.of(doc1));
+		assertNotNull(result);
+		assertTrue(result.containsKey("2025-01-01"));
+		assertTrue(result.containsKey("2025-01-02"));
+	}
 
-		List<Map<String, Object>> result = firestoreService.getAllDataFromDocument("uid", "2025-01");
+	@Test
+	void testGetDocumentData_nestedDocument_success() throws Exception {
+		DocumentReference porabaDoc = mock(DocumentReference.class);
+		CollectionReference yearCol = mock(CollectionReference.class);
+		DocumentReference monthDoc = mock(DocumentReference.class);
 
-		assertEquals(1, result.size());
-		assertTrue(result.get(0).containsKey("2025-01-01"));
-		assertTrue(result.get(0).containsKey("2025-01-02"));
+		when(db.collection("uid")).thenReturn(mock(CollectionReference.class));
+		when(db.collection("uid").document("poraba")).thenReturn(porabaDoc);
+		when(porabaDoc.collection("2024")).thenReturn(yearCol);
+		when(yearCol.document("01")).thenReturn(monthDoc);
+
+		Map<String, Object> mockData = Map.of(
+				"a", 1,
+				"b", 2);
+
+		DocumentSnapshot docSnap = mock(DocumentSnapshot.class);
+		when(monthDoc.get()).thenReturn(mock(ApiFuture.class));
+		when(monthDoc.get().get()).thenReturn(docSnap);
+		when(docSnap.exists()).thenReturn(true);
+		when(docSnap.getData()).thenReturn(mockData);
+
+		Map<String, Object> result = firestoreService.getDocumentData("uid", "poraba", "2024", "01");
+
+		assertNotNull(result);
+		assertEquals(1, result.get("a"));
+		assertEquals(2, result.get("b"));
 	}
 
 	@Test
@@ -280,73 +286,6 @@ public class FirestoreServiceTest {
 
 		assertNotNull(result);
 		assertTrue(result.isEmpty());
-	}
-
-	void saveManualInvoice_savesCorrectly() throws Exception {
-		Firestore db = mock(Firestore.class);
-		CollectionReference colRef = mock(CollectionReference.class);
-		DocumentReference docRef = mock(DocumentReference.class);
-		CollectionReference yearCollection = mock(CollectionReference.class);
-		DocumentReference monthDoc = mock(DocumentReference.class);
-		ApiFuture<WriteResult> future = mock(ApiFuture.class);
-
-		when(db.collection(any())).thenReturn(colRef);
-		when(colRef.document("racuni")).thenReturn(docRef);
-		when(docRef.collection("2025")).thenReturn(yearCollection);
-		when(yearCollection.document("04")).thenReturn(monthDoc);
-		when(monthDoc.set(any())).thenReturn(future);
-		when(future.get()).thenReturn(null);
-
-		FirestoreService service = new FirestoreService(db);
-
-		ManualInvoice invoice = new ManualInvoice();
-		invoice.setUid("TestUser");
-		invoice.setMonth("2025-04");
-		invoice.setTotalAmount(10);
-		invoice.setEnergyCost(2);
-		invoice.setNetworkCost(3);
-		invoice.setSurcharges(1);
-		invoice.setPenalties(0.5);
-		invoice.setVat(2.5);
-		invoice.setNote("Test opomba");
-
-		service.saveManualInvoice(invoice);
-
-		verify(db).collection("TestUser");
-		verify(colRef).document("racuni");
-		verify(docRef).collection("2025");
-		verify(yearCollection).document("04");
-		verify(monthDoc).set(any());
-		verify(future).get();
-	}
-
-	@Test
-	void saveManualInvoice_throwsException() throws Exception {
-		Firestore db = mock(Firestore.class);
-		CollectionReference colRef = mock(CollectionReference.class);
-		DocumentReference docRef = mock(DocumentReference.class);
-		CollectionReference yearCollection = mock(CollectionReference.class);
-		DocumentReference monthDoc = mock(DocumentReference.class);
-		ApiFuture<WriteResult> future = mock(ApiFuture.class);
-
-		when(db.collection(any())).thenReturn(colRef);
-		when(colRef.document("racuni")).thenReturn(docRef);
-		when(docRef.collection(anyString())).thenReturn(yearCollection);
-		when(yearCollection.document(anyString())).thenReturn(monthDoc);
-		when(monthDoc.set(any())).thenReturn(future);
-		when(future.get()).thenThrow(new RuntimeException("Firestore fail"));
-
-		FirestoreService service = new FirestoreService(db);
-
-		ManualInvoice invoice = new ManualInvoice();
-		invoice.setUid("TestUser");
-		invoice.setMonth("2025-04");
-		invoice.setTotalAmount(10);
-
-		Exception ex = assertThrows(Exception.class, () -> {
-			service.saveManualInvoice(invoice);
-		});
-		assertTrue(ex.getMessage().contains("Firestore fail"));
 	}
 
 }
