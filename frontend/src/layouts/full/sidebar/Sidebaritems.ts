@@ -51,13 +51,19 @@ const SidebarContent: MenuItem[] = [
     ],
   },
   {
-    heading: "UTILITIES",
+    heading: "UPORABNO",
     children: [
       {
         name: "Naloži podatke",
         icon: "tabler:file-upload",
         id: uniqueId(),
         url: "/upload-data",
+      },
+      {
+        name: "Razlaga računa",
+        icon: "solar:file-text-linear",
+        id: uniqueId(),
+        url: "/reciept-explanation",
       },
       {
         name: "Typography",

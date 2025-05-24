@@ -73,7 +73,7 @@ const UploadInvoice: React.FC = () => {
   };
 
   return (
-    <div className="rounded-xl dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
+    <div className="bg-white dark:bg-darkgray p-6 relative w-full break-words">
       <h5 className="card-title text-xl font-semibold mb-4">Ročno nalaganje izpiska iz MojElektro.si</h5>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
