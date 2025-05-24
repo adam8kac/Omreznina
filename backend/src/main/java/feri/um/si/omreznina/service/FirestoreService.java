@@ -7,7 +7,9 @@ import com.google.cloud.firestore.*;
 import feri.um.si.omreznina.model.ManualInvoice;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +29,60 @@ public class FirestoreService {
 		List<String> collectionNames = new ArrayList<>();
 
 		for (CollectionReference collection : db.listCollections()) {
-			collectionNames.add(collection.getId());
+			colectionNames.add(collection.getId());
+		}
+		return colectionNames;
+	}
+
+	// Pridobi in vrne vse kolekcije znotraj kolekcije
+	public List<String> getUserCollections(String uid) {
+		List<String> colList = new ArrayList<>();
+		CollectionReference userCol = db.collection(uid);
+		for (DocumentReference colRef : userCol.listDocuments()) {
+			colList.add(colRef.getId());
+		}
+		return colList;
+	}
+
+	public List<String> getDocumentNamesInSubcollection(
+			String userId, 
+			String parentDocId,
+			String subcollectionId 
+	) {
+		List<String> docNames = new ArrayList<>();
+		try {
+			CollectionReference ref = db
+					.collection(userId)
+					.document(parentDocId)
+					.collection(subcollectionId);
+
+			ApiFuture<QuerySnapshot> future = ref.get();
+			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+			for (QueryDocumentSnapshot doc : documents) {
+				docNames.add(doc.getId());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.warning("Failed to fetch documents: " + e.getMessage());
+			return null;
+		}
+		return docNames;
+	}
+
+	public List<String> getSubcollections(String uid, String docId) {
+		List<String> collectionNames = new ArrayList<>();
+		try {
+			DocumentReference docRef = db.collection(uid).document(docId);
+			Iterable<CollectionReference> collections = docRef.listCollections();
+			for (CollectionReference col : collections) {
+				collectionNames.add(col.getId());
+			}
+		} catch (Exception e) {
+			logger.warning("Failed to fetch subcollections: " + e.getMessage());
+			return null;
 		}
 		return collectionNames;
 	}
@@ -52,6 +107,33 @@ public class FirestoreService {
 			}
 			logger.warning(e.toString());
 		}
+	}
+
+	// pridboi podatke znotraj kolekcije ali ap podkolekcije
+	public Map<String, Object> getDocumentData(
+			String uid,
+			String docId,
+			String subcollectionId,
+			String subColDocId) {
+		try {
+			DocumentReference docRef;
+			if (subcollectionId != null && subColDocId != null) {
+				docRef = db.collection(uid)
+						.document(docId)
+						.collection(subcollectionId)
+						.document(subColDocId);
+			} else {
+				docRef = db.collection(uid)
+						.document(docId);
+			}
+			DocumentSnapshot docSnap = docRef.get().get();
+			if (docSnap.exists()) {
+				return docSnap.getData();
+			}
+		} catch (Exception e) {
+			logger.warning("Error fetching document: " + e.getMessage());
+		}
+		return null;
 	}
 
 	// Za shranjevanje prekoracitev
