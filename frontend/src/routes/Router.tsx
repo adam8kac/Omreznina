@@ -19,6 +19,7 @@ const Typography = Loadable(lazy(() => import('../views/typography/Typography'))
 const Table = Loadable(lazy(() => import('../views/tables/Table')));
 const Form = Loadable(lazy(() => import('../views/forms/Form')));
 const Shadow = Loadable(lazy(() => import('../views/shadows/Shadow')));
+const UploadData = Loadable(lazy(() => import('../views/forms/UploadDataForm')));
 const UploadPage = Loadable(lazy(() => import('../views/forms/UploadForm')));
 const UploadReciept = Loadable(lazy(() => import('../views/forms/UploadRecieptForm')));
 
@@ -29,7 +30,7 @@ const Solar = Loadable(lazy(() => import('../views/icons/Solar')));
 // authentication
 const Login = Loadable(lazy(() => import('../views/auth/login/Login')));
 const Register = Loadable(lazy(() => import('../views/auth/register/Register')));
-const SamplePage = Loadable(lazy(() => import('../views/sample-page/SamplePage')));
+const Profile = Loadable(lazy(() => import('../views/profile/Profile')));
 const Error = Loadable(lazy(() => import('../views/auth/error/Error')));
 const ResetPassword = Loadable(lazy(() => import('../views/auth/reset/ResetPassword')));
 const VerifyInfo = Loadable(lazy(() => import('../views/auth/verify/VerifyInfo')));
@@ -57,7 +58,8 @@ const Router = [
       { path: '/ui/form', exact: true, element: <Form /> },
       { path: '/ui/shadow', exact: true, element: <Shadow /> },
       { path: '/icons/solar', exact: true, element: <Solar /> },
-      { path: '/sample-page', exact: true, element: <SamplePage /> },
+      { path: '/profile', exact: true, element: <Profile /> },
+      { path: '/upload-data', exact: true, element: <UploadData /> },
       { path: '/upload-invoice', exact: true, element: <UploadPage /> },
       { path: '/upload-reciept', exact: true, element: <UploadReciept /> },
       { path: '*', element: <Navigate to="/auth/404" /> },
