@@ -1,8 +1,9 @@
 from logic import process_file
 import os
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 import shutil
+import json
 
 HOST = "0.0.0.0"
 PORT = 54321
@@ -13,7 +14,10 @@ async def root():
     return {"status": "running"}
 
 @app.post("/upload-file-dogovorjena-moc")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(
+    file: UploadFile = File(...),
+    power_by_months: str = Form(...)
+):
     filename = file.filename
     save_path = f"./{filename}"
 
@@ -21,13 +25,10 @@ async def upload_file(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     try:
-        result = process_file(save_path)
+        agreed_power_map = json.loads(power_by_months)
+        result = process_file(save_path, agreed_power_map)
     finally:
-        try:
-            os.remove(save_path)
-            print(f"Deleted file: {save_path}")
-        except Exception as e:
-            print(f"Error deleting file: {e}")
+        os.remove(save_path)
 
     return JSONResponse(result)
     

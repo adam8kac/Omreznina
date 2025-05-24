@@ -36,26 +36,56 @@ public class FirestoreController {
 		}
 	}
 
-	// vse dokumente v kolekciji
 	@GetMapping("/documents")
-	@Operation(summary = "Pridobi vse uporabnikove dokumente", description = "Prejme uporabnikov id(uid: string) kot parameter, nato vrne vse njegove dokumente v obliki List<String>.")
-	public ResponseEntity<List<String>> getDoc(@RequestParam String uid) {
+	@Operation(summary = "Pridobi vse kolekcije ki jih ima user", description = "Prejme uid kot aprameter in vrne vse kolekcije ki jih ima uporabnik")
+	public ResponseEntity<List<String>> getUsersCollections(@RequestParam String uid) {
 		try {
-			return ResponseEntity.ok(service.getDocumentNamesByUid(uid));
+			return ResponseEntity.ok(service.getUserCollections(uid));
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to fetch documents", e);
+			logger.log(Level.SEVERE, "Failed to fetch users collections", e);
 			return ResponseEntity.badRequest().build();
 		}
 	}
 
-	@GetMapping("/data")
-	@Operation(summary = "Pridobi vse zapise znotraj enega dokumenta", description = "Parameter je uid: string in docId: string. Vrne vse zapise, ki jih vsebuje en uporabnikov dokument v obliki List<Map<String, Object>> ([{YYYY-MM-DD:{DATA}, ...}]).")
-	public ResponseEntity<List<Map<String, Object>>> getDocumentData(@RequestParam String uid,
+	// pdokolekcije znotraj dokumenta (racun/poraba>podkolekcije)
+	@GetMapping("/subCollections")
+	public ResponseEntity<List<String>> getSubcollections(
+			@RequestParam String uid,
 			@RequestParam String docId) {
+		List<String> subcollections = service.getSubcollections(uid, docId);
+		if (subcollections == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(subcollections);
+	}
+
+	// Dokumenti znotrja podkolekcije
+	@GetMapping("/docsInSubCol")
+	public ResponseEntity<List<String>> getSubcollectionDocumentIds(
+			@RequestParam String uid,
+			@RequestParam String parentDocId,
+			@RequestParam String subcollectionId) {
+		List<String> docs = service.getDocumentNamesInSubcollection(uid, parentDocId, subcollectionId);
+		if (docs == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(docs);
+	}
+
+	@GetMapping("/data")
+	public ResponseEntity<Map<String, Object>> getDocumentData(
+			@RequestParam String uid,
+			@RequestParam String docId,
+			@RequestParam(required = false) String subColId,
+			@RequestParam(required = false) String subColDocId) {
 		try {
-			return ResponseEntity.ok(service.getAllDataFromDocument(uid, docId));
+			Map<String, Object> data = service.getDocumentData(uid, docId, subColId, subColDocId);
+			if (data.isEmpty()) {
+				return ResponseEntity.notFound().build();
+			}
+			return ResponseEntity.ok(data);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to fetch documents", e);
+			logger.log(Level.SEVERE, "Failed to fetch document", e);
 			return ResponseEntity.badRequest().build();
 		}
 	}

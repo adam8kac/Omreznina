@@ -1,42 +1,48 @@
 import pandas as pd
 
-def process_file(file):
-	if file.endswith("xlsx"):
-		df = pd.read_excel(file, engine="openpyxl")
-	elif file.endswith("csv"):
-		df = pd.read_csv(file)
-	else:
-		return {"error": "Unsupported file type"}
+def process_file(file, agreed_power_map: dict):
+    if file.endswith("xlsx"):
+        df = pd.read_excel(file, engine="openpyxl")
+    elif file.endswith("csv"):
+        df = pd.read_csv(file)
+    else:
+        return {"error": "Unsupported file type"}
 
-	dataframe = df[["Leto", "Mesec", "Časovna značka", "P+ Prejeta delovna moč"]]
-	unique_year = dataframe["Leto"].unique()
-	unique_months = dataframe["Mesec"].unique()
-	# print(dataframe, unique_months, unique_year)
+    df = df[["Leto", "Mesec", "Časovna značka", "P+ Prejeta delovna moč"]]
+    year_month_max_P = {}
 
-	year_month_max_P = {}
+    for (year, month), group in df.groupby(["Leto", "Mesec"]):
+        year_str = str(year)
+        month_str = f"{int(month):02d}"
 
-	for year in unique_year:
-		year_str = str(year)
-		df_current: pd.DataFrame = dataframe[dataframe["Leto"] == year]
-		if year not in year_month_max_P:
-			year_month_max_P[year_str] = {}
+        dogovorjena_moc = float(agreed_power_map[month_str])
 
-		for month in unique_months:
-			df_current_month: pd.DataFrame = df_current[df_current["Mesec"] == month]
-			new_month_value = f"{int(month):02d}"
-			if new_month_value not in year_month_max_P[year_str]:
-				year_month_max_P[year_str][new_month_value] = {}
+        if year_str not in year_month_max_P:
+            year_month_max_P[year_str] = {}
 
-			current_row_with_max_val: pd.DataFrame = df_current_month[df_current_month["P+ Prejeta delovna moč"] == df_current_month["P+ Prejeta delovna moč"].max()]
-			max_val = round(current_row_with_max_val["P+ Prejeta delovna moč"].values[0], 2)
-			timestamp = pd.to_datetime(current_row_with_max_val["Časovna značka"].values[0])
-			timestamp_str = timestamp.strftime("%H:%M")
+        over_threshold = group[group["P+ Prejeta delovna moč"] > dogovorjena_moc]
 
-			year_month_max_P[year_str][new_month_value] = {
-				"timestamp": timestamp_str,
-				"maxPowerRecieved": max_val
-				}
+        entries = []
 
-	# print(year_month_max_P)
-	return year_month_max_P
+        if not over_threshold.empty:
+            for _, row in over_threshold.iterrows():
+                timestamp = pd.to_datetime(row["Časovna značka"]).strftime("%d-%m %H:%M")
+                power = round(row["P+ Prejeta delovna moč"], 2)
+                entries.append({
+                    "agreedPower": dogovorjena_moc,
+                    "timestamp": timestamp,
+                    "maxPowerRecieved": power
+                })
+        else:
+            max_row = group.loc[group["P+ Prejeta delovna moč"].idxmax()]
+            timestamp = pd.to_datetime(max_row["Časovna značka"]).strftime("%d-%m %H:%M")
+            max_val = round(max_row["P+ Prejeta delovna moč"], 2)
+            entries.append({
+                "agreedPower": dogovorjena_moc,
+                "timestamp": timestamp,
+                "maxPowerRecieved": max_val
+            })
 
+        year_month_max_P[year_str][month_str] = { "data": entries }
+
+    return year_month_max_P
