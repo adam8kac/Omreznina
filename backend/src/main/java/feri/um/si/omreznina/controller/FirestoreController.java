@@ -51,6 +51,13 @@ public class FirestoreController {
 	@GetMapping("/subCollections")
 	public ResponseEntity<List<String>> getSubcollections(
 			@RequestParam String uid,
+<<<<<<< HEAD
+=======
+	// pdokolekcije znotraj dokumenta (racun/poraba>podkolekcije)
+	@GetMapping("/subCollections")
+	public ResponseEntity<List<String>> getSubcollections(
+			@RequestParam String uid,
+>>>>>>> 0be7922f2a725232fdc0790be0ee4182cf2dac73
 			@RequestParam String docId) {
 		List<String> subcollections = service.getSubcollections(uid, docId);
 		if (subcollections == null) {

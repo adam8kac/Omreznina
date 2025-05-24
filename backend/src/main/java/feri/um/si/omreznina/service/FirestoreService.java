@@ -7,14 +7,23 @@ import com.google.cloud.firestore.*;
 import feri.um.si.omreznina.model.ManualInvoice;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0be7922f2a725232fdc0790be0ee4182cf2dac73
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+<<<<<<< HEAD
 import java.util.*;
 
+=======
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+>>>>>>> 0be7922f2a725232fdc0790be0ee4182cf2dac73
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,6 +39,71 @@ public class FirestoreService {
 		this.db = firestore;
 	}
 
+<<<<<<< HEAD
+=======
+	// Pirodbi vse kolekcije (v root dir - to so user id)
+	public List<String> getAllCollections() {
+		List<String> colectionNames = new ArrayList<>();
+		for (CollectionReference collection : db.listCollections()) {
+			colectionNames.add(collection.getId());
+		}
+		return colectionNames;
+	}
+
+>>>>>>> 0be7922f2a725232fdc0790be0ee4182cf2dac73
+	// Pridobi in vrne vse kolekcije znotraj kolekcije
+	public List<String> getUserCollections(String uid) {
+		List<String> colList = new ArrayList<>();
+		CollectionReference userCol = db.collection(uid);
+		for (DocumentReference colRef : userCol.listDocuments()) {
+			colList.add(colRef.getId());
+		}
+		return colList;
+	}
+<<<<<<< HEAD
+
+	public List<String> getDocumentNamesInSubcollection(
+			String userId,
+			String parentDocId,
+			String subcollectionId) {
+=======
+
+	public List<String> getDocumentNamesInSubcollection(
+			String userId,
+			String parentDocId,
+			String subcollectionId) {
+		List<String> docNames = new ArrayList<>();
+		try {
+			CollectionReference ref = db
+					.collection(userId)
+					.document(parentDocId)
+					.collection(subcollectionId);
+
+			ApiFuture<QuerySnapshot> future = ref.get();
+			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+			for (QueryDocumentSnapshot doc : documents) {
+				docNames.add(doc.getId());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.warning("Failed to fetch documents: " + e.getMessage());
+			return null;
+		}
+		return docNames;
+	}
+
+	public List<String> getSubcollections(String uid, String docId) {
+		List<String> collectionNames = new ArrayList<>();
+
+		for (CollectionReference collection : db.listCollections()) {
+			colectionNames.add(collection.getId());
+		}
+		return colectionNames;
+	}
+
 	// Pridobi in vrne vse kolekcije znotraj kolekcije
 	public List<String> getUserCollections(String uid) {
 		List<String> colList = new ArrayList<>();
@@ -41,9 +115,11 @@ public class FirestoreService {
 	}
 
 	public List<String> getDocumentNamesInSubcollection(
-			String userId,
+			String userId, 
 			String parentDocId,
-			String subcollectionId) {
+			String subcollectionId 
+	) {
+>>>>>>> 0be7922f2a725232fdc0790be0ee4182cf2dac73
 		List<String> docNames = new ArrayList<>();
 		try {
 			CollectionReference ref = db
@@ -125,6 +201,7 @@ public class FirestoreService {
 			if (docSnap.exists()) {
 				return docSnap.getData();
 			}
+<<<<<<< HEAD
 		} catch (InterruptedException | ExecutionException e) {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();
@@ -133,6 +210,12 @@ public class FirestoreService {
 			return Collections.emptyMap();
 		}
 		return Collections.emptyMap();
+=======
+		} catch (Exception e) {
+			logger.warning("Error fetching document: " + e.getMessage());
+		}
+		return null;
+>>>>>>> 0be7922f2a725232fdc0790be0ee4182cf2dac73
 	}
 
 	// Za shranjevanje prekoracitev
@@ -164,6 +247,7 @@ public class FirestoreService {
 		}
 	}
 
+<<<<<<< HEAD
 
 	public List<String> getAllCollections() {
 		List<String> colectionNames = new ArrayList<>();
@@ -247,4 +331,6 @@ public class FirestoreService {
 				.get();
 	}
 
+=======
+>>>>>>> 0be7922f2a725232fdc0790be0ee4182cf2dac73
 }
