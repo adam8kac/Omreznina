@@ -48,7 +48,7 @@ public class FirestoreController {
 	}
 
 	// pdokolekcije znotraj dokumenta (racun/poraba>podkolekcije)
-	@GetMapping("/subcollections")
+	@GetMapping("/subCollections")
 	public ResponseEntity<List<String>> getSubcollections(
 			@RequestParam String uid,
 			@RequestParam String docId) {
