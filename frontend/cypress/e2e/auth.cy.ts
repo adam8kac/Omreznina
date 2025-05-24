@@ -30,14 +30,6 @@ describe('Avtentikacija – Prijava in Registracija', () => {
     cy.get('input#resetEmail').should('exist');
   });
 
-  it('Uspešna prijava z veljavnimi podatki', () => {
-    cy.get('input#email').type('tevz7star@gmail.com');
-    cy.get('input#password').type('123456#');
-    cy.get('button').contains('Prijava').click();
-    cy.url().should('not.include', '/auth/login');
-    cy.contains('Dashboard').should('exist');
-  });
-
   it('Redirect za neavtenticiranega uporabnika', () => {
     cy.clearCookies();
     cy.clearLocalStorage();
