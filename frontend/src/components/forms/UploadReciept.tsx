@@ -3,7 +3,7 @@ import { Label, TextInput, Button, Accordion } from 'flowbite-react';
 import { auth } from 'src/firebase-config';
 import { uploadManualInvoice, ManualInvoice } from 'src/index';
 
-const ManualInvoiceForm: React.FC = () => {
+export default function ManualInvoiceForm()  {
   const [month, setMonth] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [energyCost, setEnergyCost] = useState('');
@@ -84,7 +84,7 @@ const ManualInvoiceForm: React.FC = () => {
   };
 
   return (
-    <div className="rounded-xl dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
+    <div className="p-4 space-y-4">
       <h5 className="card-title text-xl font-semibold mb-4">Ročni vnos podatkov z računa</h5>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
@@ -239,7 +239,6 @@ const ManualInvoiceForm: React.FC = () => {
               </ul>
 
               <div className="mt-8 space-y-7">
-                {/* Legenda */}
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <div className="font-bold text-gray-800 text-lg mb-1 flex items-center gap-2">
@@ -260,7 +259,6 @@ const ManualInvoiceForm: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Primer vnosa */}
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
                   <div className="font-bold text-base mb-4 flex items-center gap-2">
                     📝 Primer vnosa (marec 2025)
@@ -305,7 +303,6 @@ const ManualInvoiceForm: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Primer izračuna DDV */}
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col gap-2">
                   <div className="font-bold text-green-900 text-base flex items-center gap-2">
                     💡 Primer izračuna DDV
@@ -315,7 +312,6 @@ const ManualInvoiceForm: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Več informacij */}
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <div className="font-bold text-gray-800 mb-1 flex items-center gap-2">
                     ℹ️ Več informacij
@@ -335,5 +331,3 @@ const ManualInvoiceForm: React.FC = () => {
     </div>
   );
 };
-
-export default ManualInvoiceForm;
