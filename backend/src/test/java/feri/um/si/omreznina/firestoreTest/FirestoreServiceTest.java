@@ -187,6 +187,101 @@ public class FirestoreServiceTest {
 	}
 
 	@Test
+	void testGetDocumentNamesInSubcollection_success() throws Exception {
+		String userId = "user1";
+		String parentDocId = "poraba";
+		String subcollectionId = "2024";
+
+		CollectionReference colRef = mock(CollectionReference.class);
+		DocumentReference docRef = mock(DocumentReference.class);
+
+		when(db.collection(userId)).thenReturn(colRef);
+		when(colRef.document(parentDocId)).thenReturn(docRef);
+
+		CollectionReference subColRef = mock(CollectionReference.class);
+		when(docRef.collection(subcollectionId)).thenReturn(subColRef);
+
+		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
+		QuerySnapshot snapshot = mock(QuerySnapshot.class);
+
+		QueryDocumentSnapshot doc1 = mock(QueryDocumentSnapshot.class);
+		QueryDocumentSnapshot doc2 = mock(QueryDocumentSnapshot.class);
+
+		when(subColRef.get()).thenReturn(future);
+		when(future.get()).thenReturn(snapshot);
+		when(snapshot.getDocuments()).thenReturn(List.of(doc1, doc2));
+
+		when(doc1.getId()).thenReturn("01");
+		when(doc2.getId()).thenReturn("02");
+
+		List<String> result = firestoreService.getDocumentNamesInSubcollection(userId, parentDocId, subcollectionId);
+
+		assertEquals(List.of("01", "02"), result);
+	}
+
+	@Test
+	void testGetDocumentNamesInSubcollection_interruptedException() throws Exception {
+		String userId = "user1";
+		String parentDocId = "poraba";
+		String subcollectionId = "2024";
+
+		CollectionReference colRef = mock(CollectionReference.class);
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection(userId)).thenReturn(colRef);
+		when(colRef.document(parentDocId)).thenReturn(docRef);
+		CollectionReference subColRef = mock(CollectionReference.class);
+		when(docRef.collection(subcollectionId)).thenReturn(subColRef);
+
+		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
+		when(subColRef.get()).thenReturn(future);
+		when(future.get()).thenThrow(new InterruptedException("interrupted"));
+
+		List<String> result = firestoreService.getDocumentNamesInSubcollection(userId, parentDocId, subcollectionId);
+
+		assertNull(result);
+	}
+
+	@Test
+	void testGetSubcollections_success() {
+		String uid = "user1";
+		String docId = "poraba";
+
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection(uid)).thenReturn(mock(CollectionReference.class));
+		when(db.collection(uid).document(docId)).thenReturn(docRef);
+
+		CollectionReference col2024 = mock(CollectionReference.class);
+		when(col2024.getId()).thenReturn("2024");
+		CollectionReference col2025 = mock(CollectionReference.class);
+		when(col2025.getId()).thenReturn("2025");
+
+		Iterable<CollectionReference> subCollections = List.of(col2024, col2025);
+
+		when(docRef.listCollections()).thenReturn(subCollections);
+
+		List<String> result = firestoreService.getSubcollections(uid, docId);
+
+		assertEquals(List.of("2024", "2025"), result);
+	}
+
+	@Test
+	void testGetSubcollections_empty() {
+		String uid = "user1";
+		String docId = "poraba";
+
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection(uid)).thenReturn(mock(CollectionReference.class));
+		when(db.collection(uid).document(docId)).thenReturn(docRef);
+
+		Iterable<CollectionReference> subCollections = List.of();
+		when(docRef.listCollections()).thenReturn(subCollections);
+
+		List<String> result = firestoreService.getSubcollections(uid, docId);
+
+		assertNotNull(result);
+		assertTrue(result.isEmpty());
+	}
+
 	void saveManualInvoice_savesCorrectly() throws Exception {
 		Firestore db = mock(Firestore.class);
 		CollectionReference colRef = mock(CollectionReference.class);
