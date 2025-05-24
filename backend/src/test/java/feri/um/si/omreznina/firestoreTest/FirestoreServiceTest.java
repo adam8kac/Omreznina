@@ -290,6 +290,7 @@ public class FirestoreServiceTest {
 
 		assertNotNull(result);
 		assertTrue(result.isEmpty());
+	}
 
 	void saveManualInvoice_savesCorrectly() throws Exception {
 		Firestore db = mock(Firestore.class);
