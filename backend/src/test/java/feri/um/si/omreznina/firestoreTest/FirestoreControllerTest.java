@@ -106,7 +106,7 @@ public class FirestoreControllerTest {
 
 		when(firestoreService.getDocumentNamesInSubcollection(uid, parentDocId, subcollectionId)).thenReturn(docs);
 
-		mockMvc.perform(get("/firestore/docInSubCol")
+		mockMvc.perform(get("/firestore/docsInSubCol")
 				.param("uid", uid)
 				.param("parentDocId", parentDocId)
 				.param("subcollectionId", subcollectionId))
@@ -123,7 +123,7 @@ public class FirestoreControllerTest {
 
 		when(firestoreService.getDocumentNamesInSubcollection(uid, parentDocId, subcollectionId)).thenReturn(null);
 
-		mockMvc.perform(get("/firestore/docInSubCol")
+		mockMvc.perform(get("/firestore/docsInSubCol")
 				.param("uid", uid)
 				.param("parentDocId", parentDocId)
 				.param("subcollectionId", subcollectionId))
