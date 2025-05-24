@@ -51,6 +51,10 @@ public class FirestoreController {
 	@GetMapping("/subCollections")
 	public ResponseEntity<List<String>> getSubcollections(
 			@RequestParam String uid,
+	// pdokolekcije znotraj dokumenta (racun/poraba>podkolekcije)
+	@GetMapping("/subCollections")
+	public ResponseEntity<List<String>> getSubcollections(
+			@RequestParam String uid,
 			@RequestParam String docId) {
 		List<String> subcollections = service.getSubcollections(uid, docId);
 		if (subcollections == null) {
@@ -80,7 +84,7 @@ public class FirestoreController {
 			@RequestParam(required = false) String subColDocId) {
 		try {
 			Map<String, Object> data = service.getDocumentData(uid, docId, subColId, subColDocId);
-			if (data.isEmpty()) {
+			if (data == null) {
 				return ResponseEntity.notFound().build();
 			}
 			return ResponseEntity.ok(data);
