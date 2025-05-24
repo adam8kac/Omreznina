@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import UploadInvoice from './UploadInvoice';
 import UploadReceipt from './UploadReciept';
 
-const UploadData: React.FC = () => {
+export default function UploadData() {
+
   const [selected, setSelected] = useState<'invoice' | 'receipt'>('invoice');
 
   return (
-    <div className="w-full max-w-3xl mx-auto mt-10">
+    <div className="w-full max-w-5xl mx-auto mt-10">
       <div className="flex justify-center mb-8">
         <div className="flex bg-gray-100 rounded-full p-1 shadow-sm w-fit">
           <button
@@ -18,7 +19,7 @@ const UploadData: React.FC = () => {
             onClick={() => setSelected('invoice')}
             type="button"
           >
-            Naloži račun
+            Naloži izpisek
           </button>
           <button
             className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
@@ -29,16 +30,13 @@ const UploadData: React.FC = () => {
             onClick={() => setSelected('receipt')}
             type="button"
           >
-            Naloži izpisek
+            Naloži račun
           </button>
         </div>
       </div>
-      <div className="bg-white rounded-xl shadow p-6">
         {selected === 'invoice' && <UploadInvoice />}
         {selected === 'receipt' && <UploadReceipt />}
-      </div>
     </div>
   );
 };
 
-export default UploadData;
