@@ -28,22 +28,28 @@ public class FileService {
 	public String sendFileToParser(MultipartFile file) throws IOException {
 		String url = "https://omreznina-parser-latest.onrender.com/upload-file";
 
-		return upoladFile(file, url);
+		return upoladFile(file, null, url);
 	}
 
-	public String uploadMaxPowerConsumed(MultipartFile file) throws IOException {
+	public String uploadMaxPowerConsumed(MultipartFile file, String powerByMonths)
+			throws IOException {
 		String url = "https://prekoracitev-helper.onrender.com/upload-file-dogovorjena-moc";
 
-		return upoladFile(file, url);
+		return upoladFile(file, powerByMonths, url);
 	}
 
-	private String upoladFile(MultipartFile file, String url) throws IOException {
+	private String upoladFile(MultipartFile file, String powerByMonths, String url)
+			throws IOException {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add("file", new MultipartInputStreamFileResource(file.getInputStream(), file.getOriginalFilename()));
+
+		if (powerByMonths != null) {
+			body.add("power_by_months", powerByMonths);
+		}
 
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 

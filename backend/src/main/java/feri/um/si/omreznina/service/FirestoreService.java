@@ -6,8 +6,6 @@ import com.google.cloud.firestore.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -25,11 +23,64 @@ public class FirestoreService {
 		this.db = firestore;
 	}
 
-	public List<String> getDatabaseName() {
-		List<String> collectionNames = new ArrayList<>();
-
+	// Pirodbi vse kolekcije (v root dir - to so user id)
+	public List<String> getAllCollections() {
+		List<String> colectionNames = new ArrayList<>();
 		for (CollectionReference collection : db.listCollections()) {
-			collectionNames.add(collection.getId());
+			colectionNames.add(collection.getId());
+		}
+		return colectionNames;
+	}
+
+	// Pridobi in vrne vse kolekcije znotraj kolekcije
+	public List<String> getUserCollections(String uid) {
+		List<String> colList = new ArrayList<>();
+		CollectionReference userCol = db.collection(uid);
+		for (DocumentReference colRef : userCol.listDocuments()) {
+			colList.add(colRef.getId());
+		}
+		return colList;
+	}
+
+	public List<String> getDocumentNamesInSubcollection(
+			String userId, 
+			String parentDocId,
+			String subcollectionId 
+	) {
+		List<String> docNames = new ArrayList<>();
+		try {
+			CollectionReference ref = db
+					.collection(userId)
+					.document(parentDocId)
+					.collection(subcollectionId);
+
+			ApiFuture<QuerySnapshot> future = ref.get();
+			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+			for (QueryDocumentSnapshot doc : documents) {
+				docNames.add(doc.getId());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.warning("Failed to fetch documents: " + e.getMessage());
+			return null;
+		}
+		return docNames;
+	}
+
+	public List<String> getSubcollections(String uid, String docId) {
+		List<String> collectionNames = new ArrayList<>();
+		try {
+			DocumentReference docRef = db.collection(uid).document(docId);
+			Iterable<CollectionReference> collections = docRef.listCollections();
+			for (CollectionReference col : collections) {
+				collectionNames.add(col.getId());
+			}
+		} catch (Exception e) {
+			logger.warning("Failed to fetch subcollections: " + e.getMessage());
+			return null;
 		}
 		return collectionNames;
 	}
@@ -54,6 +105,33 @@ public class FirestoreService {
 			}
 			logger.warning(e.toString());
 		}
+	}
+
+	// pridboi podatke znotraj kolekcije ali ap podkolekcije
+	public Map<String, Object> getDocumentData(
+			String uid,
+			String docId,
+			String subcollectionId,
+			String subColDocId) {
+		try {
+			DocumentReference docRef;
+			if (subcollectionId != null && subColDocId != null) {
+				docRef = db.collection(uid)
+						.document(docId)
+						.collection(subcollectionId)
+						.document(subColDocId);
+			} else {
+				docRef = db.collection(uid)
+						.document(docId);
+			}
+			DocumentSnapshot docSnap = docRef.get().get();
+			if (docSnap.exists()) {
+				return docSnap.getData();
+			}
+		} catch (Exception e) {
+			logger.warning("Error fetching document: " + e.getMessage());
+		}
+		return null;
 	}
 
 	// Za shranjevanje prekoracitev
@@ -82,65 +160,6 @@ public class FirestoreService {
 				Thread.currentThread().interrupt();
 			}
 			logger.warning("Failed to save single document: " + e.getMessage());
-		}
-	}
-
-	public List<String> getAllCollections() {
-		List<String> colectionNames = new ArrayList<>();
-		for (CollectionReference collection : db.listCollections()) {
-			colectionNames.add(collection.getId());
-		}
-		return colectionNames;
-	}
-
-	public List<String> getDocumentNamesByUid(String uid) {
-		ApiFuture<QuerySnapshot> future = db.collection(uid).get();
-		List<String> docNames = new ArrayList<>();
-
-		try {
-			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-			for (QueryDocumentSnapshot doc : documents) {
-				docNames.add(doc.getId());
-			}
-			return docNames;
-		} catch (ExecutionException | InterruptedException | CancellationException e) {
-			if (e instanceof InterruptedException) {
-				Thread.currentThread().interrupt();
-			}
-			logger.warning(e.getClass().getSimpleName() + " while fetching collection by UID: " + e.getMessage());
-			return null;
-		}
-	}
-
-	// Za dnevna stanja
-	public List<Map<String, Object>> getAllDataFromDocument(String uid, String docId) {
-		List<Map<String, Object>> documentDataList = new ArrayList<>();
-		ApiFuture<QuerySnapshot> future = db.collection(uid).get();
-
-		try {
-			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-			for (QueryDocumentSnapshot document : documents) {
-				if (document.getId().equals(docId)) {
-					Map<String, Object> data = document.getData();
-					List<Map.Entry<String, Object>> sortedEntries = new ArrayList<>(data.entrySet());
-					sortedEntries.sort(Comparator.comparing(Map.Entry::getKey));
-
-					Map<String, Object> sortedData = new LinkedHashMap<>();
-					for (Map.Entry<String, Object> entry : sortedEntries) {
-						sortedData.put(entry.getKey(), entry.getValue());
-					}
-
-					documentDataList.add(sortedData);
-				}
-			}
-			return documentDataList;
-		} catch (ExecutionException | InterruptedException | CancellationException | ClassCastException
-				| UnsupportedOperationException e) {
-			if (e instanceof InterruptedException) {
-				Thread.currentThread().interrupt();
-			}
-			logger.warning(e.getClass().getSimpleName() + " while fetching collection by UID: " + e.getMessage());
-			return null;
 		}
 	}
 

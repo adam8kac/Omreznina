@@ -31,35 +31,44 @@ public class UserService {
 	}
 
 	public void processAndStoreUserData(MultipartFile file, String uid) throws UserException {
-		String pythonMethod = "processAndStoreUserData";
 
 		if (!isUserVerified(uid)) {
 			throw new UserException(uid + " does not have  verified email!");
 		}
 
-		processAndStoreFile(file, uid, pythonMethod);
+		processAndStoreFile(file, uid, null);
 
 	}
 
-	public void processAndStoreMaxPowerConsumption(MultipartFile file, String uid) throws UserException {
-		String pythonMethod = "procesAndStoreMaxPowerConsumption";
+	public void processAndStoreMaxPowerConsumption(MultipartFile file, String powerByMonths,
+			String uid) throws UserException {
 
 		if (!isUserVerified(uid)) {
 			throw new UserException(uid + " does not have  verified email!");
 		}
 
-		processAndStoreFile(file, uid, pythonMethod);
+		processAndStoreFile(file, uid, powerByMonths);
 
 	}
 
-	private void processAndStoreFile(MultipartFile file, String uid, String typeOfFile) {
+	private void processAndStoreFile(MultipartFile file, String uid, String powerByMonths) {
 		String response = null;
 
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 
-			if ("processAndStoreUserData".equals(typeOfFile)) {
+			if (powerByMonths != null) {
+				logger.log(Level.INFO, "Sending to python-agreed-power");
+				response = fileService.uploadMaxPowerConsumed(file, powerByMonths);
+
+				Map<String, Map<String, Map<String, Object>>> parsed = mapper.readValue(
+						response, new TypeReference<>() {
+						});
+
+				firestoreService.saveSingleDocument(uid, "poraba", parsed);
+			} else {
 				response = fileService.sendFileToParser(file);
+				logger.log(Level.INFO, "Sending to python-parser");
 
 				List<Map<String, Object>> parsed = mapper.readValue(response, new TypeReference<>() {
 				});
@@ -67,14 +76,6 @@ public class UserService {
 				for (Map<String, Object> doc : parsed) {
 					firestoreService.saveDocumentToCollection(uid, doc);
 				}
-			} else {
-				response = fileService.uploadMaxPowerConsumed(file);
-
-				Map<String, Map<String, Map<String, Object>>> parsed = mapper.readValue(
-						response, new TypeReference<>() {
-						});
-
-				firestoreService.saveSingleDocument(uid, "poraba", parsed);
 			}
 		} catch (
 

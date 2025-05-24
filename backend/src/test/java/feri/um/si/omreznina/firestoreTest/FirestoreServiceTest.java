@@ -5,10 +5,13 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -83,7 +86,7 @@ public class FirestoreServiceTest {
 		Iterable<CollectionReference> iterable = List.of(col1, col2);
 		when(db.listCollections()).thenReturn(iterable);
 
-		List<String> result = firestoreService.getDatabaseName();
+		List<String> result = firestoreService.getAllCollections();
 
 		assertEquals(2, result.size());
 		assertTrue(result.contains("users"));
@@ -105,52 +108,54 @@ public class FirestoreServiceTest {
 	}
 
 	@Test
-	void testGetDocumentNamesByUid_success() throws Exception {
-		CollectionReference colRef = mock(CollectionReference.class);
-		when(db.collection("uid")).thenReturn(colRef);
+	void testGetDocumentData_rootDocument_success() throws Exception {
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection("uid")).thenReturn(mock(CollectionReference.class));
+		when(db.collection("uid").document("2025-01")).thenReturn(docRef);
 
-		QueryDocumentSnapshot doc1 = mock(QueryDocumentSnapshot.class);
-		QueryDocumentSnapshot doc2 = mock(QueryDocumentSnapshot.class);
-		when(doc1.getId()).thenReturn("2025-01");
-		when(doc2.getId()).thenReturn("2025-02");
-
-		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
-		QuerySnapshot snapshot = mock(QuerySnapshot.class);
-
-		when(colRef.get()).thenReturn(future);
-		when(future.get()).thenReturn(snapshot);
-		when(snapshot.getDocuments()).thenReturn(List.of(doc1, doc2));
-
-		List<String> names = firestoreService.getDocumentNamesByUid("uid");
-
-		assertEquals(List.of("2025-01", "2025-02"), names);
-	}
-
-	@Test
-	void testGetAllDataFromDocument_success() throws Exception {
-		CollectionReference colRef = mock(CollectionReference.class);
-		when(db.collection("uid")).thenReturn(colRef);
-
-		QueryDocumentSnapshot doc1 = mock(QueryDocumentSnapshot.class);
 		Map<String, Object> mockData = Map.of(
 				"2025-01-01", Map.of("a", 1),
 				"2025-01-02", Map.of("b", 2));
 
-		when(doc1.getId()).thenReturn("2025-01");
-		when(doc1.getData()).thenReturn(mockData);
+		DocumentSnapshot docSnap = mock(DocumentSnapshot.class);
+		when(docRef.get()).thenReturn(mock(ApiFuture.class));
+		when(docRef.get().get()).thenReturn(docSnap);
+		when(docSnap.exists()).thenReturn(true);
+		when(docSnap.getData()).thenReturn(mockData);
 
-		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
-		QuerySnapshot snapshot = mock(QuerySnapshot.class);
+		Map<String, Object> result = firestoreService.getDocumentData("uid", "2025-01", null, null);
 
-		when(colRef.get()).thenReturn(future);
-		when(future.get()).thenReturn(snapshot);
-		when(snapshot.getDocuments()).thenReturn(List.of(doc1));
+		assertNotNull(result);
+		assertTrue(result.containsKey("2025-01-01"));
+		assertTrue(result.containsKey("2025-01-02"));
+	}
 
-		List<Map<String, Object>> result = firestoreService.getAllDataFromDocument("uid", "2025-01");
+	@Test
+	void testGetDocumentData_nestedDocument_success() throws Exception {
+		DocumentReference porabaDoc = mock(DocumentReference.class);
+		CollectionReference yearCol = mock(CollectionReference.class);
+		DocumentReference monthDoc = mock(DocumentReference.class);
 
-		assertEquals(1, result.size());
-		assertTrue(result.get(0).containsKey("2025-01-01"));
-		assertTrue(result.get(0).containsKey("2025-01-02"));
+		when(db.collection("uid")).thenReturn(mock(CollectionReference.class));
+		when(db.collection("uid").document("poraba")).thenReturn(porabaDoc);
+		when(porabaDoc.collection("2024")).thenReturn(yearCol);
+		when(yearCol.document("01")).thenReturn(monthDoc);
+
+		Map<String, Object> mockData = Map.of(
+				"a", 1,
+				"b", 2);
+
+		DocumentSnapshot docSnap = mock(DocumentSnapshot.class);
+		when(monthDoc.get()).thenReturn(mock(ApiFuture.class));
+		when(monthDoc.get().get()).thenReturn(docSnap);
+		when(docSnap.exists()).thenReturn(true);
+		when(docSnap.getData()).thenReturn(mockData);
+
+		Map<String, Object> result = firestoreService.getDocumentData("uid", "poraba", "2024", "01");
+
+		assertNotNull(result);
+		assertEquals(1, result.get("a"));
+		assertEquals(2, result.get("b"));
 	}
 
 	@Test
@@ -183,6 +188,102 @@ public class FirestoreServiceTest {
 		verify(mockYearCollection).document(eq("05"));
 		verify(mockMonthDoc).set(eq(Map.of("key", "value")));
 		verify(mockFuture).get();
+	}
+
+	@Test
+	void testGetDocumentNamesInSubcollection_success() throws Exception {
+		String userId = "user1";
+		String parentDocId = "poraba";
+		String subcollectionId = "2024";
+
+		CollectionReference colRef = mock(CollectionReference.class);
+		DocumentReference docRef = mock(DocumentReference.class);
+
+		when(db.collection(userId)).thenReturn(colRef);
+		when(colRef.document(parentDocId)).thenReturn(docRef);
+
+		CollectionReference subColRef = mock(CollectionReference.class);
+		when(docRef.collection(subcollectionId)).thenReturn(subColRef);
+
+		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
+		QuerySnapshot snapshot = mock(QuerySnapshot.class);
+
+		QueryDocumentSnapshot doc1 = mock(QueryDocumentSnapshot.class);
+		QueryDocumentSnapshot doc2 = mock(QueryDocumentSnapshot.class);
+
+		when(subColRef.get()).thenReturn(future);
+		when(future.get()).thenReturn(snapshot);
+		when(snapshot.getDocuments()).thenReturn(List.of(doc1, doc2));
+
+		when(doc1.getId()).thenReturn("01");
+		when(doc2.getId()).thenReturn("02");
+
+		List<String> result = firestoreService.getDocumentNamesInSubcollection(userId, parentDocId, subcollectionId);
+
+		assertEquals(List.of("01", "02"), result);
+	}
+
+	@Test
+	void testGetDocumentNamesInSubcollection_interruptedException() throws Exception {
+		String userId = "user1";
+		String parentDocId = "poraba";
+		String subcollectionId = "2024";
+
+		CollectionReference colRef = mock(CollectionReference.class);
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection(userId)).thenReturn(colRef);
+		when(colRef.document(parentDocId)).thenReturn(docRef);
+		CollectionReference subColRef = mock(CollectionReference.class);
+		when(docRef.collection(subcollectionId)).thenReturn(subColRef);
+
+		ApiFuture<QuerySnapshot> future = mock(ApiFuture.class);
+		when(subColRef.get()).thenReturn(future);
+		when(future.get()).thenThrow(new InterruptedException("interrupted"));
+
+		List<String> result = firestoreService.getDocumentNamesInSubcollection(userId, parentDocId, subcollectionId);
+
+		assertNull(result);
+	}
+
+	@Test
+	void testGetSubcollections_success() {
+		String uid = "user1";
+		String docId = "poraba";
+
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection(uid)).thenReturn(mock(CollectionReference.class));
+		when(db.collection(uid).document(docId)).thenReturn(docRef);
+
+		CollectionReference col2024 = mock(CollectionReference.class);
+		when(col2024.getId()).thenReturn("2024");
+		CollectionReference col2025 = mock(CollectionReference.class);
+		when(col2025.getId()).thenReturn("2025");
+
+		Iterable<CollectionReference> subCollections = List.of(col2024, col2025);
+
+		when(docRef.listCollections()).thenReturn(subCollections);
+
+		List<String> result = firestoreService.getSubcollections(uid, docId);
+
+		assertEquals(List.of("2024", "2025"), result);
+	}
+
+	@Test
+	void testGetSubcollections_empty() {
+		String uid = "user1";
+		String docId = "poraba";
+
+		DocumentReference docRef = mock(DocumentReference.class);
+		when(db.collection(uid)).thenReturn(mock(CollectionReference.class));
+		when(db.collection(uid).document(docId)).thenReturn(docRef);
+
+		Iterable<CollectionReference> subCollections = List.of();
+		when(docRef.listCollections()).thenReturn(subCollections);
+
+		List<String> result = firestoreService.getSubcollections(uid, docId);
+
+		assertNotNull(result);
+		assertTrue(result.isEmpty());
 	}
 
 }

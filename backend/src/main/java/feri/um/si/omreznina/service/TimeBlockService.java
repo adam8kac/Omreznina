@@ -4,6 +4,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ public class TimeBlockService {
 	private TimeBlockBuilder blockList;
 
 	private final HolidayChecker holidayChecker;
+	private Logger logger = Logger.getLogger(getClass().getName());
 
 	public TimeBlockService(TimeBlockBuilder blockList, HolidayChecker holidayChecker) {
 		this.holidayChecker = holidayChecker;
@@ -44,13 +47,14 @@ public class TimeBlockService {
 		}
 
 		for (DayOfWeek day : weekends) {
-			if (LocalDate.now().getDayOfWeek() == day || holidayChecker.isHoliday(LocalDate.now())) {
+			if ((LocalDate.now().getDayOfWeek().equals(day)) || holidayChecker.isHoliday(LocalDate.now())) {
 				currentDay = DayType.WEEKEND;
+				break;
 			} else {
 				currentDay = DayType.WORKDAY;
 			}
 		}
-
+		logger.log(Level.INFO, "today is: " + currentTime + "month: " + currentMonth + "current day: " + currentDay);
 		return blockList.getBlockForTime(currentTime, currentMonth, currentDay);
 
 	}
