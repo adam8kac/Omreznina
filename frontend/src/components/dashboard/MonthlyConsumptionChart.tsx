@@ -47,9 +47,14 @@ const MonthlyConsumptionChart = () => {
         const docIds = await getUserDocIds(uid);
         const parsed: Record<string, ParsedMonth> = {};
 
+        //TO JE TREBA KASNEJE FIXAT DA BO ČLOVEŠKO IN NE HARDCODANO
         for (const docId of docIds) {
+          if (docId === 'poraba' || docId === 'racuni') {
+            continue;
+          }
+          console.log(docId);
           const rawResponse = await getDocumentData(uid, docId);
-          const rawMonth = rawResponse[0];
+          const rawMonth = rawResponse;
           if (!rawMonth) continue;
 
           const dni: Array<[string, DayRecord]> = [];
@@ -113,10 +118,7 @@ const MonthlyConsumptionChart = () => {
     colors: ['#60a5fa', '#facc15'],
     stroke: { curve: 'smooth', width: 2 },
     xaxis: {
-      categories:
-        selectedMonth && monthlyData[selectedMonth]
-          ? monthlyData[selectedMonth].dni.map(([dan]) => dan)
-          : [],
+      categories: selectedMonth && monthlyData[selectedMonth] ? monthlyData[selectedMonth].dni.map(([dan]) => dan) : [],
       labels: { rotate: -45 },
     },
     yaxis: {
@@ -144,8 +146,8 @@ const MonthlyConsumptionChart = () => {
       <div className="bg-gray-50 dark:bg-dark rounded-lg p-4 mt-4 border dark:border-gray-700">
         <p className="mb-2">
           Vaš najbolj potraten dan je bil <strong>{max[0]}</strong>, ko ste porabili{' '}
-          <strong>{max[1].poraba.toFixed(2)} kWh</strong>. Najbolj varčen dan je bil{' '}
-          <strong>{min[0]}</strong>, s porabo <strong>{min[1].poraba.toFixed(2)} kWh</strong>.
+          <strong>{max[1].poraba.toFixed(2)} kWh</strong>. Najbolj varčen dan je bil <strong>{min[0]}</strong>, s porabo{' '}
+          <strong>{min[1].poraba.toFixed(2)} kWh</strong>.
         </p>
         <p className="mb-2">
           Skupaj ste v mesecu <strong>{formatMonth(selectedMonth)}</strong> porabili{' '}
@@ -158,8 +160,8 @@ const MonthlyConsumptionChart = () => {
           )}
         </p>
         <p>
-          Poskusite zmanjšati porabo v konicah. Ugasnite naprave v pripravljenosti in optimizirajte
-          uporabo velikih porabnikov (npr. pralni stroj) v času sončne proizvodnje.
+          Poskusite zmanjšati porabo v konicah. Ugasnite naprave v pripravljenosti in optimizirajte uporabo velikih
+          porabnikov (npr. pralni stroj) v času sončne proizvodnje.
         </p>
       </div>
     );
@@ -186,10 +188,7 @@ const MonthlyConsumptionChart = () => {
             series={[
               {
                 name: 'Dejanska poraba (kWh)',
-                data: months.map(
-                  (m) =>
-                    (monthlyData[m]?.totalPoraba ?? 0) - (monthlyData[m]?.totalSolar ?? 0)
-                ),
+                data: months.map((m) => (monthlyData[m]?.totalPoraba ?? 0) - (monthlyData[m]?.totalSolar ?? 0)),
               },
               {
                 name: 'Oddana solarna (kWh)',
@@ -208,28 +207,24 @@ const MonthlyConsumptionChart = () => {
           {selectedMonth && monthlyData[selectedMonth] ? (
             <>
               {monthlyData[selectedMonth].totalSolar > 0 && (
-                <div className="flex items-center gap-2 text-yellow-500 mt-6 mb-4">
-                  ☀️ Sončna elektrarna zaznana
-                </div>
+                <div className="flex items-center gap-2 text-yellow-500 mt-6 mb-4">☀️ Sončna elektrarna zaznana</div>
               )}
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold">
-                  Poraba po dnevih za mesec {formatMonth(selectedMonth)}
-                </h2>
-              <Select
-                value={selectedMonth ?? ''}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="max-w-[200px]">
-                {months.map((month) => (
-                  <option key={month} value={month}>
-                    {formatMonth(month)}
-                  </option>
-                ))}
-              </Select>
+                <h2 className="text-lg font-bold">Poraba po dnevih za mesec {formatMonth(selectedMonth)}</h2>
+                <Select
+                  value={selectedMonth ?? ''}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="max-w-[200px]"
+                >
+                  {months.map((month) => (
+                    <option key={month} value={month}>
+                      {formatMonth(month)}
+                    </option>
+                  ))}
+                </Select>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Modra linija prikazuje vašo dejansko porabo iz omrežja, rumena pa oddano energijo iz
-                sončne elektrarne.
+                Modra linija prikazuje vašo dejansko porabo iz omrežja, rumena pa oddano energijo iz sončne elektrarne.
               </p>
 
               <Chart
