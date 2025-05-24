@@ -2,13 +2,15 @@ import { FaInfoCircle } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { Accordion } from 'flowbite-react';
 import { Link } from 'react-router';
+import { FaSun, FaMoon } from 'react-icons/fa';
+
 
 const blockColors: Record<number, string> = {
-  1: 'bg-[#003A63]',
-  2: 'bg-[#2F6D9F]',
-  3: 'bg-[#80A6C3]',
-  4: 'bg-[#A7C4CF]',
-  5: 'bg-[#0FA9A0]'
+  1: 'bg-[#fa144d]',
+  2: 'bg-[#faa63e]',
+  3: 'bg-[#FFD900]',
+  4: 'bg-[#2FBE8F]',
+  5: 'bg-[#B8D900]'  
 };
 
 const HourBlock = ({ hour, block }: { hour: number; block: number }) => (
@@ -25,10 +27,20 @@ const HourRing = ({ title, blocks }: { title: string; blocks: number[] }) => (
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ duration: 0.6 }}
-    className="flex flex-col items-center space-y-2"
+    className="space-y-2 w-full items-center flex flex-col"
   >
     <p className="font-semibold text-sm text-center">{title}</p>
-    <div className="grid grid-cols-12 gap-1">
+
+    <div className="flex gap-[4px] justify-center w-full">
+      {blocks.map((_, i) => (
+        <div key={i} className="w-6 h-5 flex items-end justify-center">
+          {i === 0 && <FaSun className="text-yellow-400 text-sm mb-1" />}
+          {i === 23 && <FaMoon className="text-blue-500 text-sm mb-1" />}
+        </div>
+      ))}
+    </div>
+
+    <div className="flex gap-[4px] justify-center w-full">
       {blocks.map((block, i) => (
         <HourBlock key={i} hour={i} block={block} />
       ))}
@@ -43,6 +55,7 @@ const NetworkFee = () => {
   const nizjaProst =   [5, 5, 5, 5, 5, 5, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 3, 3, 3, 4, 4, 4, 5, 5];
 
   return (
+    <div className="mt-8 bg-white p-4 rounded-xl">
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Obračunavanje omrežnine</h1>
       <p className="text-gray-700">
@@ -50,7 +63,11 @@ const NetworkFee = () => {
         najvišjo obremenjenost omrežja in posledično višjo tarifo, medtem ko blok 5 pomeni najnižjo tarifo.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <p className="text-sm text-left text-gray-400">
+        Prikaz časovnih blokov glede na uro v dnevu (00:00–23:00) :
+      </p>
+
+      <div className="flex flex-col gap-8">
         <HourRing title="Višja sezona: Delovni dan (nov–feb)" blocks={visjaDelovni} />
         <HourRing title="Višja sezona: Dela prost dan (nov–feb)" blocks={visjaProst} />
         <HourRing title="Nižja sezona: Delovni dan (mar–okt)" blocks={nizjaDelovni} />
@@ -60,12 +77,18 @@ const NetworkFee = () => {
         <p className="font-medium text-gray-800 flex items-center gap-2">
           <FaInfoCircle /> Časovni bloki (1 = najvišja tarifa, 5 = najnižja tarifa):
         </p>
-        <div className="flex gap-2 mt-2">
-          {[1, 2, 3, 4, 5].map(b => (
-            <div key={b} className={`w-10 h-5 rounded ${blockColors[b as keyof typeof blockColors]}`} title={`Blok ${b}`} />
-          ))}
-        </div>
-      <div className="mt-8 bg-white p-4 rounded-xl">
+      <div className="flex flex-wrap gap-4 mt-2 items-start">
+        {[1, 2, 3, 4, 5].map(b => (
+          <div key={b} className="flex items-center gap-2">
+            <div
+              className={`w-6 h-6 rounded ${blockColors[b as keyof typeof blockColors]}`}
+              title={`Blok ${b}`}
+            />
+            <p className="text-sm text-gray-700">Časovni blok {b}</p>
+          </div>
+        ))}
+      </div>
+      <br />
         <Accordion collapseAll>
           <Accordion.Panel>
             <Accordion.Title>Priporočilo za nižje stroške</Accordion.Title>
@@ -84,7 +107,7 @@ const NetworkFee = () => {
           </Accordion.Panel>
 	  	</Accordion>
 
-    	</div>
+    	  </div>
       </div>
     </div>
   );

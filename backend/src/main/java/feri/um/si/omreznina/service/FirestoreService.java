@@ -1,14 +1,20 @@
 package feri.um.si.omreznina.service;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 
+import feri.um.si.omreznina.model.ManualInvoice;
 import org.springframework.stereotype.Service;
+
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import java.util.*;
+
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,15 +28,6 @@ public class FirestoreService {
 
 	public FirestoreService(Firestore firestore) {
 		this.db = firestore;
-	}
-
-	// Pirodbi vse kolekcije (v root dir - to so user id)
-	public List<String> getAllCollections() {
-		List<String> colectionNames = new ArrayList<>();
-		for (CollectionReference collection : db.listCollections()) {
-			colectionNames.add(collection.getId());
-		}
-		return colectionNames;
 	}
 
 	// Pridobi in vrne vse kolekcije znotraj kolekcije
@@ -165,6 +162,89 @@ public class FirestoreService {
 			}
 			logger.warning("Failed to save single document: " + e.getMessage());
 		}
+	}
+
+
+	public List<String> getAllCollections() {
+		List<String> colectionNames = new ArrayList<>();
+		for (CollectionReference collection : db.listCollections()) {
+			colectionNames.add(collection.getId());
+		}
+		return colectionNames;
+	}
+
+	public List<String> getDocumentNamesByUid(String uid) {
+		ApiFuture<QuerySnapshot> future = db.collection(uid).get();
+		List<String> docNames = new ArrayList<>();
+
+		try {
+			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+			for (QueryDocumentSnapshot doc : documents) {
+				docNames.add(doc.getId());
+			}
+			return docNames;
+		} catch (ExecutionException | InterruptedException | CancellationException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.warning(e.getClass().getSimpleName() + " while fetching collection by UID: " + e.getMessage());
+			return null;
+		}
+	}
+
+	// Za dnevna stanja
+	public List<Map<String, Object>> getAllDataFromDocument(String uid, String docId) {
+		List<Map<String, Object>> documentDataList = new ArrayList<>();
+		ApiFuture<QuerySnapshot> future = db.collection(uid).get();
+
+		try {
+			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+			for (QueryDocumentSnapshot document : documents) {
+				if (document.getId().equals(docId)) {
+					Map<String, Object> data = document.getData();
+					List<Map.Entry<String, Object>> sortedEntries = new ArrayList<>(data.entrySet());
+					sortedEntries.sort(Comparator.comparing(Map.Entry::getKey));
+
+					Map<String, Object> sortedData = new LinkedHashMap<>();
+					for (Map.Entry<String, Object> entry : sortedEntries) {
+						sortedData.put(entry.getKey(), entry.getValue());
+					}
+
+					documentDataList.add(sortedData);
+				}
+			}
+			return documentDataList;
+		} catch (ExecutionException | InterruptedException | CancellationException | ClassCastException
+				| UnsupportedOperationException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.warning(e.getClass().getSimpleName() + " while fetching collection by UID: " + e.getMessage());
+			return null;
+		}
+	}
+
+	public void saveManualInvoice(ManualInvoice invoice) throws Exception {
+
+		Map<String, Object> data = new HashMap<>();
+		data.put("month", invoice.getMonth());
+		data.put("totalAmount", invoice.getTotalAmount());
+		data.put("energyCost", invoice.getEnergyCost());
+		data.put("networkCost", invoice.getNetworkCost());
+		data.put("surcharges", invoice.getSurcharges());
+		data.put("penalties", invoice.getPenalties());
+		data.put("vat", invoice.getVat());
+		data.put("note", invoice.getNote());
+		data.put("uploadTime", Timestamp.now());
+
+		String[] parts = invoice.getMonth().split("-");
+
+		db.collection(invoice.getUid())
+				.document("racuni")
+				.collection(parts[0])
+				.document(parts[1])
+				.set(data)
+				.get();
 	}
 
 }

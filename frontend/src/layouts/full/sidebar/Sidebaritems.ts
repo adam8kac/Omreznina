@@ -54,16 +54,10 @@ const SidebarContent: MenuItem[] = [
     heading: "UTILITIES",
     children: [
       {
-        name: "Naloži izpisek",
-        icon: "solar:cloud-upload-linear",
-        id: uniqueId(),
-        url: "/upload-invoice",
-      },
-      {
-        name: "Naloži račun",
+        name: "Naloži podatke",
         icon: "tabler:file-upload",
         id: uniqueId(),
-        url: "/upload-reciept",
+        url: "/upload-data",
       },
       {
         name: "Typography",
@@ -118,10 +112,10 @@ const SidebarContent: MenuItem[] = [
         url: "/icons/solar",
       },
       {
-        name: "Sample Page",
-        icon: "solar:notes-minimalistic-outline",
+        name: "Profile",
+        icon: "solar:user-circle-outline",
         id: uniqueId(),
-        url: "/sample-page",
+        url: "/profile",
       },
     ],
   },

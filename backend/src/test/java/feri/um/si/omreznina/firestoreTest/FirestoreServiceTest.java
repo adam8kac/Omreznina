@@ -9,14 +9,20 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+
+import feri.um.si.omreznina.model.ManualInvoice;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -284,6 +290,72 @@ public class FirestoreServiceTest {
 
 		assertNotNull(result);
 		assertTrue(result.isEmpty());
+
+	void saveManualInvoice_savesCorrectly() throws Exception {
+		Firestore db = mock(Firestore.class);
+		CollectionReference colRef = mock(CollectionReference.class);
+		DocumentReference docRef = mock(DocumentReference.class);
+		CollectionReference yearCollection = mock(CollectionReference.class);
+		DocumentReference monthDoc = mock(DocumentReference.class);
+		ApiFuture<WriteResult> future = mock(ApiFuture.class);
+
+		when(db.collection(any())).thenReturn(colRef);
+		when(colRef.document("racuni")).thenReturn(docRef);
+		when(docRef.collection("2025")).thenReturn(yearCollection);
+		when(yearCollection.document("04")).thenReturn(monthDoc);
+		when(monthDoc.set(any())).thenReturn(future);
+		when(future.get()).thenReturn(null);
+
+		FirestoreService service = new FirestoreService(db);
+
+		ManualInvoice invoice = new ManualInvoice();
+		invoice.setUid("TestUser");
+		invoice.setMonth("2025-04");
+		invoice.setTotalAmount(10);
+		invoice.setEnergyCost(2);
+		invoice.setNetworkCost(3);
+		invoice.setSurcharges(1);
+		invoice.setPenalties(0.5);
+		invoice.setVat(2.5);
+		invoice.setNote("Test opomba");
+
+		service.saveManualInvoice(invoice);
+
+		verify(db).collection("TestUser");
+		verify(colRef).document("racuni");
+		verify(docRef).collection("2025");
+		verify(yearCollection).document("04");
+		verify(monthDoc).set(any());
+		verify(future).get();
+	}
+
+	@Test
+	void saveManualInvoice_throwsException() throws Exception {
+		Firestore db = mock(Firestore.class);
+		CollectionReference colRef = mock(CollectionReference.class);
+		DocumentReference docRef = mock(DocumentReference.class);
+		CollectionReference yearCollection = mock(CollectionReference.class);
+		DocumentReference monthDoc = mock(DocumentReference.class);
+		ApiFuture<WriteResult> future = mock(ApiFuture.class);
+
+		when(db.collection(any())).thenReturn(colRef);
+		when(colRef.document("racuni")).thenReturn(docRef);
+		when(docRef.collection(anyString())).thenReturn(yearCollection);
+		when(yearCollection.document(anyString())).thenReturn(monthDoc);
+		when(monthDoc.set(any())).thenReturn(future);
+		when(future.get()).thenThrow(new RuntimeException("Firestore fail"));
+
+		FirestoreService service = new FirestoreService(db);
+
+		ManualInvoice invoice = new ManualInvoice();
+		invoice.setUid("TestUser");
+		invoice.setMonth("2025-04");
+		invoice.setTotalAmount(10);
+
+		Exception ex = assertThrows(Exception.class, () -> {
+			service.saveManualInvoice(invoice);
+		});
+		assertTrue(ex.getMessage().contains("Firestore fail"));
 	}
 
 }
