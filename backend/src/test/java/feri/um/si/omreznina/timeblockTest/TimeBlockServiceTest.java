@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -72,4 +73,38 @@ public class TimeBlockServiceTest {
 	void testGetCurrentTimeBlockDoesNotThrow() {
 		assertDoesNotThrow(() -> timeBlockService.getCurrentTimeBlock());
 	}
+
+	@Test
+	void testGetCustomTimeBlock_LowWeekend() {
+		String dateTimeString = "2024-03-09 03:00";
+		TimeBlock block = timeBlockService.getCustomTimeBlock(dateTimeString);
+		assertNotNull(block);
+		assertEquals(5, block.getBlockNumber());
+	}
+
+	@Test
+	void testGetCustomTimeBlock_Holiday() {
+		String dateTimeString = "2024-12-25 10:00";
+		TimeBlock block = timeBlockService.getCustomTimeBlock(dateTimeString);
+		assertNotNull(block);
+		assertEquals(2, block.getBlockNumber());
+	}
+
+	@Test
+	void testGetNumberAndPrice_HighWorkday() {
+		String dateTimeString = "2024-01-01 08:00";
+		Map<String, Object> result = timeBlockService.getNumberAndPrice(dateTimeString);
+		assertNotNull(result);
+		assertEquals(2, result.get("blockNumber"));
+		assertEquals(0.91224, (double) result.get("price"), 0.0001);
+	}
+
+	@Test
+	void testGetNumberAndPrice_LowWeekend() {
+		String dateTimeString = "2024-03-10 03:00";
+		Map<String, Object> result = timeBlockService.getNumberAndPrice(dateTimeString);
+		assertNotNull(result);
+		assertEquals(5, result.get("blockNumber"));
+	}
+
 }

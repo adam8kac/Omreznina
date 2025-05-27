@@ -42,4 +42,15 @@ public class UserController {
 		}
 	}
 
+	@PostMapping("/optimal-power")
+	public ResponseEntity<String> uploadAndOptimize(@RequestPart("file") MultipartFile file,
+			@RequestParam("power_by_months") String powerByMonths, @RequestParam("uid") String uid) {
+		try {
+			userService.computeAndStoreOptimalPower(file, powerByMonths, uid);
+			return ResponseEntity.ok().body("Document added successfuly");
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
 }

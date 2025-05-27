@@ -53,17 +53,19 @@ def read_files(files):
             except Exception as e:
                 print(f"Napaka pri {val}: {e}")
 
+    if len(results) == 1:
+        return results[0]
     return results
 
 
 def process_file(file: pd.DataFrame):
     df_copy = file.copy()
-    first_index_month = str(file.index[0]).split("-")[1]
+    first_index_year = str(file.index[0]).split("-")[0]
     # print("prvi mesec:", first_index_month)
 
     structured_obj = defaultdict(dict)
     
-    delta_values = calulate_delta(df_copy)
+    delta_values, tariff_values = calulate_delta(df_copy)
     # print(delta_values)
 
     json_obj = {}
@@ -71,32 +73,35 @@ def process_file(file: pd.DataFrame):
         index_split = str(index).split("-")
         year, month, day = index_split
         month_key = f"{year}-{month}"
-       
-        if month != first_index_month:
-            continue
 
+        # ne da naslednjega leta(1.1.x+1)
+        if month_key.split("-")[0] != first_index_year:
+            continue
+       
         if month_key not in json_obj:
             json_obj[month_key] = {}
 
         day_data = {}
 
-        if index_split[1] != first_index_month:
-            # print(index)
-            file.drop(index=index, inplace=True)
-        else:
-            # print(index)
-            for column_name in file.columns:
-                value = row[column_name]
-                # če hočemo odstranit vrendosti 0 pri prejeti/oddani energiji odkomentiraj(težave mogoče da če pride do nejasnosti podatkov da kje manjka kaka vrednost je lahko zaradi tega) ~ 3kb razlike v velikosti jsona če damo 0 stran
-                # if isinstance(value, (int, float)) and value == 0:  
-                #     continue
-                day_data[column_name.lower()] = value
 
-            for col_name, series in delta_values.items():
-                delta = series.get(index)
-                if delta is not None and not pd.isna(delta):
-                    key = col_name.lower()
-                    day_data[key] = round(delta, 3)
+            # print(index)
+        for column_name in file.columns:
+            value = row[column_name]
+            # če hočemo odstranit vrendosti 0 pri prejeti/oddani energiji odkomentiraj(težave mogoče da če pride do nejasnosti podatkov da kje manjka kaka vrednost je lahko zaradi tega) ~ 3kb razlike v velikosti jsona če damo 0 stran
+            # if isinstance(value, (int, float)) and value == 0:  
+            #     continue
+            day_data[column_name.lower()] = value
+
+        for col_name, series in delta_values.items():
+            if not hasattr(series, "get"):
+                continue
+            delta = series.get(index)
+            if delta is not None and not pd.isna(delta):
+                key = col_name.lower()
+                day_data[key] = round(delta, 3)
+
+        for tariff_name, price in tariff_values.items():
+            day_data[tariff_name.lower()] = price
 
         json_obj[month_key][str(index)] = day_data
 
@@ -104,7 +109,13 @@ def process_file(file: pd.DataFrame):
 
 
 def calulate_delta(df: pd.DataFrame):
+    tariffs = {
+        "vt": 0.11990,
+        "mt": 0.09790,
+        "et": 0.10890
+    }
     delta_values = {}
+    tariff_values = {}
     columns = df.select_dtypes(include=["float64", "int64"]).columns
 
     for col in df.describe().columns:
@@ -119,6 +130,9 @@ def calulate_delta(df: pd.DataFrame):
 
         if series1 is not None and series2 is not None:
             new_col_name = col1_name.strip().split(" ")[-1].lower()  
-            delta_values[f"poraba {new_col_name}"] = series1 - series2  #če je + poraba ppomeni da je poraba več kot oddaja(si ti v minus ker morš plačat)
+            consumption = series1 - series2
+            delta_values[f"poraba {new_col_name}"] = consumption  #če je + poraba ppomeni da je poraba več kot oddaja(si ti v minus ker morš plačat)
+            delta_values[f"cena energije {new_col_name}"] = consumption * tariffs[new_col_name]
+            tariff_values[f"tarifa za {new_col_name}"] = tariffs[new_col_name]
 
-    return delta_values
+    return delta_values, tariff_values

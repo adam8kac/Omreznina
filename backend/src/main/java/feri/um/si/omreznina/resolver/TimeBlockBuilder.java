@@ -28,7 +28,7 @@ public class TimeBlockBuilder {
 
 	private final List<TimeRange> thirdTimeRange = List.of(
 			new TimeRange("00:00", "06:00"),
-			new TimeRange("22:00", "20:00"));
+			new TimeRange("22:00", "00:00"));
 
 	public TimeBlockBuilder() {
 		blocks = new ArrayList<>();
@@ -50,7 +50,7 @@ public class TimeBlockBuilder {
 		TimeBlock highWeekend3 = new TimeBlock(SeasonType.HIGH, DayType.WEEKEND, 3, secondTimeRange);
 		blocks.add(highWeekend3);
 
-		TimeBlock highWeekend4 = new TimeBlock(SeasonType.HIGH, DayType.WEEKEND, 3, thirdTimeRange);
+		TimeBlock highWeekend4 = new TimeBlock(SeasonType.HIGH, DayType.WEEKEND, 4, thirdTimeRange);
 		blocks.add(highWeekend4);
 
 		// Nizka sezna delovn dan

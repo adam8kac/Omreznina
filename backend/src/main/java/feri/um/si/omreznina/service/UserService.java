@@ -11,7 +11,6 @@ import com.google.firebase.auth.UserRecord;
 
 import feri.um.si.omreznina.exceptions.UserException;
 
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,6 +21,7 @@ public class UserService {
 	private final Logger logger = Logger.getLogger(getClass().getName());
 
 	private FileService fileService;
+
 
 	FirestoreService firestoreService;
 
@@ -36,7 +36,7 @@ public class UserService {
 			throw new UserException(uid + " does not have  verified email!");
 		}
 
-		processAndStoreFile(file, uid, null);
+		processAndStoreFile(file, uid, null, null);
 
 	}
 
@@ -47,17 +47,28 @@ public class UserService {
 			throw new UserException(uid + " does not have  verified email!");
 		}
 
-		processAndStoreFile(file, uid, powerByMonths);
+		String parser = "prekoracitve";
+		processAndStoreFile(file, uid, powerByMonths, parser);
 
 	}
 
-	private void processAndStoreFile(MultipartFile file, String uid, String powerByMonths) {
+	public void computeAndStoreOptimalPower(MultipartFile file, String powerByMonths,
+			String uid) throws UserException {
+		if (!isUserVerified(uid) || uid == null) {
+			throw new UserException(uid + " does not have  verified email!");
+		}
+
+		String parser = "optimum";
+		processAndStoreFile(file, uid, powerByMonths, parser);
+	}
+
+	private void processAndStoreFile(MultipartFile file, String uid, String powerByMonths, String parser) {
 		String response = null;
 
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 
-			if (powerByMonths != null) {
+			if (powerByMonths != null && parser.equals("prekoracitve")) {
 				logger.log(Level.INFO, "Sending to python-agreed-power");
 				response = fileService.uploadMaxPowerConsumed(file, powerByMonths);
 
@@ -65,17 +76,27 @@ public class UserService {
 						response, new TypeReference<>() {
 						});
 
-				firestoreService.saveSingleDocument(uid, "poraba", parsed);
+				firestoreService.saveDocumentToCollection(uid, "prekoracitve", parsed);
+			} else if (powerByMonths != null && parser.equals("optimum")) {
+				logger.log(Level.INFO, "Sending to python-agreed-power");
+				response = fileService.uploadMaxPowerConsumed(file, powerByMonths);
+
+				Map<String, Map<String, Map<String, Object>>> parsed = mapper.readValue(
+						response, new TypeReference<>() {
+						});
+
+				firestoreService.saveDocumentToCollection(uid, "optimum", parsed);
 			} else {
-				response = fileService.sendFileToParser(file);
+
 				logger.log(Level.INFO, "Sending to python-parser");
+				response = fileService.sendFileToParser(file);
 
-				List<Map<String, Object>> parsed = mapper.readValue(response, new TypeReference<>() {
-				});
+				Map<String, Map<String, Map<String, Object>>> parsed = mapper.readValue(
+						response, new TypeReference<>() {
+						});
 
-				for (Map<String, Object> doc : parsed) {
-					firestoreService.saveDocumentToCollection(uid, doc);
-				}
+				firestoreService.saveDocumentToCollection(uid, "poraba", parsed);
+
 			}
 		} catch (
 

@@ -9,12 +9,6 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.WriteResult;
 
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,7 +29,6 @@ import feri.um.si.omreznina.service.FirestoreService;
 import feri.um.si.omreznina.service.UserService;
 
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -59,27 +52,34 @@ public class FirestoreServiceTest {
 	private FirestoreService firestoreService;
 
 	@Test
-	void saveDocToCollectiob() throws Exception {
+	void saveDocToCollection() throws Exception {
 		Firestore mockDb = mock(Firestore.class);
-		CollectionReference mockCollection = mock(CollectionReference.class);
+		CollectionReference mockUserCollection = mock(CollectionReference.class);
 		DocumentReference mockDoc = mock(DocumentReference.class);
+		CollectionReference mockYearCollection = mock(CollectionReference.class);
+		DocumentReference mockMonthDoc = mock(DocumentReference.class);
 		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
 
-		when(mockDb.collection(anyString())).thenReturn(mockCollection);
-		when(mockCollection.document(anyString())).thenReturn(mockDoc);
-		when(mockDoc.set(any())).thenReturn(mockFuture);
+		when(mockDb.collection(anyString())).thenReturn(mockUserCollection);
+		when(mockUserCollection.document(anyString())).thenReturn(mockDoc);
+		when(mockDoc.collection(anyString())).thenReturn(mockYearCollection);
+		when(mockYearCollection.document(anyString())).thenReturn(mockMonthDoc);
+		when(mockMonthDoc.set(any())).thenReturn(mockFuture);
 		when(mockFuture.get()).thenReturn(null);
 
 		FirestoreService firestoreService = new FirestoreService(mockDb);
 
-		ReflectionTestUtils.setField(firestoreService, "db", mockDb);
+		Map<String, Map<String, Map<String, Object>>> doc = Map.of(
+				"2023", Map.of(
+						"2023-03", Map.of("key1", 100)));
 
-		Map<String, Object> doc = Map.of(
-				"2023-03", Map.of("key1", 100));
+		firestoreService.saveDocumentToCollection("uid", "poraba", doc);
 
-		firestoreService.saveDocumentToCollection("uid", doc);
-
-		verify(mockDb.collection("uid")).document("2023-03");
+		verify(mockDb).collection("uid");
+		verify(mockUserCollection).document("poraba");
+		verify(mockDoc).collection("2023");
+		verify(mockYearCollection).document("2023-03");
+		verify(mockMonthDoc).set(Map.of("key1", 100));
 	}
 
 	@Test
@@ -186,7 +186,7 @@ public class FirestoreServiceTest {
 				"2025", Map.of(
 						"05", Map.of("key", "value")));
 
-		firestoreService.saveSingleDocument("testUid", "docId", data);
+		firestoreService.saveDocumentToCollection("testUid", "docId", data);
 
 		verify(mockDb).collection(eq("testUid"));
 		verify(mockCollection).document(eq("docId"));
