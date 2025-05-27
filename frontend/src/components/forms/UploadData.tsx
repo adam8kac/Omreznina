@@ -5,7 +5,7 @@ import UploadReceipt from './UploadReciept';
 export default function UploadData() {
 
   const [selected, setSelected] = useState<'invoice' | 'receipt'>('invoice');
-
+//pregled prekoracitve, pridobi optimum dogovorjene moci, pojasnila zakaj so obrazci
   return (
     <div className="w-full max-w-5xl mx-auto mt-10">
       <div className="flex justify-center mb-8">
@@ -19,7 +19,7 @@ export default function UploadData() {
             onClick={() => setSelected('invoice')}
             type="button"
           >
-            Naloži izpisek
+            Naloži dnevna stanja 
           </button>
           <button
             className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
