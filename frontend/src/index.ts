@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+//const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 
 export interface DayRecord {
@@ -82,6 +83,24 @@ export const getManualInvoice = async (
   year: string,
   month: string
 ): Promise<ManualInvoice | null> => {
-  const res = await api.get(`/firestore/manual-invoice?uid=${uid}&year=${year}&month=${month}`);
+  const res = await api.get(
+    `firestore/data?uid=${uid}&docId=racuni&subColId=${year}&subColDocId=${month}`
+  );
   return res.data ?? null;
 };
+
+export const getAvailableYears = async (uid: string): Promise<string[]> => {
+  const res = await api.get(`firestore/subCollections?uid=${uid}&docId=racuni`);
+  return res.data;
+};
+
+export const getAvailableMonths = async (
+  uid: string,
+  year: string
+): Promise<string[]> => {
+  const res = await api.get(
+    `firestore/docsInSubCol?uid=${uid}&parentDocId=racuni&subcollectionId=${year}`
+  );
+  return res.data;
+};
+

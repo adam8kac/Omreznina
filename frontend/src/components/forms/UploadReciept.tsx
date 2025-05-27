@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Label, TextInput, Button, Accordion } from 'flowbite-react';
 import { auth } from 'src/firebase-config';
 import { uploadManualInvoice, ManualInvoice } from 'src/index';
+import { debounce } from 'lodash';
 
 export default function ManualInvoiceForm()  {
   const [month, setMonth] = useState('');
@@ -83,9 +84,35 @@ export default function ManualInvoiceForm()  {
     setLoading(false);
   };
 
+  const debouncedUpload = debounce((data: ManualInvoice) => {
+    uploadManualInvoice(data)
+      .then(() => console.log('Auto-saved invoice'))
+      .catch((e) => console.error('Auto-save failed:', e));
+  }, 1000);
+
+  useEffect(() => {
+    const uid = getUid();
+    if (!uid || !month) return;
+
+    const invoice: ManualInvoice = {
+      uid: uid,
+      month: month,
+      totalAmount: parseFloat(totalAmount.replace(',', '.') || '0'),
+      energyCost: parseFloat(energyCost.replace(',', '.') || '0'),
+      networkCost: parseFloat(networkCost.replace(',', '.') || '0'),
+      surcharges: parseFloat(surcharges.replace(',', '.') || '0'),
+      penalties: parseFloat(penalties.replace(',', '.') || '0'),
+      vat: parseFloat(vat.replace(',', '.') || '0'),
+      note: note,
+    };
+
+    debouncedUpload(invoice);
+  }, [month, totalAmount, energyCost, networkCost, surcharges, penalties, vat, note]);
+
+
   return (
     <div className="p-4 space-y-4">
-      <h5 className="card-title text-xl font-semibold mb-4">Ročni vnos podatkov z računa</h5>
+      <h5 className="card-title text-xl font-semibold mb-4">Ročni vnos podatkov računa</h5>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
