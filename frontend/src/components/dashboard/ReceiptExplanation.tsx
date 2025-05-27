@@ -84,9 +84,10 @@ const InvoiceTable: React.FC = () => {
 
   return (
     <div className="rounded-xl shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
-      <h5 className="text-xl font-semibold mb-4">Račun na kratko</h5>
-      <p className="text-gray-600 mb-4">
+      <h5 className="text-3xl font-bold mb-4 text-center">Račun na kratko</h5>
+      <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
         Hiter in jasen pregled tvojega računa. Izberi leto in mesec ter si oglej, kako je sestavljen tvoj strošek za elektriko.      </p>
+      <br />
       <div className="mb-4 flex gap-4 items-center flex-wrap">
         <div>
           <label className="block text-sm mb-1">Izberi leto:</label>

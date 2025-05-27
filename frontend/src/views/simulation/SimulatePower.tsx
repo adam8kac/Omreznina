@@ -64,10 +64,10 @@ useEffect(() => {
 
   return (
     <div className="p-4 space-y-4">
-      <h2 className="text-xl font-semibold">Izberi naprave</h2>
-      <p className="text-gray-700">
+      <h2 className="text-3xl font-bold mb-4 text-center">Izberi naprave</h2>
+      <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
         Izberite naprave, katerih porabo želite simulirati. Na podlagi izbranih naprav in dogovorjene moči bo prikazan rezultat simulacije.
-        <p className="text-gray-500">
+        <p className="text-gray-400 text-lg max-w-2xl mx-auto text-center">
           Preizkusi različne kombinacije naprav in preveri, ali presegaš dogovorjeno moč.
         </p>
         <br />

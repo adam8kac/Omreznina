@@ -57,13 +57,13 @@ const NetworkFee = () => {
   return (
     <div className="mt-8 bg-white p-4 rounded-xl">
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Obračunavanje omrežnine</h1>
-      <p className="text-gray-700">
+      <h1 className="text-3xl font-bold mb-4 text-center">Obračunavanje omrežnine</h1>
+      <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
         Omrežnina je strošek, ki ga plačujemo za uporabo elektroenergetskega omrežja. Obračunavanje poteka po časovnih blokih (1–5), ki so razdeljeni glede na sezono in dan v tednu. Blok 1 pomeni
         najvišjo obremenjenost omrežja in posledično višjo tarifo, medtem ko blok 5 pomeni najnižjo tarifo.
       </p>
 
-      <p className="text-sm text-left text-gray-400">
+      <p className="text-sm text-left text-gray-400 text-center">
         Prikaz časovnih blokov glede na uro v dnevu (00:00–23:00) :
       </p>
 

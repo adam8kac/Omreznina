@@ -74,7 +74,7 @@ const UploadInvoice: React.FC = () => {
 
   return (
     <div className="bg-white dark:bg-darkgray p-6 relative w-full break-words">
-      <h5 className="card-title text-xl font-semibold mb-4">Ročno nalaganje izpiska iz MojElektro.si</h5>
+      <h5 className="card-title text-xl font-semibold mb-4">Nalaganje izpiska iz MojElektro.si za mesečno porabo</h5>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
@@ -127,7 +127,7 @@ const UploadInvoice: React.FC = () => {
                   Iz zgornjega menija izberi <strong>Dnevna stanja</strong>.
                 </li>
                 <li>
-                  V izbirniku obdobja izberi <strong>Prejšnji mesec</strong> in klikni <strong>Potrdi</strong>.
+                  Znotraj izbirnika obdobja izberi <strong>Prejšnje leto</strong> ali drugo obdobje, nato klikni <strong>Potrdi</strong>.
                 </li>
                 <li>
                   Klikni <strong>Izvozi Excel</strong> ali <strong>Izvozi CSV</strong> za prenos datoteke.
