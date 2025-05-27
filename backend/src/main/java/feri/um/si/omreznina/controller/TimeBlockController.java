@@ -55,6 +55,10 @@ public class TimeBlockController {
 
 	@GetMapping("/price-and-block")
 	public ResponseEntity<Map<String, Object>> getNumberAndPrice(@RequestParam String dateTimeString) {
+		if (!dateTimeString.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}")) {
+			return ResponseEntity.badRequest().body(Map.of("error", "Bad datetime format"));
+		}
+
 		try {
 			return ResponseEntity.ok(timeBlockService.getNumberAndPrice(dateTimeString));
 		} catch (Exception e) {
