@@ -79,7 +79,7 @@ public class UserService {
 				firestoreService.saveDocumentToCollection(uid, "prekoracitve", parsed);
 			} else if (powerByMonths != null && parser.equals("optimum")) {
 				logger.log(Level.INFO, "Sending to python-agreed-power");
-				response = fileService.uploadMaxPowerConsumed(file, powerByMonths);
+				response = fileService.calculateOptimalConsumtion(file, powerByMonths);
 
 				Map<String, Map<String, Map<String, Object>>> parsed = mapper.readValue(
 						response, new TypeReference<>() {

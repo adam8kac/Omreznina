@@ -5,7 +5,6 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 import shutil
 import json
-import requests
 
 HOST = "0.0.0.0"
 PORT = 54321
