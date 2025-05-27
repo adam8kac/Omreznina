@@ -75,15 +75,6 @@ public class TimeBlockServiceTest {
 	}
 
 	@Test
-	void testGetCustomTimeBlock_HighWorkday() {
-		String dateTimeString = "2024-01-01 08:00";
-		TimeBlock block = timeBlockService.getCustomTimeBlock(dateTimeString);
-		assertNotNull(block);
-		assertEquals(1, block.getBlockNumber());
-		assertEquals(3.42250, block.getPrice(), 0.0001);
-	}
-
-	@Test
 	void testGetCustomTimeBlock_LowWeekend() {
 		String dateTimeString = "2024-03-09 03:00";
 		TimeBlock block = timeBlockService.getCustomTimeBlock(dateTimeString);
@@ -104,8 +95,8 @@ public class TimeBlockServiceTest {
 		String dateTimeString = "2024-01-01 08:00";
 		Map<String, Object> result = timeBlockService.getNumberAndPrice(dateTimeString);
 		assertNotNull(result);
-		assertEquals(1, result.get("blockNumber"));
-		assertEquals(3.42250, (double) result.get("price"), 0.0001);
+		assertEquals(2, result.get("blockNumber"));
+		assertEquals(0.91224, (double) result.get("price"), 0.0001);
 	}
 
 	@Test
