@@ -1,6 +1,7 @@
 from parser import filter_files, read_files
 import os
 from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import JSONResponse
 import shutil
 
 HOST = "0.0.0.0"
@@ -41,7 +42,7 @@ async def upload_file(file: UploadFile = File(...)):
         except Exception as e:
             print(f"Error deleting file: {e}")
 
-    return result
+    return JSONResponse(result)
 
 if __name__ == "__main__":
     import uvicorn

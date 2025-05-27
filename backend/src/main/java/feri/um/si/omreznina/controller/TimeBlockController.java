@@ -8,11 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/timeBlock")
@@ -37,6 +39,24 @@ public class TimeBlockController {
 	public ResponseEntity<TimeBlock> getCurrentBlock() {
 		try {
 			return ResponseEntity.ok(timeBlockService.getCurrentTimeBlock());
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@GetMapping("/custom-block")
+	public ResponseEntity<TimeBlock> getCustomTimeBlock(@RequestParam String dateTimeString) {
+		try {
+			return ResponseEntity.ok(timeBlockService.getCustomTimeBlock(dateTimeString));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@GetMapping("/price-and-block")
+	public ResponseEntity<Map<String, Object>> getNumberAndPrice(@RequestParam String dateTimeString) {
+		try {
+			return ResponseEntity.ok(timeBlockService.getNumberAndPrice(dateTimeString));
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().build();
 		}

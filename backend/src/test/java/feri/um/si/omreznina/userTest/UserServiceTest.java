@@ -34,7 +34,7 @@ public class UserServiceTest {
 	@Test
 	void success_verified_user() throws Exception {
 		String uid = "verifiedUser";
-		String jsonResponse = "[{\"2023-01\":{\"a\":1}}]";
+		String jsonResponse = "{\"2023\": {\"2023-01\": {\"a\": 1}}}";
 
 		MockMultipartFile file = new MockMultipartFile(
 				"file", "test.xlsx",
@@ -54,7 +54,7 @@ public class UserServiceTest {
 			UserService userService = new UserService(fileService, firestoreService);
 			userService.processAndStoreUserData(file, uid);
 
-			verify(firestoreService, times(1)).saveDocumentToCollection(eq(uid), any());
+			verify(firestoreService, times(1)).saveDocumentToCollection(eq(uid), eq("poraba"), any());
 		}
 	}
 

@@ -7,16 +7,9 @@ import com.google.cloud.firestore.*;
 import feri.um.si.omreznina.model.ManualInvoice;
 import org.springframework.stereotype.Service;
 
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import java.util.*;
 
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CancellationException;
 
@@ -82,25 +75,37 @@ public class FirestoreService {
 		return collectionNames;
 	}
 
-	// za shranjevanje denvnih stanj
-	public void saveDocumentToCollection(String uid, Map<String, Object> response) {
-		try {
-			for (Map.Entry<String, Object> entry : response.entrySet()) {
-				String yearMonth = entry.getKey();
-				@SuppressWarnings("unchecked") // Mogo bi preverit če je entry.getValue() instanceof Map
-				Map<String, Object> data = (Map<String, Object>) entry.getValue();
+	public void saveDocumentToCollection(String uid, String docId, Map<String, Map<String, Map<String, Object>>> data) {
+		List<ApiFuture<WriteResult>> futures = new ArrayList<>();
 
-				db.collection(uid)
-						.document(yearMonth)
-						.set(data)
-						.get();
-				logger.log(Level.INFO, "Document saved!");
+		try {
+			for (Map.Entry<String, Map<String, Map<String, Object>>> yearEntry : data.entrySet()) {
+				String year = yearEntry.getKey();
+				Map<String, Map<String, Object>> monthsMap = yearEntry.getValue();
+
+				for (Map.Entry<String, Map<String, Object>> monthEntry : monthsMap.entrySet()) {
+					String month = monthEntry.getKey();
+					Map<String, Object> monthData = monthEntry.getValue();
+
+					ApiFuture<WriteResult> future = db.collection(uid)
+							.document(docId)
+							.collection(year)
+							.document(month)
+							.set(monthData);
+
+					futures.add(future);
+				}
 			}
-		} catch (CancellationException | ExecutionException | InterruptedException e) {
+
+			for (ApiFuture<WriteResult> future : futures) {
+				future.get(); 
+			}
+			logger.info("All documents saved for user");
+		} catch (InterruptedException | ExecutionException e) {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();
 			}
-			logger.warning(e.toString());
+			logger.warning("Failed to save documents: " + e.getMessage());
 		}
 	}
 
@@ -134,36 +139,6 @@ public class FirestoreService {
 		}
 		return Collections.emptyMap();
 	}
-
-	// Za shranjevanje prekoracitev
-	public void saveSingleDocument(String uid, String docId, Map<String, Map<String, Map<String, Object>>> data) {
-		try {
-			for (Map.Entry<String, Map<String, Map<String, Object>>> yearEntry : data.entrySet()) {
-				String year = yearEntry.getKey();
-				Map<String, Map<String, Object>> monthsMap = yearEntry.getValue();
-
-				for (Map.Entry<String, Map<String, Object>> monthEntry : monthsMap.entrySet()) {
-					String month = monthEntry.getKey();
-					Map<String, Object> monthData = monthEntry.getValue();
-
-					db.collection(uid)
-							.document(docId)
-							.collection(year)
-							.document(month)
-							.set(monthData)
-							.get();
-
-					logger.info("Saved document for user");
-				}
-			}
-		} catch (InterruptedException | ExecutionException e) {
-			if (e instanceof InterruptedException) {
-				Thread.currentThread().interrupt();
-			}
-			logger.warning("Failed to save single document: " + e.getMessage());
-		}
-	}
-
 
 	public List<String> getAllCollections() {
 		List<String> colectionNames = new ArrayList<>();

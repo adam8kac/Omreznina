@@ -41,4 +41,32 @@ public class FileServiceTest {
         verify(mockRestTemplate, times(1)).postForObject(anyString(), any(HttpEntity.class), eq(String.class));
     }
 
+    @Test
+    void testCalculateOptimalConsumtion_success() throws Exception {
+        RestTemplate mockRestTemplate = mock(RestTemplate.class);
+        FileService fileService = new FileService(mockRestTemplate);
+
+        MockMultipartFile multipartFile = new MockMultipartFile(
+                "file", "test.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "data".getBytes());
+
+        String powerByMonths = "{\"1\": 7.2, \"2\": 7.2}";
+        String expectedResponse = "{\"optimal\": true}";
+
+        when(mockRestTemplate.postForObject(
+                anyString(),
+                any(),
+                eq(String.class))).thenReturn(expectedResponse);
+
+        String result = fileService.calculateOptimalConsumtion(multipartFile, powerByMonths);
+
+        assertEquals(expectedResponse, result);
+
+        verify(mockRestTemplate, times(1)).postForObject(
+                eq("https://prekoracitev-helper.onrender.com/optimal"),
+                any(),
+                eq(String.class));
+    }
+
 }

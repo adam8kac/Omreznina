@@ -11,7 +11,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -89,6 +89,48 @@ public class UserControllerIntegrationTest {
 		mockMvc.perform(multipart("/user/upload-power-consumption")
 				.file(file)
 				.param("uid", "test-uid")
+				.contentType(MediaType.MULTIPART_FORM_DATA))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void testUploadAndOptimize_success() throws Exception {
+		MockMultipartFile file = new MockMultipartFile(
+				"file", "data.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
+
+		String powerByMonths = "{\"01\":7.0,\"02\":6.0}";
+		String uid = "abc123";
+
+		doNothing().when(userService).computeAndStoreOptimalPower(file, powerByMonths, uid);
+
+		mockMvc.perform(multipart("/user/optimal-power")
+				.file(file)
+				.param("power_by_months", powerByMonths)
+				.param("uid", uid)
+				.contentType(MediaType.MULTIPART_FORM_DATA))
+				.andExpect(status().isOk())
+				.andExpect(content().string("Document added successfuly"));
+
+		verify(userService, times(1)).computeAndStoreOptimalPower(file, powerByMonths, uid);
+	}
+
+	@Test
+	void testUploadAndOptimize_failure() throws Exception {
+		MockMultipartFile file = new MockMultipartFile(
+				"file", "data.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
+
+		String powerByMonths = "{\"01\":7.0,\"02\":6.0}";
+		String uid = "abc123";
+
+		doThrow(new RuntimeException("Error")).when(userService)
+				.computeAndStoreOptimalPower(file, powerByMonths, uid);
+
+		mockMvc.perform(multipart("/user/optimal-power")
+				.file(file)
+				.param("power_by_months", powerByMonths)
+				.param("uid", uid)
 				.contentType(MediaType.MULTIPART_FORM_DATA))
 				.andExpect(status().isBadRequest());
 	}
