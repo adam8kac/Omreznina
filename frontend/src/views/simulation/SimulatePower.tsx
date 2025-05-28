@@ -176,7 +176,7 @@ export const SimulatePower = () => {
                   {result.status}
                 </span>
               </p>
-              <p>Za vsako uro s takšno porabo boste plačali približno: {priceTariff}€ zardi tarife.</p>
+              <p>Za vsako uro s takšno porabo boste plačali približno: {priceTariff}€ zaradi tarife.</p>
               {result.totalUsedPower > result.agreedPower && (
                 <>
                   <p>

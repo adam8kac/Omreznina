@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
-import { Spinner, Select } from 'flowbite-react';
+import { Spinner, Select, Accordion } from 'flowbite-react';
 import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import {
-  getSubcollectionDocsConsumption,
   getSubcollectionsConsumption,
+  getSubcollectionDocsConsumption,
   getDocumentDataConsumption,
 } from 'src/index';
-import { HiChevronDown, HiChevronUp } from 'react-icons/hi';
 
 interface DayRecord {
   poraba: number;
@@ -38,7 +37,7 @@ const MonthlyConsumptionChart = () => {
   const [monthlyData, setMonthlyData] = useState<Record<string, ParsedMonth>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
+  const [showSummary] = useState<boolean>(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -52,49 +51,43 @@ const MonthlyConsumptionChart = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const monthsList = await getSubcollectionsConsumption(uid, 'poraba');
+        const monthsList: string[] = await getSubcollectionsConsumption(uid, 'poraba');
         const parsed: Record<string, ParsedMonth> = {};
+        const yearSet = new Set<string>();
 
         for (const month of monthsList) {
-          const days = await getSubcollectionDocsConsumption(uid, 'poraba', month);
+          yearSet.add(month.split('-')[0]);
+
+          const days: string[] = await getSubcollectionDocsConsumption(uid, 'poraba', month);
           const dni: Array<[string, DayRecord]> = [];
 
           let sumPoraba = 0;
           let sumSolar = 0;
           let sumPrejeta = 0;
+          let et = 0, mt = 0, vt = 0;
 
-          let et = 0;
-          let mt = 0;
-          let vt = 0;
-
-          for (const day of days) {
+          const dayDataPromises = days.map(async (day: string) => {
             const data = await getDocumentDataConsumption(uid, 'poraba', month, day);
-            const deltaPrejeta = (data['delta prejeta delovna energija et'] ?? 0) as number;
-            const deltaOddana = (data['delta oddana delovna energija et'] ?? 0) as number;
-            const porabaEt = (data['poraba et'] ?? 0) as number;
+            const deltaPrejeta = Math.max(0, data['delta prejeta delovna energija et'] ?? 0);
+            const deltaOddana = Math.max(0, data['delta oddana delovna energija et'] ?? 0);
+            const porabaEt = data['poraba et'] ?? 0;
 
             et += data['prejeta delovna energija et'] ?? 0;
             mt += data['prejeta delovna energija mt'] ?? 0;
             vt += data['prejeta delovna energija vt'] ?? 0;
 
-            dni.push([
-              day,
-              {
-                poraba: Math.max(0, deltaPrejeta),
-                solar: Math.max(0, deltaOddana),
-              },
-            ]);
-
+            dni.push([day, { poraba: deltaPrejeta, solar: deltaOddana }]);
             sumPoraba += porabaEt;
             sumSolar += deltaOddana;
             sumPrejeta += deltaPrejeta;
-          }
+          });
+
+          await Promise.all(dayDataPromises);
 
           const total = et + mt + vt;
-          const tarifaShare =
-            total > 0
-              ? `ET: ${((et / total) * 100).toFixed(1)}%, MT: ${((mt / total) * 100).toFixed(1)}%, VT: ${((vt / total) * 100).toFixed(1)}%`
-              : 'Ni podatkov o tarifah';
+          const tarifaShare = total > 0
+            ? `ET: ${((et / total) * 100).toFixed(1)}%, MT: ${((mt / total) * 100).toFixed(1)}%, VT: ${((vt / total) * 100).toFixed(1)}%`
+            : 'Ni podatkov o tarifah';
 
           parsed[month] = {
             totalPoraba: parseFloat(sumPoraba.toFixed(3)),
@@ -105,14 +98,13 @@ const MonthlyConsumptionChart = () => {
           };
         }
 
-        const allKeys = Object.keys(parsed).sort();
-        const yearSet = Array.from(new Set(allKeys.map((k) => k.split('-')[0])));
-
-        setMonths(allKeys);
-        setYears(yearSet);
-        setSelectedYear(yearSet[0] ?? '');
+        const sortedKeys = Object.keys(parsed).sort();
+        const sortedYears = Array.from(yearSet).sort();
         setMonthlyData(parsed);
-        setSelectedMonth(allKeys[0] ?? null);
+        setMonths(sortedKeys);
+        setYears(sortedYears);
+        setSelectedYear(sortedYears[0] ?? '');
+        setSelectedMonth(sortedKeys.find((k) => k.startsWith(sortedYears[0])) ?? null);
       } catch (e) {
         console.error('[ERROR] Napaka pri fetchu:', e);
         setHasError(true);
@@ -124,7 +116,61 @@ const MonthlyConsumptionChart = () => {
     fetchData();
   }, [uid]);
 
+  useEffect(() => {
+    const firstMonthInYear = months.find((m) => m.startsWith(selectedYear));
+    if (firstMonthInYear) setSelectedMonth(firstMonthInYear);
+  }, [selectedYear, months]);
+
   const filteredMonths = months.filter((m) => m.startsWith(selectedYear));
+  const currentMonthData = selectedMonth ? monthlyData[selectedMonth] : null;
+  const previousYearSameMonth = selectedMonth
+    ? monthlyData[selectedMonth.replace(/^(\d{4})/, (y) => `${+y - 1}`)]
+    : null;
+
+  const dailyPorabaValues = currentMonthData?.dni.map(([_, d]) => d.poraba) ?? [];
+
+  const summaryText = currentMonthData ? (() => {
+    const totalDays = currentMonthData.dni.length;
+    const maxPoraba = Math.max(...dailyPorabaValues);
+    const minPoraba = Math.min(...dailyPorabaValues);
+    const avgPoraba = currentMonthData.totalPoraba / totalDays;
+    const maxDay = currentMonthData.dni.find(([_, d]) => d.poraba === maxPoraba)?.[0];
+    const minDay = currentMonthData.dni.find(([_, d]) => d.poraba === minPoraba)?.[0];
+    const realUsage = currentMonthData.totalPrejeta - currentMonthData.totalSolar;
+
+    const yearComparison = previousYearSameMonth
+      ? `V enakem obdobju prejšnje leto ste porabili ${previousYearSameMonth.totalPoraba.toFixed(2)} kWh, kar je ${
+          currentMonthData.totalPoraba > previousYearSameMonth.totalPoraba
+            ? 'manj'
+            : 'več'
+        } kot letos.`
+      : null;
+
+    const smartTip = currentMonthData.totalPoraba > 200
+      ? '🔌 Nasvet: preglejte največje porabnike in razmislite o preklopu na naprave z manjšo porabo.'
+      : '✅ Vaša poraba je bila učinkovita. Nadaljujte s takšnim načinom upravljanja.';
+
+    return (
+      <Accordion collapseAll className="mt-4 border rounded-lg">
+        <Accordion.Panel>
+          <Accordion.Title className="text-blue-700 dark:text-blue-400">
+            {showSummary ? 'Skrij razlago vaših podatkov' : 'Prikaži razlago vaših podatkov'}
+          </Accordion.Title>
+          <Accordion.Content className="bg-gray-50 dark:bg-gray-900">
+            <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+              <p className="mb-2">V mesecu <strong>{formatMonth(selectedMonth!)}</strong> ste porabili <strong>{currentMonthData.totalPoraba.toFixed(2)} kWh</strong>.</p>
+              <p className="mb-2">Največ ste porabili dne <strong>{maxDay}</strong> (<strong>{maxPoraba.toFixed(2)} kWh</strong>), najmanj pa dne <strong>{minDay}</strong> (<strong>{minPoraba.toFixed(2)} kWh</strong>).</p>
+              <p className="mb-2">Povprečna dnevna poraba znaša <strong>{avgPoraba.toFixed(2)} kWh</strong>.</p>
+              <p className="mb-2">Iz omrežja ste prejeli <strong>{currentMonthData.totalPrejeta.toFixed(2)} kWh</strong>, oddali pa <strong>{currentMonthData.totalSolar.toFixed(2)} kWh</strong>.</p>
+              <p className="mb-2">Vaša neto poraba je znašala <strong>{realUsage.toFixed(2)} kWh</strong>.</p>
+              {yearComparison && <p className="mb-2">📊 {yearComparison}</p>}
+              <p className="mt-3 text-blue-700 dark:text-blue-400 italic">📌 {smartTip}</p>
+            </div>
+          </Accordion.Content>
+        </Accordion.Panel>
+      </Accordion>
+    );
+  })() : null;
 
   const optionsBarChart: ApexOptions = {
     chart: { animations: { speed: 500 }, toolbar: { show: false } },
@@ -176,7 +222,7 @@ const MonthlyConsumptionChart = () => {
     colors: ['#3b82f6', '#facc15'],
     stroke: { curve: 'smooth', width: 2 },
     xaxis: {
-      categories: selectedMonth && monthlyData[selectedMonth] ? monthlyData[selectedMonth].dni.map(([dan]) => dan) : [],
+      categories: currentMonthData?.dni.map(([dan]) => dan) ?? [],
       labels: { rotate: -45 },
     },
     yaxis: {
@@ -187,33 +233,6 @@ const MonthlyConsumptionChart = () => {
       y: { formatter: (val: number) => `${val.toFixed(2)} kWh` },
     },
     legend: { show: true },
-  };
-
-  const renderSummary = () => {
-    if (!selectedMonth || !monthlyData[selectedMonth]) return null;
-
-    const dni = monthlyData[selectedMonth].dni;
-    if (dni.length === 0) return null;
-
-    const max = dni.reduce((a, b) => (a[1].poraba > b[1].poraba ? a : b));
-    const min = dni.reduce((a, b) => (a[1].poraba < b[1].poraba ? a : b));
-
-    const { totalPoraba, totalSolar } = monthlyData[selectedMonth];
-
-    return (
-      <div className="bg-gray-50 dark:bg-dark rounded-lg p-4 mt-4 border dark:border-gray-700">
-        <p className="mb-2">
-          Vaš najbolj potraten dan je bil <strong>{max[0]}</strong>, ko ste porabili <strong>{max[1].poraba.toFixed(2)} kWh</strong>. Najbolj varčen dan je bil <strong>{min[0]}</strong>, s porabo <strong>{min[1].poraba.toFixed(2)} kWh</strong>.
-        </p>
-        <p className="mb-2">
-          Skupaj ste v mesecu <strong>{formatMonth(selectedMonth)}</strong> porabili <strong>{totalPoraba.toFixed(2)} kWh</strong> električne energije.
-          {totalSolar > 0 && (<> Vaša sončna elektrarna je proizvedla <strong>{totalSolar.toFixed(2)} kWh</strong>.</>)}
-        </p>
-        <p>
-          Poskusite zmanjšati porabo v konicah. Ugasnite naprave v pripravljenosti in optimizirajte uporabo velikih porabnikov (npr. pralni stroj) v času sončne proizvodnje.
-        </p>
-      </div>
-    );
   };
 
   return (
@@ -238,7 +257,12 @@ const MonthlyConsumptionChart = () => {
             {years.length > 1 && (
               <div className="flex gap-2 items-center">
                 <label htmlFor="leto">Izberi leto:</label>
-                <Select id="leto" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="max-w-[150px]">
+                <Select
+                  id="leto"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="max-w-[150px]"
+                >
                   {years.map((year) => (
                     <option key={year} value={year}>{year}</option>
                   ))}
@@ -268,27 +292,21 @@ const MonthlyConsumptionChart = () => {
             width="100%"
           />
 
-          {selectedMonth && monthlyData[selectedMonth] ? (
+          {selectedMonth && currentMonthData && (
             <>
-              {monthlyData[selectedMonth].totalSolar > 0 && (
-                <div className="flex items-center gap-2 text-yellow-500 mt-6 mb-4">
-                  ☀️ Sončna elektrarna zaznana
-                </div>
-              )}
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold">Poraba po dnevih za mesec {formatMonth(selectedMonth)}</h2>
+              <div className="flex items-center justify-between mt-8 mb-4">
+                <h2 className="text-lg font-bold">Poraba po dnevih za {formatMonth(selectedMonth)}</h2>
                 <Select
-                  value={selectedMonth ?? ''}
+                  value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
                   className="max-w-[200px]"
                 >
                   {filteredMonths.map((month) => (
-                    <option key={month} value={month}>
-                      {formatMonth(month)}
-                    </option>
+                    <option key={month} value={month}>{formatMonth(month)}</option>
                   ))}
                 </Select>
               </div>
+
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Modra linija prikazuje prejeta energijo iz omrežja, rumena pa oddano energijo iz sončne elektrarne.
               </p>
@@ -298,11 +316,11 @@ const MonthlyConsumptionChart = () => {
                 series={[
                   {
                     name: 'Prejeta energija (kWh)',
-                    data: monthlyData[selectedMonth].dni.map(([_, e]) => e.poraba),
+                    data: currentMonthData.dni.map(([_, e]) => e.poraba),
                   },
                   {
                     name: 'Oddana solarna (kWh)',
-                    data: monthlyData[selectedMonth].dni.map(([_, e]) => e.solar),
+                    data: currentMonthData.dni.map(([_, e]) => e.solar),
                   },
                 ]}
                 type="line"
@@ -310,17 +328,8 @@ const MonthlyConsumptionChart = () => {
                 width="100%"
               />
 
-              <div className="mt-4 cursor-pointer" onClick={() => setShowSummary(!showSummary)}>
-                <div className="flex items-center text-blue-600 hover:underline gap-1">
-                  <span>Želite dodatne informacije?</span>
-                  {showSummary ? <HiChevronUp /> : <HiChevronDown />}
-                </div>
-              </div>
-
-              {showSummary && renderSummary()}
+              {summaryText}
             </>
-          ) : (
-            <p className="text-gray-600 mt-4">Za izbrani mesec ni dnevnih podatkov.</p>
           )}
         </>
       )}
