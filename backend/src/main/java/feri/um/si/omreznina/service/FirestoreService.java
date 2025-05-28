@@ -98,7 +98,7 @@ public class FirestoreService {
 			}
 
 			for (ApiFuture<WriteResult> future : futures) {
-				future.get(); 
+				future.get();
 			}
 			logger.info("All documents saved for user");
 		} catch (InterruptedException | ExecutionException e) {
@@ -222,43 +222,23 @@ public class FirestoreService {
 				.get();
 	}
 
-	//dogovorjene obračunske moči
-	public void saveAgreedPowers(String uid, Map<Integer, Integer> agreedPowers) {
+	// dogovorjene obračunske moči
+	public void saveAgreedPowers(String uid, Map<Integer, Double> agreedPowers) {
 		try {
 			Map<String, Object> data = new HashMap<>();
-			Map<String, Integer> converted = new HashMap<>();
-			for (Map.Entry<Integer, Integer> entry : agreedPowers.entrySet()) {
-				converted.put(String.valueOf(entry.getKey()), entry.getValue());
+			for (Map.Entry<Integer, Double> entry : agreedPowers.entrySet()) {
+				data.put(String.valueOf(entry.getKey()), entry.getValue() * 1000);
 			}
-			data.put("agreedPowers", converted);
 
-			db.collection("users").document(uid)
+			db.collection(uid).document("dogovorjena-moc")
 					.set(data, SetOptions.merge())
 					.get();
 
-			logger.info("Agreed powers saved for user: " + uid);
 		} catch (InterruptedException | ExecutionException e) {
-			if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+			if (e instanceof InterruptedException)
+				Thread.currentThread().interrupt();
 			logger.warning("Failed to save agreed powers: " + e.getMessage());
 		}
-	}
-
-	public Map<Integer, Integer> getAgreedPowers(String uid) {
-		try {
-			DocumentSnapshot doc = db.collection("users").document(uid).get().get();
-			if (doc.exists() && doc.contains("agreedPowers")) {
-				Map<String, Long> raw = (Map<String, Long>) doc.get("agreedPowers");
-				Map<Integer, Integer> parsed = new HashMap<>();
-				for (Map.Entry<String, Long> entry : raw.entrySet()) {
-					parsed.put(Integer.parseInt(entry.getKey()), entry.getValue().intValue());
-				}
-				return parsed;
-			}
-		} catch (InterruptedException | ExecutionException e) {
-			if (e instanceof InterruptedException) Thread.currentThread().interrupt();
-			logger.warning("Failed to get agreed powers: " + e.getMessage());
-		}
-		return null;
 	}
 
 }
