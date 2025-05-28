@@ -2,6 +2,7 @@ package feri.um.si.omreznina.simulation;
 
 import feri.um.si.omreznina.controller.SimulationOfExpensesController;
 import feri.um.si.omreznina.service.SimulationOfExpensesService;
+import feri.um.si.omreznina.service.FirestoreService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -17,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(SimulationOfExpensesController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@SuppressWarnings("removal")
 public class SimulationControllerTest {
 
 	@Autowired
@@ -25,6 +25,9 @@ public class SimulationControllerTest {
 
 	@MockBean
 	private SimulationOfExpensesService simulationService;
+
+	@MockBean
+	private FirestoreService firestoreService;
 
 	@Test
 	void testGetAvailableDevices_success() throws Exception {
