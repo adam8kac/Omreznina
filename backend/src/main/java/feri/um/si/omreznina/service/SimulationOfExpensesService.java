@@ -45,8 +45,15 @@ public class SimulationOfExpensesService {
 
     private final TimeBlockService timeBlockService;
 
-    public SimulationOfExpensesService(TimeBlockService timeBlockService) {
+    private final FirestoreService firestoreService;
+
+    public SimulationOfExpensesService(TimeBlockService timeBlockService, FirestoreService firestoreService) {
         this.timeBlockService = timeBlockService;
+        this.firestoreService = firestoreService;
+    }
+
+    public void saveAgreedPowers(String uid, Map<Integer, Integer> agreedPowers) {
+        firestoreService.saveAgreedPowers(uid, agreedPowers);
     }
 
     public List<String> getAvailableDevices() {

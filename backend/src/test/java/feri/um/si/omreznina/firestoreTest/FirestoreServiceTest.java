@@ -1,13 +1,7 @@
 package feri.um.si.omreznina.firestoreTest;
 
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.*;
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.WriteResult;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -358,5 +352,34 @@ public class FirestoreServiceTest {
 		});
 		assertTrue(ex.getMessage().contains("Firestore fail"));
 	}
+	@Test
+	void testSaveAndGetAgreedPowers_success() throws Exception {
+		DocumentReference userDoc = mock(DocumentReference.class);
+		ApiFuture<WriteResult> writeFuture = mock(ApiFuture.class);
+		DocumentSnapshot docSnap = mock(DocumentSnapshot.class);
+		ApiFuture<DocumentSnapshot> readFuture = mock(ApiFuture.class);
+		CollectionReference usersCol = mock(CollectionReference.class);
+		when(db.collection("users")).thenReturn(usersCol);
+		when(usersCol.document("testUid")).thenReturn(userDoc);
+		when(userDoc.set(any(Map.class), eq(SetOptions.merge()))).thenReturn(writeFuture);
+		when(writeFuture.get()).thenReturn(null);
+		when(userDoc.get()).thenReturn(readFuture);
+		when(readFuture.get()).thenReturn(docSnap);
+		when(docSnap.exists()).thenReturn(true);
+		when(docSnap.contains("agreedPowers")).thenReturn(true);
+		when(docSnap.get("agreedPowers")).thenReturn(Map.of("1", 2000L, "2", 1500L));
+		Map<Integer, Integer> input = Map.of(1, 2000, 2, 1500);
+		firestoreService.saveAgreedPowers("testUid", input);
+		Map<Integer, Integer> result = firestoreService.getAgreedPowers("testUid");
+		assertNotNull(result);
+		assertEquals(2, result.size());
+		assertEquals(2000, result.get(1));
+		assertEquals(1500, result.get(2));
+		verify(db, times(2)).collection("users"); // ✅ FIX: Expected 2 invocations
+		verify(usersCol, times(2)).document("testUid");
+		verify(userDoc).set(any(Map.class), eq(SetOptions.merge()));
+		verify(userDoc).get();
+	}
+
 
 }
