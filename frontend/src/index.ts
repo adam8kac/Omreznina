@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-//const api = axios.create({ baseURL: 'http://localhost:8080/' });
+//const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -30,6 +30,8 @@ export interface ParsedMonth {
   dni: Array<[string, DayRecord]>;
   totalPoraba: number;
   totalSolar: number;
+  totalPrejeta?: number;
+  tarifaShare?: string;
 }
 
 export interface SimulationRequest {
@@ -130,9 +132,7 @@ export const getSubcollectionsConsumption = async (
   uid: string,
   docId: string
 ): Promise<string[]> => {
-  const res = await api.get(
-    `firestore/subCollections?uid=${uid}&docId=${docId}`
-  );
+  const res = await api.get(`firestore/subCollections?uid=${uid}&docId=${docId}`);
   return res.data;
 };
 
