@@ -1,5 +1,7 @@
 package feri.um.si.omreznina.service;
+
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -8,8 +10,13 @@ import feri.um.si.omreznina.model.TimeBlock;
 @Service
 public class SimulationOfExpensesService {
 
-    public enum Season { VISJA, NIZJA }
-    public enum DayType { DELOVNI_DAN, DELA_PROST_DAN }
+    public enum Season {
+        VISJA, NIZJA
+    }
+
+    public enum DayType {
+        DELOVNI_DAN, DELA_PROST_DAN
+    }
 
     @Getter
     public static class Device {
@@ -47,12 +54,15 @@ public class SimulationOfExpensesService {
 
     private final FirestoreService firestoreService;
 
+    private final Logger logger = Logger.getLogger(getClass().getName());
+
     public SimulationOfExpensesService(TimeBlockService timeBlockService, FirestoreService firestoreService) {
         this.timeBlockService = timeBlockService;
         this.firestoreService = firestoreService;
     }
 
-    public void saveAgreedPowers(String uid, Map<Integer, Integer> agreedPowers) {
+    public void saveAgreedPowers(String uid, Map<Integer, Double> agreedPowers) {
+        logger.info("Saved powers: " + agreedPowers);
         firestoreService.saveAgreedPowers(uid, agreedPowers);
     }
 
@@ -61,9 +71,9 @@ public class SimulationOfExpensesService {
     }
 
     public Map<String, Object> simulate(List<String> selectedDeviceNames,
-                                        Map<Integer, Integer> agreedPowers,
-                                        Season season,
-                                        DayType dayType) {
+            Map<Integer, Integer> agreedPowers,
+            Season season,
+            DayType dayType) {
 
         List<Device> selectedDevices = selectedDeviceNames.stream()
                 .map(predefinedDevices::get)
@@ -72,6 +82,7 @@ public class SimulationOfExpensesService {
 
         TimeBlock currentTimeBlock = timeBlockService.getCurrentTimeBlock();
         int currentBlockId = currentTimeBlock.getBlockNumber();
+        double price = currentTimeBlock.getPrice();
 
         int agreedPower = agreedPowers.getOrDefault(currentBlockId, 0);
 
@@ -87,6 +98,7 @@ public class SimulationOfExpensesService {
 
         Map<String, Object> result = new HashMap<>();
         result.put("currentBlock", currentBlockId);
+        result.put("timeBlockPrice", price);
         result.put("agreedPower", agreedPower);
         result.put("totalUsedPower", totalUsedPower);
         result.put("status", totalUsedPower > agreedPower ? "PREKORAČITEV" : "V REDU");

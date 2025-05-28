@@ -1,11 +1,9 @@
 package feri.um.si.omreznina.controller;
 
-import feri.um.si.omreznina.service.FirestoreService;
 import feri.um.si.omreznina.service.SimulationOfExpensesService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,9 +16,6 @@ public class SimulationOfExpensesController {
 
     @Autowired
     private SimulationOfExpensesService simulationService;
-
-    @Autowired
-    private FirestoreService firestoreService;
 
     @GetMapping("/available-devices")
     public List<String> getAvailableDevices() {
@@ -43,17 +38,6 @@ public class SimulationOfExpensesController {
         return ResponseEntity.ok("Saved agreed powers.");
     }
 
-    @GetMapping("/getAgreedPowers")
-    public ResponseEntity<Map<Integer, Integer>> getAgreedPowers(@RequestParam String uid) {
-        Map<Integer, Integer> agreedPowers = firestoreService.getAgreedPowers(uid);
-        if (agreedPowers != null) {
-            return ResponseEntity.ok(agreedPowers);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-
-
     @Setter
     @Getter
     public static class SimulationRequest {
@@ -68,7 +52,7 @@ public class SimulationOfExpensesController {
     @Getter
     public static class AgreedPowersRequest {
         private String uid;
-        private Map<Integer, Integer> agreedPowers;
+        private Map<Integer, Double> agreedPowers;
 
     }
 }
