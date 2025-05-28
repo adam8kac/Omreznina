@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-const api = axios.create({ baseURL: 'http://localhost:8080/' });
+const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+//const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -24,6 +24,19 @@ export interface ManualInvoice {
   penalties: number;
   vat: number;
   note?: string;
+}
+
+export interface ParsedMonth {
+  dni: Array<[string, DayRecord]>;
+  totalPoraba: number;
+  totalSolar: number;
+}
+
+export interface SimulationRequest {
+  selectedDevices: string[];
+  agreedPowers: Record<number, number>;
+  season: 'VISJA' | 'NIZJA';
+  dayType: 'DELOVNI_DAN' | 'DELA_PROST_DAN';
 }
 
 export const getDocumentData = async (uid: string, docId: string): Promise<Record<string, MonthRecord>> => {
@@ -55,13 +68,6 @@ export const getAvailableDevices = async (): Promise<string[]> => {
   const res = await api.get('api/simulation/available-devices');
   return res.data;
 };
-
-export interface SimulationRequest {
-  selectedDevices: string[];
-  agreedPowers: Record<number, number>;
-  season: 'VISJA' | 'NIZJA';
-  dayType: 'DELOVNI_DAN' | 'DELA_PROST_DAN';
-}
 
 export const simulateUsage = async (request: SimulationRequest): Promise<any> => {
   const res = await api.post('api/simulation/simulate', request);
@@ -107,4 +113,39 @@ export const getCurrentTariff = async () => {
 export const getKiloWattHourPrice = async (consumption: number) => {
   const response = await api.get(`power/energy-price?consumption=${consumption}`);
   return response.data;
+};
+
+export const getSubcollectionDocsConsumption = async (
+  uid: string,
+  parentDocId: string,
+  subcollectionId: string
+): Promise<string[]> => {
+  const res = await api.get(
+    `firestore/docsInSubCol?uid=${uid}&parentDocId=${parentDocId}&subcollectionId=${subcollectionId}`
+  );
+  return res.data;
+};
+
+export const getSubcollectionsConsumption = async (
+  uid: string,
+  docId: string
+): Promise<string[]> => {
+  const res = await api.get(
+    `firestore/subCollections?uid=${uid}&docId=${docId}`
+  );
+  return res.data;
+};
+
+export const getDocumentDataConsumption = async (
+  uid: string,
+  docId: string,
+  subColId?: string,
+  subColDocId?: string
+): Promise<Record<string, any>> => {
+  const params = new URLSearchParams({ uid, docId });
+  if (subColId) params.append('subColId', subColId);
+  if (subColDocId) params.append('subColDocId', subColDocId);
+
+  const res = await api.get(`firestore/data?${params.toString()}`);
+  return res.data;
 };
