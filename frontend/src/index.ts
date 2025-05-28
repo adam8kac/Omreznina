@@ -104,3 +104,15 @@ export const getAvailableMonths = async (
   return res.data;
 };
 
+export const saveAgreedPowers = async (
+  uid: string,
+  agreedPowers: Record<number, number>
+): Promise<any> => {
+  return api.post("api/simulation/setAgreedPowers", { uid, agreedPowers });
+};
+
+export const getAgreedPowers = async (uid: string): Promise<Record<number, number>> => {
+  const res = await api.get(`api/simulation/getAgreedPowers?uid=${uid}`);
+  return res.data;
+};
+

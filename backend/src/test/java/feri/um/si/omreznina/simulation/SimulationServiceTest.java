@@ -1,5 +1,6 @@
 package feri.um.si.omreznina.simulation;
 import feri.um.si.omreznina.model.TimeBlock;
+import feri.um.si.omreznina.service.FirestoreService;
 import feri.um.si.omreznina.service.SimulationOfExpensesService;
 import feri.um.si.omreznina.service.SimulationOfExpensesService.DayType;
 import feri.um.si.omreznina.service.SimulationOfExpensesService.Season;
@@ -22,8 +23,12 @@ public class SimulationServiceTest {
 		TimeBlock fakeBlock = new TimeBlock();
 		fakeBlock.setBlockNumber(1);
 		when(mockTimeBlockService.getCurrentTimeBlock()).thenReturn(fakeBlock);
-		simulationService = new SimulationOfExpensesService(mockTimeBlockService);
+
+		FirestoreService mockFirestoreService = mock(FirestoreService.class); // << dodano
+
+		simulationService = new SimulationOfExpensesService(mockTimeBlockService, mockFirestoreService);
 	}
+
 
 	@Test
 	void testGetAvailableDevices() {
