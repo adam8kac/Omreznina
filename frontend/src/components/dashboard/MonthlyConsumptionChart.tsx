@@ -8,6 +8,7 @@ import {
   getSubcollectionDocsConsumption,
   getDocumentDataConsumption,
 } from 'src/index';
+import { Link } from 'react-router';
 
 interface DayRecord {
   poraba: number;
@@ -244,11 +245,11 @@ const MonthlyConsumptionChart = () => {
       ) : hasError ? (
         <p className="text-red-600">Napaka pri nalaganju podatkov.</p>
       ) : months.length === 0 ? (
-        <div className="text-gray-600">
+        <div className="text-gray-600"> 
           Ni podatkov za prikaz.<br />
-          <span className="text-blue-600 underline cursor-pointer">
+          <Link to="/upload-data" className="text-blue-600 underline cursor-pointer">
             Obiščite podstran »Naloži podatke« in jih dodajte.
-          </span>
+          </Link>
         </div>
       ) : (
         <>

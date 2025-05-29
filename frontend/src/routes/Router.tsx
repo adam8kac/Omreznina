@@ -11,6 +11,7 @@ const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')))
 
 // Dashboard
 const Dashboard = Loadable(lazy(() => import('../views/dashboards/Dashboard')));
+const AboutUs = Loadable(lazy(() => import('../views/dashboards/AboutUs')));
 
 // utilities
 const SimulatePower = Loadable(lazy(() => import('../views/simulation/SimulatePower')));
@@ -53,6 +54,8 @@ const Router = [
       { path: '/upload-reciept', exact: true, element: <UploadReciept /> },
       { path: '/reciept-explanation', exact: true, element: <ReceiptExplanation /> },
       { path: '*', element: <Navigate to="/auth/404" /> },
+      { path: '/about-us', exact: true, element: <AboutUs /> },
+
     ],
   },
   {
