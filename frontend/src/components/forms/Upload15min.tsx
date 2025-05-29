@@ -3,7 +3,7 @@ import { Label, Button, FileInput, Accordion } from 'flowbite-react';
 import instructions1 from '../../assets/images/instructions/instructions1.png';
 import instructions4 from '../../assets/images/instructions/instructions4.png';
 
-import { getUserDocIds, uploadMonthlyPower, uploadMonthlyOptimal } from 'src/index';
+import { getUserDocIds, uploadMonthlyPower, uploadMonthlyOptimal, getAgreedPowers } from 'src/index';
 import { auth } from 'src/firebase-config';
 
 export default function Upload15min () {
@@ -26,8 +26,8 @@ export default function Upload15min () {
       return;
     }
 
-    const fromData = new FormData();
-    fromData.append('file', file);
+    const formData = new FormData();
+    formData.append('file', file);
 
     try {
       const uid = await getUid();
@@ -36,10 +36,13 @@ export default function Upload15min () {
       }
 
       const numOfDocsBefore = (await getUserDocIds(uid as string)).length;
-      fromData.append('uid', uid);
+      formData.append('uid', uid);
 
-      await uploadMonthlyPower(fromData);
-      await uploadMonthlyOptimal(fromData);
+      const agreedPowers = await getAgreedPowers(uid);
+      formData.append("power_by_months", JSON.stringify(agreedPowers));
+
+      await uploadMonthlyPower(formData);
+      await uploadMonthlyOptimal(formData);
 
       const numOfDocsAfter = (await getUserDocIds(uid as string)).length;
 
