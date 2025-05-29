@@ -6,7 +6,6 @@ import SimpleBar from "simplebar-react";
 import React from "react";
 import FullLogo from "../shared/logo/FullLogo";
 import 'simplebar-react/dist/simplebar.min.css';
-import Upgrade from "./Upgrade";
 
 const MobileSidebar = () => {
   return (
@@ -40,7 +39,6 @@ const MobileSidebar = () => {
               </Sidebar.ItemGroup>
             </Sidebar.Items>
           </SimpleBar>
-          <Upgrade/>
         </Sidebar>
       </div>
     </>

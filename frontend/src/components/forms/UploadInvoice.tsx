@@ -44,7 +44,7 @@ const UploadInvoice: React.FC = () => {
       if (numOfDocsAfter > numOfDocsBefore) {
         alert('Račun uspešno naložen!');
       } else {
-        alert('Ne gre');
+        alert('Napaka pri nalaganju podatkov');
       }
 
       setFile(null);

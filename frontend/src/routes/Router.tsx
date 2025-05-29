@@ -15,17 +15,11 @@ const Dashboard = Loadable(lazy(() => import('../views/dashboards/Dashboard')));
 // utilities
 const SimulatePower = Loadable(lazy(() => import('../views/simulation/SimulatePower')));
 const NetworkFee = Loadable(lazy(() => import('../views/simulation/NetworkFee')));
-const Typography = Loadable(lazy(() => import('../views/typography/Typography')));
-const Table = Loadable(lazy(() => import('../views/tables/Table')));
-const Form = Loadable(lazy(() => import('../views/forms/Form')));
-const Shadow = Loadable(lazy(() => import('../views/shadows/Shadow')));
 const UploadData = Loadable(lazy(() => import('../views/forms/UploadDataForm')));
 const UploadPage = Loadable(lazy(() => import('../views/forms/UploadForm')));
 const UploadReciept = Loadable(lazy(() => import('../views/forms/UploadRecieptForm')));
 const ReceiptExplanation = Loadable(lazy(() => import('../views/tables/RecieptExplanationTable')));
 
-// icons
-const Solar = Loadable(lazy(() => import('../views/icons/Solar')));
 
 // authentication
 const Login = Loadable(lazy(() => import('../views/auth/login/Login')));
@@ -53,11 +47,6 @@ const Router = [
       { path: '/', exact: true, element: <Dashboard /> },
       { path: '/simulate-power', exact: true, element: <SimulatePower /> },
       { path: '/network-fee', exact: true, element: <NetworkFee /> },
-      { path: '/ui/typography', exact: true, element: <Typography /> },
-      { path: '/ui/table', exact: true, element: <Table /> },
-      { path: '/ui/form', exact: true, element: <Form /> },
-      { path: '/ui/shadow', exact: true, element: <Shadow /> },
-      { path: '/icons/solar', exact: true, element: <Solar /> },
       { path: '/profile', exact: true, element: <Profile /> },
       { path: '/upload-data', exact: true, element: <UploadData /> },
       { path: '/upload-invoice', exact: true, element: <UploadPage /> },

@@ -149,3 +149,33 @@ export const getDocumentDataConsumption = async (
   const res = await api.get(`firestore/data?${params.toString()}`);
   return res.data;
 };
+
+export const uploadMonthlyPower = async (data: FormData) => {
+  try {
+    const response = await api.post('user/upload-power-consumption', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+    alert('Napaka pri nalaganju.');
+  }
+};
+
+export const uploadMonthlyOptimal = async (data: FormData) => {
+  try {
+    const response = await api.post('user/optimal-power', data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+    alert('Napaka pri nalaganju.');
+  }
+};
