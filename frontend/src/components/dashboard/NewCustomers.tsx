@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import { Link } from "react-router";
 
 const NewCustomers = () => {
   return (
@@ -13,12 +14,12 @@ const NewCustomers = () => {
         Preberite si več o naši platformi in odkrijte, kako vam lahko pomaga
         pri nadzoru nad porabo elektrike.
       </p>
-      <a
-        href="/about"
+      <Link
+        to="/about-us"
         className="inline-block text-sm text-blue-600 hover:underline font-medium"
       >
         Več o nas →
-      </a>
+      </Link>
     </div>
   );
 };
