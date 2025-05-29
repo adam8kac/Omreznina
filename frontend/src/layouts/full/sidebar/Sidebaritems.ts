@@ -65,66 +65,8 @@ const SidebarContent: MenuItem[] = [
         id: uniqueId(),
         url: "/reciept-explanation",
       },
-      {
-        name: "Typography",
-        icon: "solar:text-circle-outline",
-        id: uniqueId(),
-        url: "/ui/typography",
-      },
-      {
-        name: "Table",
-        icon: "solar:bedside-table-3-linear",
-        id: uniqueId(),
-        url: "/ui/table",
-      },
-      {
-        name: "Form",
-        icon: "solar:password-minimalistic-outline",
-        id: uniqueId(),
-        url: "/ui/form",
-      },
-      {
-        name: "Shadow",
-        icon: "solar:airbuds-case-charge-outline",
-        id: uniqueId(),
-        url: "/ui/shadow",
-      },
     ],
-  },
-  {
-    heading: "AUTH",
-    children: [
-      {
-        name: "Login",
-        icon: "solar:login-2-linear",
-        id: uniqueId(),
-        url: "/auth/login",
-      },
-      {
-        name: "Register",
-        icon: "solar:shield-user-outline",
-        id: uniqueId(),
-        url: "/auth/register",
-      },
-    ],
-  },
-  {
-    heading: "EXTRA",
-    children: [
-      {
-        name: "Icons",
-        icon: "solar:smile-circle-outline",
-        id: uniqueId(),
-        url: "/icons/solar",
-      },
-      {
-        name: "Profile",
-        icon: "solar:user-circle-outline",
-        id: uniqueId(),
-        url: "/profile",
-      },
-    ],
-  },
+  }
 ];
 
 export default SidebarContent;

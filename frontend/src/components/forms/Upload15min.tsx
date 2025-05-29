@@ -3,7 +3,7 @@ import { Label, Button, FileInput, Accordion } from 'flowbite-react';
 import instructions1 from '../../assets/images/instructions/instructions1.png';
 import instructions4 from '../../assets/images/instructions/instructions4.png';
 
-import { getUserDocIds, uploadMonthlyFile } from 'src/index';
+import { getUserDocIds, uploadMonthlyPower, uploadMonthlyOptimal } from 'src/index';
 import { auth } from 'src/firebase-config';
 
 export default function Upload15min () {
@@ -38,13 +38,15 @@ export default function Upload15min () {
       const numOfDocsBefore = (await getUserDocIds(uid as string)).length;
       fromData.append('uid', uid);
 
-      await uploadMonthlyFile(fromData);
+      await uploadMonthlyPower(fromData);
+      await uploadMonthlyOptimal(fromData);
+
       const numOfDocsAfter = (await getUserDocIds(uid as string)).length;
 
       if (numOfDocsAfter > numOfDocsBefore) {
-        alert('Račun uspešno naložen!');
+        alert('Podatki uspešno naloženi!');
       } else {
-        alert('Ne gre');
+        alert('Napaka pri nalaganju podatkov');
       }
 
       setFile(null);
