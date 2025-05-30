@@ -8,6 +8,8 @@ import { auth } from 'src/firebase-config';
 
 export default function Upload15min () {
   const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const keyId = auth.config.apiKey;
   const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -15,14 +17,18 @@ export default function Upload15min () {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
+      setError(null);
+      setSuccess(null);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
     if (!file) {
-      alert('Naloži datoteko.');
+      setError('Naloži datoteko.');
       return;
     }
 
@@ -32,7 +38,8 @@ export default function Upload15min () {
     try {
       const uid = await getUid();
       if (!uid) {
-        console.log('Uid notavalible');
+        setError('Napaka: uporabnik ni prijavljen.');
+        return;
       }
 
       const numOfDocsBefore = (await getUserDocIds(uid as string)).length;
@@ -47,17 +54,17 @@ export default function Upload15min () {
       const numOfDocsAfter = (await getUserDocIds(uid as string)).length;
 
       if (numOfDocsAfter > numOfDocsBefore) {
-        alert('Podatki uspešno naloženi!');
+        setSuccess('Podatki uspešno naloženi!');
+        setFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } else {
-        alert('Napaka pri nalaganju podatkov');
+        setError('Napaka pri nalaganju podatkov.');
       }
-
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.error(err);
+      setError('Prišlo je do napake med nalaganjem.');
     }
   };
 
@@ -85,10 +92,21 @@ export default function Upload15min () {
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
             <div>
               <Label htmlFor="fileInput" value="Izberi datoteko" className="mb-1 block" />
-              <FileInput id="fileInput" ref={fileInputRef} accept=".xlsx,.csv" onChange={handleFileChange} required />
-              {file && <p className="text-sm text-green-600 mt-1">Izbrana datoteka: {file.name}</p>}
+              <FileInput
+                id="fileInput"
+                ref={fileInputRef}
+                accept=".xlsx,.csv"
+                onChange={handleFileChange}
+                className={error === 'Naloži datoteko.' ? 'border border-red-500 rounded-lg' : ''}
+              />
+              {file ? (
+                <p className="text-sm text-green-600 mt-1">Izbrana datoteka: {file.name}</p>
+              ) : error === 'Naloži datoteko.' && (
+                <p className="text-sm text-red-600 mt-1">⚠️ Naložite datoteko.</p>
+              )}
             </div>
           </div>
+
           <div className="col-span-12 flex gap-3 mt-2">
             <Button type="submit" color="primary">
               Naloži csv ali excel
@@ -98,11 +116,27 @@ export default function Upload15min () {
               color="gray"
               onClick={() => {
                 setFile(null);
+                setError(null);
+                setSuccess(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
               }}
             >
               Prekliči
             </Button>
           </div>
+          {error && error !== 'Naloži datoteko.' && (
+            <div className="col-span-12 mt-3 text-red-600 text-sm font-medium">
+              ⚠️ {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="col-span-12 mt-3 text-green-600 text-sm font-medium">
+              ✅ {success}
+            </div>
+          )}
         </div>
       </form>
 

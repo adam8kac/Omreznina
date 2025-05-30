@@ -24,7 +24,7 @@ const InvoiceTable: React.FC = () => {
   const [months, setMonths] = useState<string[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [openRow, setOpenRow] = useState<string | null>(null);
+  const [openRows, setOpenRows] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
 
   const keyId = auth.config.apiKey;
@@ -86,7 +86,8 @@ const InvoiceTable: React.FC = () => {
     <div className="rounded-xl shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
       <h5 className="text-3xl font-bold mb-4 text-center">Račun na kratko</h5>
       <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
-        Hiter in jasen pregled tvojega računa. Izberi leto in mesec ter si oglej, kako je sestavljen tvoj strošek za elektriko.      </p>
+        Hiter in jasen pregled tvojega računa. Izberi leto in mesec ter si oglej, kako je sestavljen tvoj strošek za elektriko.
+      </p>
       <br />
       <div className="mb-4 flex gap-4 items-center flex-wrap">
         <div>
@@ -160,15 +161,25 @@ const InvoiceTable: React.FC = () => {
                     </td>
                     <td className="px-6 py-5 text-right">
                       <button
-                        onClick={() => setOpenRow(openRow === row.label ? null : row.label)}
+                        onClick={() => {
+                          setOpenRows((prev) => {
+                            const newSet = new Set(prev);
+                            if (newSet.has(row.label)) {
+                              newSet.delete(row.label);
+                            } else {
+                              newSet.add(row.label);
+                            }
+                            return newSet;
+                          });
+                        }}
                         className="text-gray-500 hover:text-gray-700 transition"
                         aria-label={`Toggle details for ${row.label}`}
                       >
-                        {openRow === row.label ? <HiChevronUp className="w-5 h-5" /> : <HiChevronDown className="w-5 h-5" />}
+                        {openRows.has(row.label) ? <HiChevronUp className="w-5 h-5" /> : <HiChevronDown className="w-5 h-5" />}
                       </button>
                     </td>
                   </tr>
-                  {openRow === row.label && (
+                  {openRows.has(row.label) && (
                     <tr className="bg-blue-50">
                       <td colSpan={3} className="px-6 py-5 text-sm text-blue-800">
                         <span className="font-semibold">{row.label}</span>: {explanationTexts[row.label]}

@@ -4,7 +4,8 @@ import { auth } from 'src/firebase-config';
 import { uploadManualInvoice, ManualInvoice } from 'src/index';
 import { debounce } from 'lodash';
 
-export default function ManualInvoiceForm()  {
+export default function ManualInvoiceForm() {
+  const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [energyCost, setEnergyCost] = useState('');
@@ -13,10 +14,29 @@ export default function ManualInvoiceForm()  {
   const [penalties, setPenalties] = useState('');
   const [vat, setVat] = useState('');
   const [note, setNote] = useState('');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const keyId = auth.config.apiKey;
   const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 9 }, (_, i) => `${currentYear - i}`);
+  const months = [
+    { value: '01', label: 'Januar' },
+    { value: '02', label: 'Februar' },
+    { value: '03', label: 'Marec' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'Maj' },
+    { value: '06', label: 'Junij' },
+    { value: '07', label: 'Julij' },
+    { value: '08', label: 'Avgust' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'Oktober' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' },
+  ];
 
   const getUid = (): string => {
     const sessionUser = sessionStorage.getItem(userSessionid);
@@ -33,19 +53,20 @@ export default function ManualInvoiceForm()  {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors: { [key: string]: string } = {};
 
-    if (
-      !month ||
-      !totalAmount ||
-      !energyCost ||
-      !networkCost ||
-      !surcharges ||
-      !penalties ||
-      !vat
-    ) {
-      alert('Izpolni vsa polja.');
-      return;
-    }
+    if (!year) newErrors.year = 'Izberite leto.';
+    if (!month) newErrors.month = 'Izberite mesec.';
+    if (!totalAmount) newErrors.totalAmount = 'Vnesite skupni znesek.';
+    if (!energyCost) newErrors.energyCost = 'Vnesite strošek energije.';
+    if (!networkCost) newErrors.networkCost = 'Vnesite omrežnino.';
+    if (!surcharges) newErrors.surcharges = 'Vnesite prispevke in ostalo.';
+    if (!penalties) newErrors.penalties = 'Vnesite penalizacije (0, če jih ni).';
+    if (!vat) newErrors.vat = 'Vnesite DDV.';
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
     setLoading(true);
 
     const uid = getUid();
@@ -55,9 +76,10 @@ export default function ManualInvoiceForm()  {
       return;
     }
 
+    const fullMonth = `${year}-${month}`;
     const invoice: ManualInvoice = {
       uid: uid,
-      month: month,
+      month: fullMonth,
       totalAmount: parseFloat(totalAmount.replace(',', '.')),
       energyCost: parseFloat(energyCost.replace(',', '.')),
       networkCost: parseFloat(networkCost.replace(',', '.')),
@@ -69,7 +91,10 @@ export default function ManualInvoiceForm()  {
 
     try {
       await uploadManualInvoice(invoice);
-      alert('Račun uspešno vnešen!');
+      setErrors({});
+      setSuccessMessage('Račun uspešno vnešen!');
+      setTimeout(() => setSuccessMessage(''), 5000);
+      setYear('');
       setMonth('');
       setTotalAmount('');
       setEnergyCost('');
@@ -81,6 +106,7 @@ export default function ManualInvoiceForm()  {
     } catch (error) {
       alert('Napaka pri shranjevanju računa.');
     }
+
     setLoading(false);
   };
 
@@ -88,15 +114,15 @@ export default function ManualInvoiceForm()  {
     uploadManualInvoice(data)
       .then(() => console.log('Auto-saved invoice'))
       .catch((e) => console.error('Auto-save failed:', e));
-  }, 1000);
+}, 1000);
 
   useEffect(() => {
     const uid = getUid();
-    if (!uid || !month) return;
+    if (!uid || !year || !month) return;
 
     const invoice: ManualInvoice = {
       uid: uid,
-      month: month,
+      month: `${year}-${month}`,
       totalAmount: parseFloat(totalAmount.replace(',', '.') || '0'),
       energyCost: parseFloat(energyCost.replace(',', '.') || '0'),
       networkCost: parseFloat(networkCost.replace(',', '.') || '0'),
@@ -107,26 +133,52 @@ export default function ManualInvoiceForm()  {
     };
 
     debouncedUpload(invoice);
-  }, [month, totalAmount, energyCost, networkCost, surcharges, penalties, vat, note]);
-
+  }, [year, month, totalAmount, energyCost, networkCost, surcharges, penalties, vat, note]);
 
   return (
     <div className="p-4 space-y-4">
-      <h5 className="card-title text-xl font-semibold mb-4">Ročni vnos podatkov računa</h5>
+      <h5 className="text-xl font-semibold mb-4">Ročni vnos podatkov računa</h5>
+      {successMessage && (
+        <p className="text-sm text-green-600 bg-green-50 border border-green-200 px-3 py-2 rounded mb-4">
+          ✅ {successMessage}
+        </p>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
-            <div>
-              <Label htmlFor="month" value="Mesec" className="mb-1 block" />
-              <input
-                id="month"
-                type="month"
-                className="w-full border p-2 rounded"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
-                required
-              />
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label htmlFor="year" value="Leto" className="mb-1 block" />
+                <select
+                  id="year"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  className={`w-full border p-2 rounded ${errors.year ? 'border-red-500' : ''}`}
+                >
+                  <option value="">-- Izberi leto --</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                {errors.year && <p className="text-sm text-red-600 mt-1">⚠️ {errors.year}</p>}
+              </div>
+              <div className="flex-1">
+                <Label htmlFor="month" value="Mesec" className="mb-1 block" />
+                <select
+                  id="month"
+                  value={month}
+                  onChange={(e) => setMonth(e.target.value)}
+                  className={`w-full border p-2 rounded ${errors.month ? 'border-red-500' : ''}`}
+                >
+                  <option value="">-- Izberi mesec --</option>
+                  {months.map((m) => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+                {errors.month && <p className="text-sm text-red-600 mt-1">⚠️ {errors.month}</p>}
+              </div>
             </div>
+
             <div>
               <Label htmlFor="totalAmount" value="Znesek skupaj (€)" className="mb-1 block" />
               <TextInput
@@ -136,9 +188,11 @@ export default function ManualInvoiceForm()  {
                 min="0"
                 value={totalAmount}
                 onChange={(e) => setTotalAmount(e.target.value)}
-                required
+                className={errors.totalAmount ? 'border-red-500' : ''}
               />
+              {errors.totalAmount && <p className="text-sm text-red-600 mt-1">⚠️ {errors.totalAmount}</p>}
             </div>
+
             <div>
               <Label htmlFor="energyCost" value="Strošek energije (€)" className="mb-1 block" />
               <TextInput
@@ -148,9 +202,11 @@ export default function ManualInvoiceForm()  {
                 min="0"
                 value={energyCost}
                 onChange={(e) => setEnergyCost(e.target.value)}
-                required
+                className={errors.energyCost ? 'border-red-500' : ''}
               />
+              {errors.energyCost && <p className="text-sm text-red-600 mt-1">⚠️ {errors.energyCost}</p>}
             </div>
+
             <div>
               <Label htmlFor="networkCost" value="Omrežnina (€)" className="mb-1 block" />
               <TextInput
@@ -160,10 +216,12 @@ export default function ManualInvoiceForm()  {
                 min="0"
                 value={networkCost}
                 onChange={(e) => setNetworkCost(e.target.value)}
-                required
+                className={errors.networkCost ? 'border-red-500' : ''}
               />
+              {errors.networkCost && <p className="text-sm text-red-600 mt-1">⚠️ {errors.networkCost}</p>}
             </div>
           </div>
+
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
             <div>
               <Label htmlFor="surcharges" value="Prispevki in ostalo (€)" className="mb-1 block" />
@@ -174,9 +232,11 @@ export default function ManualInvoiceForm()  {
                 min="0"
                 value={surcharges}
                 onChange={(e) => setSurcharges(e.target.value)}
-                required
+                className={errors.surcharges ? 'border-red-500' : ''}
               />
+              {errors.surcharges && <p className="text-sm text-red-600 mt-1">⚠️ {errors.surcharges}</p>}
             </div>
+
             <div>
               <Label htmlFor="penalties" value="Penali (€)" className="mb-1 block" />
               <TextInput
@@ -186,9 +246,11 @@ export default function ManualInvoiceForm()  {
                 min="0"
                 value={penalties}
                 onChange={(e) => setPenalties(e.target.value)}
-                required
+                className={errors.penalties ? 'border-red-500' : ''}
               />
+              {errors.penalties && <p className="text-sm text-red-600 mt-1">⚠️ {errors.penalties}</p>}
             </div>
+
             <div>
               <Label htmlFor="vat" value="DDV (€)" className="mb-1 block" />
               <TextInput
@@ -198,9 +260,11 @@ export default function ManualInvoiceForm()  {
                 min="0"
                 value={vat}
                 onChange={(e) => setVat(e.target.value)}
-                required
+                className={errors.vat ? 'border-red-500' : ''}
               />
+              {errors.vat && <p className="text-sm text-red-600 mt-1">⚠️ {errors.vat}</p>}
             </div>
+
             <div>
               <Label htmlFor="note" value="Opomba" className="mb-1 block" />
               <TextInput
@@ -213,6 +277,7 @@ export default function ManualInvoiceForm()  {
             </div>
           </div>
         </div>
+
         <div className="col-span-12 flex gap-3 mt-6">
           <Button type="submit" color="primary" isProcessing={loading}>
             {loading ? 'Shranjujem...' : 'Shrani račun'}
@@ -221,6 +286,7 @@ export default function ManualInvoiceForm()  {
             type="reset"
             color="gray"
             onClick={() => {
+              setYear('');
               setMonth('');
               setTotalAmount('');
               setEnergyCost('');
@@ -229,12 +295,14 @@ export default function ManualInvoiceForm()  {
               setPenalties('');
               setVat('');
               setNote('');
+              setErrors({});
             }}
           >
             Prekliči
           </Button>
         </div>
       </form>
+
       <div className="mt-8">
         <Accordion collapseAll>
           <Accordion.Panel>
@@ -357,4 +425,4 @@ export default function ManualInvoiceForm()  {
       </div>
     </div>
   );
-};
+}
