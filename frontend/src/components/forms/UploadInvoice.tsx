@@ -8,6 +8,8 @@ import { auth } from 'src/firebase-config';
 
 const UploadInvoice: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const keyId = auth.config.apiKey;
   const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -15,14 +17,18 @@ const UploadInvoice: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
+      setError(null);
+      setSuccess(null);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
     if (!file) {
-      alert('Naloži datoteko.');
+      setError('Naloži datoteko.');
       return;
     }
 
@@ -32,7 +38,8 @@ const UploadInvoice: React.FC = () => {
     try {
       const uid = await getUid();
       if (!uid) {
-        console.log('Uid notavalible');
+        setError('Uporabniški ID ni na voljo.');
+        return;
       }
 
       const numOfDocsBefore = (await getUserDocIds(uid as string)).length;
@@ -42,17 +49,17 @@ const UploadInvoice: React.FC = () => {
       const numOfDocsAfter = (await getUserDocIds(uid as string)).length;
 
       if (numOfDocsAfter > numOfDocsBefore) {
-        alert('Račun uspešno naložen!');
+        setSuccess('Račun uspešno naložen!');
+        setFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } else {
-        alert('Napaka pri nalaganju podatkov');
-      }
-
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        setError('Napaka pri nalaganju podatkov.');
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      setError('Prišlo je do napake med nalaganjem.');
     }
   };
 
@@ -74,16 +81,34 @@ const UploadInvoice: React.FC = () => {
 
   return (
     <div className="bg-white dark:bg-darkgray p-6 relative w-full break-words">
-      <h5 className="card-title text-xl font-semibold mb-4">Nalaganje izpiska iz MojElektro.si za mesečno porabo</h5>
+      <h5 className="text-xl font-semibold mb-4">
+        Nalaganje izpiska iz MojElektro.si za mesečno porabo
+      </h5>
+
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
             <div>
               <Label htmlFor="fileInput" value="Izberi datoteko" className="mb-1 block" />
-              <FileInput id="fileInput" ref={fileInputRef} accept=".xlsx,.csv" onChange={handleFileChange} required />
-              {file && <p className="text-sm text-green-600 mt-1">Izbrana datoteka: {file.name}</p>}
+              <FileInput
+                id="fileInput"
+                ref={fileInputRef}
+                accept=".xlsx,.csv"
+                onChange={handleFileChange}
+                className={error === 'Naloži datoteko.' ? 'border border-red-500 rounded-lg' : ''}
+              />
+              {file ? (
+                <p className="text-sm text-green-600 mt-1">
+                  Izbrana datoteka: {file.name}
+                </p>
+              ) : error === 'Naloži datoteko.' && (
+                <p className="text-sm text-red-600 mt-1">
+                  ⚠️ Naložite datoteko.
+                </p>
+              )}
             </div>
           </div>
+
           <div className="col-span-12 flex gap-3 mt-2">
             <Button type="submit" color="primary">
               Naloži csv ali excel
@@ -93,11 +118,28 @@ const UploadInvoice: React.FC = () => {
               color="gray"
               onClick={() => {
                 setFile(null);
+                setError(null);
+                setSuccess(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
               }}
             >
               Prekliči
             </Button>
           </div>
+
+          {error && error !== 'Naloži datoteko.' && (
+            <div className="col-span-12 mt-3 text-red-600 text-sm font-medium">
+              ⚠️ {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="col-span-12 mt-3 text-green-600 text-sm font-medium">
+              ✅ {success}
+            </div>
+          )}
         </div>
       </form>
 
