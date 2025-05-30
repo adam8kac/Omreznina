@@ -1,9 +1,16 @@
 import { Icon } from "@iconify/react";
 import { Link } from "react-router";
 
-const NewCustomers = () => {
+const NewCustomers = ({ onClose }: { onClose: () => void }) => {
   return (
-    <div className="bg-white rounded-xl shadow-md p-8">
+    <div className="bg-white rounded-xl shadow-md p-8 relative">
+      <button 
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-700" 
+        onClick={onClose}
+        aria-label="Zapri"
+      >
+        <Icon icon="mdi:close" height={22} />
+      </button>
       <div className="flex items-center gap-4 mb-6">
         <div className="bg-red-100 text-red-500 p-3 rounded-md">
           <Icon icon="mdi:heart-outline" height={24} />

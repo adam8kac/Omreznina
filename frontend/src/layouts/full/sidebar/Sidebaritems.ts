@@ -23,10 +23,10 @@ import { uniqueId } from "lodash";
 
 const SidebarContent: MenuItem[] = [
   {
-    heading: "HOME",
+    heading: "DOMOV",
     children: [
       {
-        name: "Dashboard",
+        name: "Nadzorna plošča",
         icon: "solar:widget-add-line-duotone",
         id: uniqueId(),
         url: "/",
