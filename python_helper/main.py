@@ -42,8 +42,14 @@ async def upload_file(file: UploadFile = File(...)):
         except Exception as e:
             print(f"Error deleting file: {e}")
 
+    from parser import has_invalid_floats
+    if has_invalid_floats(result):
+        print("POZOR! JSON vsebuje še vedno NaN ali inf!!!")
+    else:
+        print("JSON OK: brez NaN in inf.")
+
     return JSONResponse(result)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=12345, reload=True)
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=True)
