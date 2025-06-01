@@ -176,3 +176,8 @@ export const uploadMonthlyOptimal = async (data: FormData) => {
     alert('Napaka pri nalaganju.');
   }
 };
+
+export const getCurrentTimeBlock = async () => {
+  const response = await api.get('timeBlock/now');
+  return response.data;
+};
