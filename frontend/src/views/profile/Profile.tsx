@@ -27,6 +27,13 @@ const ProfilePage = () => {
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | '' }>({ message: '', type: '' });
 
   const [agreedPowers, setAgreedPowers] = useState<Record<number, number>>({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
+  const [agreedPowersInput, setAgreedPowersInput] = useState<Record<number, string>>({
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
+  });
 
   useEffect(() => {
     if (status.message) {
@@ -214,22 +221,25 @@ const ProfilePage = () => {
                   <div key={block} className="mb-3 flex items-center gap-3">
                     <label className="text-sm font-medium w-1/2">Blok {block}</label>
                     <input
-                      type="number"
-                      className="w-full px-4 py-2 border rounded 
-                      [&::-webkit-outer-spin-button]:appearance-none 
-                      [&::-webkit-inner-spin-button]:appearance-none 
-                      [-moz-appearance:textfield]"
+                      type="text"
+                      inputMode="decimal"
+                      className="w-full px-4 py-2 border rounded"
                       placeholder={`Blok ${block} moč`}
-                      value={agreedPowers[block] || ''}
-                      onChange={(e) =>
+                      value={agreedPowersInput[block] || ''}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        setAgreedPowersInput((prev) => ({ ...prev, [block]: raw }));
+
+                        const parsed = parseFloat(raw.replace(',', '.'));
                         setAgreedPowers((prev) => ({
                           ...prev,
-                          [block]: parseFloat(e.target.value || '0'),
-                        }))
-                      }
+                          [block]: isNaN(parsed) ? 0 : parsed,
+                        }));
+                      }}
                     />
                   </div>
                 ))}
+
                 <button
                   className="mt-4 w-full bg-primary text-white rounded py-2 font-medium"
                   onClick={handleSaveAgreedPowers}

@@ -27,20 +27,22 @@ public class FileService {
 
 	public String sendFileToParser(MultipartFile file) throws IOException {
 		String url = "https://omreznina-parser-latest.onrender.com/upload-file";
+		// String url = "http://localhost:12345/upload-file";
 
 		return upoladFile(file, null, url);
 	}
 
 	public String uploadMaxPowerConsumed(MultipartFile file, String powerByMonths)
 			throws IOException {
-		String url =
-		"https://prekoracitev-helper.onrender.com/upload-file-dogovorjena-moc";
+		String url = "https://prekoracitev-helper.onrender.com/upload-file-dogovorjena-moc";
+		// String url = "http://localhost:54321/upload-file-dogovorjena-moc";
 
 		return upoladFile(file, powerByMonths, url);
 	}
 
 	public String calculateOptimalConsumtion(MultipartFile file, String powerByMonths) throws IOException {
 		String url = "https://prekoracitev-helper.onrender.com/optimal";
+		// String url = "http://localhost:54321/optimal";
 
 		return upoladFile(file, powerByMonths, url);
 	}

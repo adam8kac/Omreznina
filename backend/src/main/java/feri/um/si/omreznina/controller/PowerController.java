@@ -13,27 +13,28 @@ import feri.um.si.omreznina.service.PowerService;
 @RestController
 public class PowerController {
 
-    private PowerService powerService;
+	private PowerService powerService;
 
-    public PowerController(PowerService powerService) {
-        this.powerService = powerService;
-    }
+	public PowerController(PowerService powerService) {
+		this.powerService = powerService;
+	}
 
-    @GetMapping("/tariff")
-    public ResponseEntity<Tariff> getTariff() {
-        try {
-            return ResponseEntity.ok(powerService.getTariff());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
+	@GetMapping("/tariff")
+	public ResponseEntity<Tariff> getTariff() {
+		try {
+			return ResponseEntity.ok(powerService.getTariff());
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
 
-    @GetMapping("/energy-price")
-    public ResponseEntity<Double> getPricePerHour(@RequestParam("consumption") double consumption) {
-        try {
-            return ResponseEntity.ok(powerService.getPricePerHour(consumption));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
+	@GetMapping("/energy-price")
+	public ResponseEntity<Double> getPricePerHour(@RequestParam("consumption") double consumption) {
+		try {
+			return ResponseEntity.ok(powerService.getPricePerHour(consumption));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
 }

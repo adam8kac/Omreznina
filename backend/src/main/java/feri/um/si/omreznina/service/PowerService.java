@@ -12,58 +12,58 @@ import feri.um.si.omreznina.type.TariffType;
 
 @Service
 public class PowerService {
-    private Tariff tariff;
-    private final HolidayChecker holidayChecker;
+	private Tariff tariff;
+	private final HolidayChecker holidayChecker;
 
-    public PowerService(HolidayChecker holidayChecker) {
-        this.holidayChecker = holidayChecker;
-    }
+	public PowerService(HolidayChecker holidayChecker) {
+		this.holidayChecker = holidayChecker;
+	}
 
-    public Tariff getTariff() {
-        tariff = new Tariff(setType());
-        return tariff;
-    }
+	public Tariff getTariff() {
+		tariff = new Tariff(setType());
+		return tariff;
+	}
 
-    public double getPricePerHour(double energyConsumed) {
-        Tariff tariff = getTariff();
-        double pricePerkWH = tariff.getPrice();
-        double priceToPay = pricePerkWH * energyConsumed;
-        return priceToPay;
-    }
+	public double getPricePerHour(double energyConsumed) {
+		Tariff tariff = getTariff();
+		double pricePerkWH = tariff.getPrice();
+		double priceToPay = pricePerkWH * energyConsumed;
+		return priceToPay;
+	}
 
-    private TariffType setType() {
-        LocalDate date = LocalDate.now();
+	private TariffType setType() {
+		LocalDate date = LocalDate.now();
 
-        if (holidayChecker.isHoliday(date) || isInTimeRnage() || isWeekend()) {
-            return TariffType.MT;
-        } else {
-            return TariffType.VT;
-        }
+		if (holidayChecker.isHoliday(date) || isInTimeRnage() || isWeekend()) {
+			return TariffType.MT;
+		} else {
+			return TariffType.VT;
+		}
 
-    }
+	}
 
-    private boolean isInTimeRnage() {
-        LocalTime currentTime = LocalTime.now();
-        int currentHour = currentTime.getHour();
-        int[] mtHours = { 22, 23, 1, 2, 3, 4, 5, 6 };
+	private boolean isInTimeRnage() {
+		LocalTime currentTime = LocalTime.now();
+		int currentHour = currentTime.getHour();
+		int[] mtHours = { 22, 23, 1, 2, 3, 4, 5, 6 };
 
-        for (int hour : mtHours) {
-            if (currentHour == hour) {
-                return true;
-            }
-        }
-        return false;
-    }
+		for (int hour : mtHours) {
+			if (currentHour == hour) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    private boolean isWeekend() {
-        DayOfWeek[] weekends = { DayOfWeek.SATURDAY, DayOfWeek.SUNDAY };
-        DayOfWeek today = LocalDate.now().getDayOfWeek();
+	private boolean isWeekend() {
+		DayOfWeek[] weekends = { DayOfWeek.SATURDAY, DayOfWeek.SUNDAY };
+		DayOfWeek today = LocalDate.now().getDayOfWeek();
 
-        for (DayOfWeek day : weekends) {
-            if (day.equals(today)) {
-                return true;
-            }
-        }
-        return false;
-    }
+		for (DayOfWeek day : weekends) {
+			if (day.equals(today)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
