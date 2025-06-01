@@ -33,8 +33,7 @@ public class FileService {
 
 	public String uploadMaxPowerConsumed(MultipartFile file, String powerByMonths)
 			throws IOException {
-		String url =
-		"https://prekoracitev-helper.onrender.com/upload-file-dogovorjena-moc";
+		String url = "https://prekoracitev-helper.onrender.com/upload-file-dogovorjena-moc";
 
 		return upoladFile(file, powerByMonths, url);
 	}

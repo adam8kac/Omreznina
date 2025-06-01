@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-//const api = axios.create({ baseURL: 'http://localhost:8080/' });
+// const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -128,10 +128,7 @@ export const getSubcollectionDocsConsumption = async (
   return res.data;
 };
 
-export const getSubcollectionsConsumption = async (
-  uid: string,
-  docId: string
-): Promise<string[]> => {
+export const getSubcollectionsConsumption = async (uid: string, docId: string): Promise<string[]> => {
   const res = await api.get(`firestore/subCollections?uid=${uid}&docId=${docId}`);
   return res.data;
 };

@@ -6,7 +6,7 @@ import instructions4 from '../../assets/images/instructions/instructions4.png';
 import { getUserDocIds, uploadMonthlyPower, uploadMonthlyOptimal, getAgreedPowers } from 'src/index';
 import { auth } from 'src/firebase-config';
 
-export default function Upload15min () {
+export default function Upload15min() {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -45,8 +45,20 @@ export default function Upload15min () {
       const numOfDocsBefore = (await getUserDocIds(uid as string)).length;
       formData.append('uid', uid);
 
-      const agreedPowers = await getAgreedPowers(uid);
-      formData.append("power_by_months", JSON.stringify(agreedPowers));
+      let agreedPowers: Record<string, number> | null = null;
+      try {
+        agreedPowers = await getAgreedPowers(uid);
+      } catch (err) {
+        setError('Najprej nastavi dogovorjene moči v razdelku "Moj profil"!');
+        return;
+      }
+      if (!agreedPowers || Object.keys(agreedPowers).length === 0) {
+        setError('Najprej nastavi dogovorjene moči v razdelku "Moj profil"!');
+        return;
+      }
+      // Divide all agreed powers by 1000
+      agreedPowers = Object.fromEntries(Object.entries(agreedPowers).map(([key, value]) => [key, value / 1000]));
+      formData.append('power_by_months', JSON.stringify(agreedPowers));
 
       await uploadMonthlyPower(formData);
       await uploadMonthlyOptimal(formData);
@@ -86,7 +98,9 @@ export default function Upload15min () {
 
   return (
     <div className="bg-white dark:bg-darkgray p-6 relative w-full break-words">
-      <h5 className="card-title text-xl font-semibold mb-4">Nalaganje izpiska iz MojElektro.si za prekoračitve in optimum dogovorjene moči</h5>
+      <h5 className="card-title text-xl font-semibold mb-4">
+        Nalaganje izpiska iz MojElektro.si za prekoračitve in optimum dogovorjene moči
+      </h5>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-6">
           <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
@@ -101,8 +115,8 @@ export default function Upload15min () {
               />
               {file ? (
                 <p className="text-sm text-green-600 mt-1">Izbrana datoteka: {file.name}</p>
-              ) : error === 'Naloži datoteko.' && (
-                <p className="text-sm text-red-600 mt-1">⚠️ Naložite datoteko.</p>
+              ) : (
+                error === 'Naloži datoteko.' && <p className="text-sm text-red-600 mt-1">⚠️ Naložite datoteko.</p>
               )}
             </div>
           </div>
@@ -127,16 +141,10 @@ export default function Upload15min () {
             </Button>
           </div>
           {error && error !== 'Naloži datoteko.' && (
-            <div className="col-span-12 mt-3 text-red-600 text-sm font-medium">
-              ⚠️ {error}
-            </div>
+            <div className="col-span-12 mt-3 text-red-600 text-sm font-medium">⚠️ {error}</div>
           )}
 
-          {success && (
-            <div className="col-span-12 mt-3 text-green-600 text-sm font-medium">
-              ✅ {success}
-            </div>
-          )}
+          {success && <div className="col-span-12 mt-3 text-green-600 text-sm font-medium">✅ {success}</div>}
         </div>
       </form>
 
@@ -168,14 +176,13 @@ export default function Upload15min () {
                   Izberi prikaz <strong>Moč</strong>, da se prikažejo podatki o odjemni in oddani delovni moči.
                 </li>
                 <li>
-                  Znotraj izbirnika obdobja izberi <strong>Prejšnje leto</strong> ali drugo obdobje, nato klikni <strong>Potrdi</strong>.
+                  Znotraj izbirnika obdobja izberi <strong>Prejšnje leto</strong> ali drugo obdobje, nato klikni{' '}
+                  <strong>Potrdi</strong>.
                 </li>
                 <li>
                   Klikni gumb <strong>Izvozi Excel</strong> ali <strong>Izvozi CSV</strong>, da preneseš datoteko.
                 </li>
-                <li>
-                  Ko je datoteka prenesena, jo naloži v zgornji obrazec.
-                </li>
+                <li>Ko je datoteka prenesena, jo naloži v zgornji obrazec.</li>
               </ol>
               <div className="mt-4 space-y-4">
                 <img src={instructions1} alt="Koraki 1–2" className="rounded-md border shadow-sm" />
@@ -187,5 +194,4 @@ export default function Upload15min () {
       </div>
     </div>
   );
-};
-
+}

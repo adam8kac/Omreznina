@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState } from 'react';
 import NewCustomers from 'src/components/dashboard/NewCustomers';
 import MonthlyConsumptionChart from 'src/components/dashboard/MonthlyConsumptionChart';
+import { PowerStats } from 'src/components/dashboard/PowerStats';
 
 const Dashboard = () => {
   const [showNewCustomers, setShowNewCustomers] = useState(true);
@@ -18,7 +19,7 @@ const Dashboard = () => {
         </p>
       </div>
       <div className="grid grid-cols-12 gap-6">
-        <div className={showNewCustomers ? "lg:col-span-8 col-span-12" : "col-span-12"}>
+        <div className={showNewCustomers ? 'lg:col-span-8 col-span-12' : 'col-span-12'}>
           <MonthlyConsumptionChart />
         </div>
         {showNewCustomers && (
@@ -30,6 +31,9 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+        <div className={showNewCustomers ? 'lg:col-span-8 col-span-12' : 'col-span-12'}>
+          <PowerStats />
+        </div>
       </div>
     </div>
   );
