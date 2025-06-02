@@ -101,4 +101,15 @@ public class FirestoreController {
 			return ResponseEntity.status(500).body("Napaka: " + e.getMessage());
 		}
 	}
+
+	@PostMapping("/setEt")
+	public ResponseEntity<String> saveEt(@RequestParam String uid) {
+		try {
+			service.saveTariff(uid);
+			return ResponseEntity.ok("Et added");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Napaka pri shranjevanju tarife", e);
+			return ResponseEntity.badRequest().build();
+		}
+	}
 }

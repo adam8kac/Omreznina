@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -63,7 +64,6 @@ public class FirestoreControllerTest {
 		String uid = "user1";
 		String docId = "2023-01";
 
-		// Če uporabljaš novo metodo z več parametri
 		when(firestoreService.getDocumentData(uid, docId, null, null))
 				.thenThrow(new RuntimeException("fail"));
 
@@ -72,7 +72,6 @@ public class FirestoreControllerTest {
 				.param("docId", docId))
 				.andExpect(status().isBadRequest());
 	}
-
 
 	void testGetSubcollections_success() throws Exception {
 		String uid = "user1";
@@ -153,8 +152,8 @@ public class FirestoreControllerTest {
 		doNothing().when(firestoreService).saveManualInvoice(any());
 
 		mockMvc.perform(post("/firestore/manual")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(json))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json))
 				.andExpect(status().isOk());
 	}
 
@@ -170,10 +169,29 @@ public class FirestoreControllerTest {
 		doThrow(new RuntimeException("Simulated fail")).when(firestoreService).saveManualInvoice(any());
 
 		mockMvc.perform(post("/firestore/manual")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(json))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json))
 				.andExpect(status().is5xxServerError())
 				.andExpect(content().string(org.hamcrest.Matchers.containsString("Napaka")));
+	}
+
+	@Test
+	void testSaveEt_success() throws Exception {
+		mockMvc.perform(post("/firestore/setEt").param("uid", "mojUid"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("Et added"));
+
+		verify(firestoreService).saveTariff("mojUid");
+	}
+
+	@Test
+	void testSaveEt_failure() throws Exception {
+		doThrow(new RuntimeException("BOOM")).when(firestoreService).saveTariff(anyString());
+
+		mockMvc.perform(post("/firestore/setEt").param("uid", "mojUid"))
+				.andExpect(status().isBadRequest());
+
+		verify(firestoreService).saveTariff("mojUid");
 	}
 
 }

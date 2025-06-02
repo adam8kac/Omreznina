@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-// const api = axios.create({ baseURL: 'http://localhost:8080/' });
+// const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -179,5 +179,11 @@ export const uploadMonthlyOptimal = async (data: FormData) => {
 
 export const getCurrentTimeBlock = async () => {
   const response = await api.get('timeBlock/now');
+  return response.data;
+};
+
+export const saveEt = async (uid: string) => {
+  const response = await api.post(`firestore/setEt?uid=${uid}`);
+  console.log(uid);
   return response.data;
 };
