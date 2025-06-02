@@ -8,7 +8,7 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import zxcvbn from 'zxcvbn';
-import { getAgreedPowers, getCurrentTariff, getDocumentData, saveAgreedPowers, saveEt } from 'src/index';
+import { getAgreedPowers, getDocumentData, saveAgreedPowers, saveEt } from 'src/index';
 
 const ProfilePage = () => {
   const user = auth.currentUser!;
@@ -109,7 +109,6 @@ const ProfilePage = () => {
 
   const handleSaveAgreedPowers = async () => {
     if (!validateDecreasing()) {
-      alert('Vsak naslednji blok mora imeti vrendost več ali enako prejšnjemu!');
       return;
     }
 
@@ -307,6 +306,7 @@ const ProfilePage = () => {
                   </div>
                 ))}
 
+                {validationError && <div className="mb-3 text-red-600 text-center text-sm">{validationError}</div>}
                 <div className="flex items-center">
                   <label className="text-sm font-medium ">Tip tarife ki jo imate</label>
                   <button className="px-5 py-2 text-white bg-primary rounded ml-20" onClick={() => handleEt()}>
