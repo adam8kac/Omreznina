@@ -1,7 +1,7 @@
 import { getAuth } from 'firebase/auth';
-import { Select } from 'flowbite-react';
+import { Select, Accordion } from 'flowbite-react';
 import { useEffect, useState } from 'react';
-import { getDocumentDataConsumption,getSubcollectionDocsConsumption,getSubcollectionsConsumption } from 'src/index';
+import { getDocumentDataConsumption, getSubcollectionDocsConsumption, getSubcollectionsConsumption } from 'src/index';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts';
 
 const BlockPricePieChart = ({
@@ -14,7 +14,6 @@ const BlockPricePieChart = ({
   excessCost: number;
 }) => {
   const optimalCost = totalCost - excessCost;
-  const saved = Math.max(excessCost - optimalCost, 0);
 
   const blockColors: Record<number, string> = {
     1: '#fa144d',
@@ -31,15 +30,17 @@ const BlockPricePieChart = ({
       <h3 className="text-center font-semibold mb-2">Blok {blockNumber}</h3>
       <PieChart
         hideLegend
-        series={[{
-          arcLabel: (item) => formatEUR(item.value),
-          arcLabelMinAngle: 15,
-          outerRadius: 70,
-          data: [
-            { id: 0, value: optimalCost, label: 'Optimalna poraba', color: `${blockColors[blockNumber]}B3`},
-            { id: 1, value: excessCost, label: 'Prekoračitev', color: 'rgba(255, 0, 0, 0.7)' }
-          ],
-        }]}
+        series={[
+          {
+            arcLabel: (item) => formatEUR(item.value),
+            arcLabelMinAngle: 15,
+            outerRadius: 70,
+            data: [
+              { id: 0, value: optimalCost, label: 'Optimalna poraba', color: `${blockColors[blockNumber]}B3` },
+              { id: 1, value: excessCost, label: 'Prekoračitev', color: 'rgba(255, 0, 0, 0.7)' },
+            ],
+          },
+        ]}
         width={200}
         height={180}
         sx={{
@@ -50,24 +51,24 @@ const BlockPricePieChart = ({
         }}
       />
       <div className="text-sm mt-3 text-center">
-        <p><strong>Optimalna cena:</strong> {formatEUR(optimalCost)}</p>
-        <p><strong>Prekoračitev:</strong> {formatEUR(excessCost)}</p>
-        <p><strong>Privarčevali bi:</strong> {formatEUR(saved)}</p>
+        <p>
+          <strong>Lahko bi plačali:</strong> {formatEUR(optimalCost)}
+        </p>
+        <p>
+          <strong>Preplačali ste:</strong> {formatEUR(excessCost)}
+        </p>
+        <p>
+          <strong>Plačali ste:</strong>{' '}
+          {formatEUR(totalCost) + ' (' + formatEUR(excessCost) + ' + ' + formatEUR(optimalCost) + ')'}
+        </p>
       </div>
     </div>
   );
 };
 
-const PricePieChart = ({
-  optimum,
-  actual,
-}: {
-  optimum: number;
-  actual: number;
-}) => {
+const PricePieChart = ({ optimum, actual }: { optimum: number; actual: number }) => {
   const excess = Math.max(actual - optimum, 0);
   const normal = actual - excess;
-  const saved = Math.max(actual - 2 * optimum, 0);
 
   const formatEUR = (value: number) => `${value.toFixed(2)} €`;
 
@@ -76,15 +77,17 @@ const PricePieChart = ({
       <h3 className="text-center text-lg font-semibold mb-4">Skupna mesečna poraba</h3>
       <PieChart
         hideLegend
-        series={[{
-          arcLabel: (item) => formatEUR(item.value),
-          arcLabelMinAngle: 15,
-          outerRadius: 90,
-          data: [
-            { id: 0, value: normal, label: 'Optimalna poraba', color: '#2FBE8F' },
-            { id: 1, value: excess, label: 'Prekoračitev', color: 'rgba(255, 0, 0, 0.7)' },
-          ],
-        }]}
+        series={[
+          {
+            arcLabel: (item) => formatEUR(item.value),
+            arcLabelMinAngle: 15,
+            outerRadius: 90,
+            data: [
+              { id: 0, value: normal, label: 'Optimalna poraba', color: '#2FBE8F' },
+              { id: 1, value: excess, label: 'Prekoračitev', color: 'rgba(255, 0, 0, 0.7)' },
+            ],
+          },
+        ]}
         width={300}
         height={240}
         sx={{
@@ -95,9 +98,16 @@ const PricePieChart = ({
         }}
       />
       <div className="text-sm mt-4 text-center">
-        <p><strong>Optimalna cena:</strong> {formatEUR(optimum)}</p>
-        <p><strong>Prekoračitev:</strong> {formatEUR(excess)}</p>
-        <p><strong>Privarčevali bi:</strong> {formatEUR(saved)}</p>
+        <p>
+          <strong>Lahko bi plačali:</strong> {formatEUR(optimum)}
+        </p>
+        <p>
+          <strong>Preplačali ste:</strong> {formatEUR(excess)}
+        </p>
+        <p>
+          <strong>Plačali ste:</strong>{' '}
+          {formatEUR(actual) + ' (' + formatEUR(excess) + ' + ' + formatEUR(optimum) + ')'}
+        </p>
       </div>
     </div>
   );
@@ -115,6 +125,7 @@ export const PowerStats = () => {
   const [optimumData, setOptimumData] = useState<Record<string, any> | null>(null);
   const [moneySpent, setMoneySpent] = useState<number>();
   const [optimumMoneySpent, setOptimumMoneySpent] = useState<number>();
+  const [showSummary] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -161,9 +172,18 @@ export const PowerStats = () => {
   useEffect(() => {
     if (selectedMonth && selectedYear) {
       const monthNames: Record<string, string> = {
-        '01': 'Januar', '02': 'Februar', '03': 'Marec', '04': 'April',
-        '05': 'Maj', '06': 'Junij', '07': 'Julij', '08': 'Avgust',
-        '09': 'September', '10': 'Oktober', '11': 'November', '12': 'December',
+        '01': 'Januar',
+        '02': 'Februar',
+        '03': 'Marec',
+        '04': 'April',
+        '05': 'Maj',
+        '06': 'Junij',
+        '07': 'Julij',
+        '08': 'Avgust',
+        '09': 'September',
+        '10': 'Oktober',
+        '11': 'November',
+        '12': 'December',
       };
       setFormatedDate(`${monthNames[selectedMonth] || selectedMonth} ${selectedYear}`);
     }
@@ -203,7 +223,9 @@ export const PowerStats = () => {
         <label className="block mb-1">Izberi leto:</label>
         <Select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
           {years?.map((year) => (
-            <option key={year} value={year}>{year}</option>
+            <option key={year} value={year}>
+              {year}
+            </option>
           ))}
         </Select>
       </div>
@@ -212,7 +234,9 @@ export const PowerStats = () => {
         <label className="block mb-1">Izberi mesec:</label>
         <Select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
           {months?.map((month) => (
-            <option key={month} value={month}>{month}</option>
+            <option key={month} value={month}>
+              {month}
+            </option>
           ))}
         </Select>
       </div>
@@ -222,24 +246,29 @@ export const PowerStats = () => {
       {chartData.length > 0 && moneySpent && optimumMoneySpent ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
-            {[1, 2, 3, 4, 5].map((blockNumber) => {
+            {[1, 2, 3, 4].map((blockNumber) => {
               const normalSum = chartData.reduce((sum, day) => sum + (day[`b${blockNumber}_normal`] || 0), 0);
               const excessSum = chartData.reduce((sum, day) => sum + (day[`b${blockNumber}_excess`] || 0), 0);
               const totalPower = normalSum + excessSum;
 
-              const totalMonthlyPower = chartData.reduce((sum, day) => (
-                sum + [1, 2, 3, 4, 5].reduce((s, b) => s + (day[`b${b}_normal`] || 0) + (day[`b${b}_excess`] || 0), 0)
-              ), 0);
+              const totalMonthlyPower = chartData.reduce(
+                (sum, day) =>
+                  sum +
+                  [1, 2, 3, 4, 5].reduce((s, b) => s + (day[`b${b}_normal`] || 0) + (day[`b${b}_excess`] || 0), 0),
+                0
+              );
 
               if (!totalPower || !totalMonthlyPower) return null;
-              const blockRatio = totalPower / totalMonthlyPower;
 
               return (
                 <BlockPricePieChart
                   key={blockNumber}
                   blockNumber={blockNumber}
-                  totalCost={Number((blockRatio * moneySpent).toFixed(2))}
-                  excessCost={Number((blockRatio * (moneySpent - optimumMoneySpent)).toFixed(2))}
+                  totalCost={Number(prekoracitveData?.[blockNumber]?.['total price'])}
+                  excessCost={
+                    Number(prekoracitveData?.[blockNumber]?.['total price']) -
+                    Number(optimumData?.[blockNumber]?.['total price'])
+                  }
                 />
               );
             })}
@@ -250,6 +279,64 @@ export const PowerStats = () => {
       ) : (
         <p className="text-gray-500">Ni podatkov za prikaz.</p>
       )}
+      <Accordion collapseAll className="mt-4 border rounded-lg">
+        <Accordion.Panel>
+          <Accordion.Title className="text-blue-700 dark:text-blue-400">
+            {showSummary ? 'Skrij razlago vaših podatkov' : 'Prikaži razlago vaših podatkov'}
+          </Accordion.Title>
+          <Accordion.Content className="bg-gray-50 dark:bg-gray-900">
+            {[1, 2, 3, 4].map((blockNumber) => {
+              const totalPrice = Number(prekoracitveData?.[blockNumber]?.['total price']);
+              const optimalPrice = Number(optimumData?.[blockNumber]?.['total price']);
+              const excessPrice = totalPrice - optimalPrice;
+
+              const dataArr = prekoracitveData?.[blockNumber]?.data || [];
+              const optimumArr = optimumData?.[blockNumber]?.data || [];
+              const agreedPower = dataArr[0]?.agreedPower ?? '-';
+              const optimalAgreedPower = optimumArr[0]?.agreedPower ?? '-';
+
+              if (!totalPrice || !optimalPrice) return null;
+
+              return (
+                <div key={blockNumber} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 mb-2">
+                  <p className="mb-2">
+                    V bloku: <b>{blockNumber}</b> ste plačali <b>{totalPrice.toFixed(2)} €</b>, saj imate zakupljenih{' '}
+                    <b>{agreedPower} kW</b> dogovorjene moči.
+                  </p>
+                  <p className="mb-2">
+                    To pomeni da ste preplačali <b>{excessPrice.toFixed(2)} €</b>, in bi lahko plačali{' '}
+                    <b>{optimalPrice.toFixed(2)} €</b>, če bi imeli zakupljenih <b>{optimalAgreedPower} kW</b>.
+                  </p>
+                </div>
+              );
+            })}
+            <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+              <p className="mb-2">
+                V mesecu: <b>{formatedDate}</b>, ste skupaj plačali <b>{moneySpent}€</b>.
+              </p>
+              <p className="mb-2">
+                To pomeni da ste{' '}
+                <b>
+                  preplačali {(moneySpent ?? 0) - (optimumMoneySpent ?? 0)}€, in bi lahko palčali {optimumMoneySpent}€
+                </b>
+                , če bi imeli v vsakem bloku naše priporočene dogovorjene moči.
+              </p>
+            </div>
+            <p className="mt-3 text-blue-700 dark:text-blue-400 italic">
+              <p>
+                <b>
+                  To ni cena celotnega računa ampak zgolj koliko ste plačali zaradi vaše dogovorjene moči ter 15
+                  minutnih prekoračitev.
+                </b>
+                <br />
+                <br />
+                Naše priporočitve so izračunane glede na vaše naložene podatke, če se bi poraba spremenila, bi se lahko
+                spremenila tudi cena in priporočena dogovorjena moč.
+              </p>
+            </p>
+          </Accordion.Content>
+        </Accordion.Panel>
+      </Accordion>
     </div>
   );
 };

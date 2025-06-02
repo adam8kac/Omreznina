@@ -123,9 +123,9 @@ export const SimulatePower = () => {
       <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
         Izberite naprave, katerih porabo želite simulirati. Na podlagi izbranih naprav in dogovorjene moči bo prikazan
         rezultat simulacije.
-        <p className="text-gray-400 text-lg">
-          Preizkusi različne kombinacije naprav in preveri, ali presegaš dogovorjeno moč.
-        </p>
+      </p>
+      <p className="text-gray-400 text-lg mx-auto text-center">
+        Preizkusi različne kombinacije naprav in preveri, ali presegaš dogovorjeno moč.
       </p>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {availableDevices

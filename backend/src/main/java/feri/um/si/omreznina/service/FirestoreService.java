@@ -241,4 +241,16 @@ public class FirestoreService {
 		}
 	}
 
+	public void saveTariff(String uid) {
+		Map<String, Object> data = new HashMap<>();
+		data.put("price", 0.10890);
+		try {
+			db.collection(uid).document("et").set(data).get();
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException)
+				Thread.currentThread().interrupt();
+			logger.warning("Failed to save tariff: " + e.getMessage());
+		}
+	}
+
 }

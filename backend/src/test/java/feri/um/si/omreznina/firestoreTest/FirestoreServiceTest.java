@@ -352,34 +352,27 @@ public class FirestoreServiceTest {
 		});
 		assertTrue(ex.getMessage().contains("Firestore fail"));
 	}
-	// @Test
-	// void testSaveAndGetAgreedPowers_success() throws Exception {
-	// 	DocumentReference userDoc = mock(DocumentReference.class);
-	// 	ApiFuture<WriteResult> writeFuture = mock(ApiFuture.class);
-	// 	DocumentSnapshot docSnap = mock(DocumentSnapshot.class);
-	// 	ApiFuture<DocumentSnapshot> readFuture = mock(ApiFuture.class);
-	// 	CollectionReference usersCol = mock(CollectionReference.class);
-	// 	when(db.collection("users")).thenReturn(usersCol);
-	// 	when(usersCol.document("testUid")).thenReturn(userDoc);
-	// 	when(userDoc.set(any(Map.class), eq(SetOptions.merge()))).thenReturn(writeFuture);
-	// 	when(writeFuture.get()).thenReturn(null);
-	// 	when(userDoc.get()).thenReturn(readFuture);
-	// 	when(readFuture.get()).thenReturn(docSnap);
-	// 	when(docSnap.exists()).thenReturn(true);
-	// 	when(docSnap.contains("agreedPowers")).thenReturn(true);
-	// 	when(docSnap.get("agreedPowers")).thenReturn(Map.of("1", 2000L, "2", 1500L));
-	// 	Map<Integer, Integer> input = Map.of(1, 2000, 2, 1500);
-	// 	firestoreService.saveAgreedPowers("testUid", input);
-	// 	Map<String, Object> result = firestoreService.getDocumentData("testUid", "agreedPowers", null, null);
-	// 	assertNotNull(result);
-	// 	assertEquals(2, result.size());
-	// 	assertEquals(2000, result.get(1));
-	// 	assertEquals(1500, result.get(2));
-	// 	verify(db, times(2)).collection("users"); 
-	// 	verify(usersCol, times(2)).document("testUid");
-	// 	verify(userDoc).set(any(Map.class), eq(SetOptions.merge()));
-	// 	verify(userDoc).get();
-	// }
 
+@Test
+void testSaveTariff_savesCorrectly() throws Exception {
+    Firestore mockDb = mock(Firestore.class);
+    CollectionReference mockCollection = mock(CollectionReference.class);
+    DocumentReference mockDocRef = mock(DocumentReference.class);
+    ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
+
+    when(mockDb.collection("someUid")).thenReturn(mockCollection);
+    when(mockCollection.document("et")).thenReturn(mockDocRef);
+    when(mockDocRef.set(any(Map.class))).thenReturn(mockFuture);
+    when(mockFuture.get()).thenReturn(null);
+
+    FirestoreService firestoreService = new FirestoreService(mockDb);
+
+    firestoreService.saveTariff("someUid");
+
+    verify(mockDb).collection("someUid");
+    verify(mockCollection).document("et");
+    verify(mockDocRef).set(eq(Map.of("price", 0.10890)));
+    verify(mockFuture).get();
+}
 
 }

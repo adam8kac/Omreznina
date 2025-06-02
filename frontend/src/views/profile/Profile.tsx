@@ -8,7 +8,7 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import zxcvbn from 'zxcvbn';
-import { saveAgreedPowers } from 'src/index';
+import { getAgreedPowers, getDocumentData, saveAgreedPowers, saveEt } from 'src/index';
 
 const ProfilePage = () => {
   const user = auth.currentUser!;
@@ -34,6 +34,9 @@ const ProfilePage = () => {
     4: '',
     5: '',
   });
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [et, setEt] = useState<string>();
+  const [isEt, setIsEt] = useState(true);
 
   useEffect(() => {
     if (status.message) {
@@ -43,6 +46,35 @@ const ProfilePage = () => {
   }, [status]);
 
   useEffect(() => {
+    if (!user.uid) return;
+    (async () => {
+      const ap = await getAgreedPowers(user.uid);
+      setAgreedPowers(ap);
+      setAgreedPowersInput({
+        1: ap[1] ? (ap[1] / 1000).toString() : '',
+        2: ap[2] ? (ap[2] / 1000).toString() : '',
+        3: ap[3] ? (ap[3] / 1000).toString() : '',
+        4: ap[4] ? (ap[4] / 1000).toString() : '',
+        5: ap[5] ? (ap[5] / 1000).toString() : '',
+      });
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!user.uid) return;
+    (async () => {
+      try {
+        await getDocumentData(user.uid, 'et');
+        setEt('et');
+      } catch (err) {}
+    })();
+  }, []);
+
+  if (et == undefined) {
+    setEt('Vt/Mt');
+  }
+
+  useEffect(() => {
     if (newPassword.length > 0) {
       const res = zxcvbn(newPassword);
       setPasswordStrength(res.score);
@@ -50,6 +82,17 @@ const ProfilePage = () => {
       setPasswordStrength(0);
     }
   }, [newPassword]);
+
+  const handleEt = async () => {
+    if (et == 'Vt/Mt') {
+      setEt('et');
+      setIsEt(true);
+    } else {
+      setEt('Vt/Mt');
+      setIsEt(false);
+    }
+    console.log(et);
+  };
 
   const handleProfileUpdate = async () => {
     setNameLoading(true);
@@ -65,8 +108,20 @@ const ProfilePage = () => {
   };
 
   const handleSaveAgreedPowers = async () => {
+    if (!validateDecreasing()) {
+      return;
+    }
+
+    const dataToSave: Record<number, number> = {};
+    [1, 2, 3, 4, 5].forEach((block) => {
+      const val = parseFloat(agreedPowersInput[block]?.replace(',', '.') || '0');
+      dataToSave[block] = isNaN(val) ? 0 : val;
+    });
     try {
-      await saveAgreedPowers(user.uid, agreedPowers);
+      if (!isEt) {
+        await saveEt(user.uid);
+      }
+      await saveAgreedPowers(user.uid, dataToSave);
       setStatus({ message: 'Dogovorjene moči uspešno shranjene.', type: 'success' });
     } catch (err) {
       setStatus({ message: 'Napaka pri shranjevanju moči.', type: 'error' });
@@ -127,6 +182,18 @@ const ProfilePage = () => {
       </div>
     );
   }
+
+  const validateDecreasing = () => {
+    const vals = [1, 2, 3, 4, 5].map((i) => parseFloat(agreedPowersInput[i]?.replace(',', '.') || '0'));
+    for (let i = 0; i < vals.length - 1; i++) {
+      if (vals[i] < vals[i + 1]) {
+        setValidationError(`Blok ${i + 2} ne sme biti večji od blok ${i + 1}.`);
+        return false;
+      }
+    }
+    setValidationError(null);
+    return true;
+  };
 
   return (
     <div className="w-full min-h-screen flex justify-center items-start py-16 bg-white rounded-2xl shadow-xl">
@@ -224,12 +291,11 @@ const ProfilePage = () => {
                       type="text"
                       inputMode="decimal"
                       className="w-full px-4 py-2 border rounded"
-                      placeholder={`Blok ${block} moč`}
+                      placeholder={`${agreedPowers[block] / 1000} kW`}
                       value={agreedPowersInput[block] || ''}
                       onChange={(e) => {
                         const raw = e.target.value;
                         setAgreedPowersInput((prev) => ({ ...prev, [block]: raw }));
-
                         const parsed = parseFloat(raw.replace(',', '.'));
                         setAgreedPowers((prev) => ({
                           ...prev,
@@ -239,6 +305,14 @@ const ProfilePage = () => {
                     />
                   </div>
                 ))}
+
+                {validationError && <div className="mb-3 text-red-600 text-center text-sm">{validationError}</div>}
+                <div className="flex items-center">
+                  <label className="text-sm font-medium ">Tip tarife ki jo imate</label>
+                  <button className="px-5 py-2 text-white bg-primary rounded ml-20" onClick={() => handleEt()}>
+                    {isEt ? 'Vt/Mt' : 'Et'}
+                  </button>
+                </div>
 
                 <button
                   className="mt-4 w-full bg-primary text-white rounded py-2 font-medium"
