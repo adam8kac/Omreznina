@@ -5,12 +5,15 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 
 import feri.um.si.omreznina.model.ManualInvoice;
+import feri.um.si.omreznina.model.MfaSettings;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+
 import java.util.concurrent.CancellationException;
 
 @Service
@@ -251,6 +254,30 @@ public class FirestoreService {
 				Thread.currentThread().interrupt();
 			logger.warning("Failed to save tariff: " + e.getMessage());
 		}
+	}
+
+	public void saveMfaSettings(String uid, MfaSettings settings) {
+		try {
+			db.collection(uid)
+					.document("mfa")
+					.set(settings)
+					.get();
+		} catch (Exception e) {
+			logger.warning("Failed to save mfa settings: " + e.toString());
+		}
+	}
+
+	public MfaSettings getMfaSettings(String uid) {
+		try {
+			DocumentReference docRef = db.collection(uid).document("mfa");
+			DocumentSnapshot snapshot = docRef.get().get();
+			if (snapshot.exists()) {
+				return snapshot.toObject(MfaSettings.class);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

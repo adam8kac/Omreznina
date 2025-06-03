@@ -9,10 +9,11 @@ import {
 } from 'firebase/auth';
 import zxcvbn from 'zxcvbn';
 import { getAgreedPowers, getDocumentData, saveAgreedPowers, saveEt } from 'src/index';
+import MfaSettingsPanel from './MfaSettingsPanel';
 
 const ProfilePage = () => {
   const user = auth.currentUser!;
-  const [section, setSection] = useState<'profile' | 'password' | 'delete'>('profile');
+  const [section, setSection] = useState<'profile' | 'password' | 'delete' | 'mfa'>('profile');
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [nameLoading, setNameLoading] = useState(false);
@@ -91,7 +92,6 @@ const ProfilePage = () => {
       setEt('Vt/Mt');
       setIsEt(false);
     }
-    console.log(et);
   };
 
   const handleProfileUpdate = async () => {
@@ -108,9 +108,7 @@ const ProfilePage = () => {
   };
 
   const handleSaveAgreedPowers = async () => {
-    if (!validateDecreasing()) {
-      return;
-    }
+    if (!validateDecreasing()) return;
 
     const dataToSave: Record<number, number> = {};
     [1, 2, 3, 4, 5].forEach((block) => {
@@ -118,9 +116,7 @@ const ProfilePage = () => {
       dataToSave[block] = isNaN(val) ? 0 : val;
     });
     try {
-      if (!isEt) {
-        await saveEt(user.uid);
-      }
+      if (!isEt) await saveEt(user.uid);
       await saveAgreedPowers(user.uid, dataToSave);
       setStatus({ message: 'Dogovorjene moči uspešno shranjene.', type: 'success' });
     } catch (err) {
@@ -172,17 +168,6 @@ const ProfilePage = () => {
     return password.length >= 6 && /\d/.test(password) && /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
   }
 
-  const pwColors = ['bg-gray-300', 'bg-red-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-500'];
-  const pwLabels = ['Zelo šibko', 'Šibko', 'Srednje', 'Dobro', 'Odlično'];
-
-  if (!user) {
-    return (
-      <div className="w-full flex justify-center mt-20">
-        <div className="p-6 rounded bg-white shadow text-center text-red-600">Napaka: Uporabnik ni prijavljen.</div>
-      </div>
-    );
-  }
-
   const validateDecreasing = () => {
     const vals = [1, 2, 3, 4, 5].map((i) => parseFloat(agreedPowersInput[i]?.replace(',', '.') || '0'));
     for (let i = 0; i < vals.length - 1; i++) {
@@ -194,6 +179,9 @@ const ProfilePage = () => {
     setValidationError(null);
     return true;
   };
+
+  const pwColors = ['bg-gray-300', 'bg-red-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-500'];
+  const pwLabels = ['Zelo šibko', 'Šibko', 'Srednje', 'Dobro', 'Odlično'];
 
   return (
     <div className="w-full min-h-screen flex justify-center items-start py-16 bg-white rounded-2xl shadow-xl">
@@ -208,22 +196,28 @@ const ProfilePage = () => {
           </div>
         )}
 
-        <div className="flex gap-3 justify-center mb-10">
+        <div className="flex gap-3 justify-center mb-10 flex-wrap">
           <button
             onClick={() => setSection('profile')}
-            className={`px-5 py-2 rounded-full font-semibold ${section === 'profile' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'} transition`}
+            className={`px-5 py-2 rounded-full font-semibold ${section === 'profile' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'}`}
           >
             Uredi profil
           </button>
           <button
             onClick={() => setSection('password')}
-            className={`px-5 py-2 rounded-full font-semibold ${section === 'password' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'} transition`}
+            className={`px-5 py-2 rounded-full font-semibold ${section === 'password' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'}`}
           >
             Spremeni geslo
           </button>
           <button
+            onClick={() => setSection('mfa')}
+            className={`px-5 py-2 rounded-full font-semibold ${section === 'mfa' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'}`}
+          >
+            Dvofaktorska avtentikacija
+          </button>
+          <button
             onClick={() => setSection('delete')}
-            className={`px-5 py-2 rounded-full font-semibold ${section === 'delete' ? 'bg-red-500 text-white' : 'bg-gray-100 text-red-700'} transition`}
+            className={`px-5 py-2 rounded-full font-semibold ${section === 'delete' ? 'bg-red-500 text-white' : 'bg-gray-100 text-red-700'}`}
           >
             Izbriši profil
           </button>
@@ -361,6 +355,12 @@ const ProfilePage = () => {
             >
               Spremeni geslo
             </button>
+          </div>
+        )}
+
+        {section === 'mfa' && (
+          <div className="max-w-xl mx-auto">
+            <MfaSettingsPanel uid={user.uid} />
           </div>
         )}
 
