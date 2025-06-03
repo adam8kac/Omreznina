@@ -1,152 +1,201 @@
-import React, { useRef, useState } from 'react';
-import { Label, Button, FileInput, Accordion } from 'flowbite-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Label, Button, FileInput, Accordion, Progress } from 'flowbite-react';
 import instructions1 from '../../assets/images/instructions/instructions1.png';
 import instructions4 from '../../assets/images/instructions/instructions4.png';
+import Lottie from 'lottie-react';
+import plugLoading from '../../assets/lottie/Animation - 1748963030379.json';
 
-import { getUserDocIds, uploadMonthlyPower, uploadMonthlyOptimal, getAgreedPowers } from 'src/index';
+import { uploadMonthlyPower, uploadMonthlyOptimal, getAgreedPowers } from 'src/index';
 import { auth } from 'src/firebase-config';
+import { useUploadLoading } from '../../contexts/UploadLoadingContext';
 
 export default function Upload15min() {
+  // Uporabiš context hook za 'minutni'
+  const {
+    isLoading, setIsLoading, progress, setProgress, message: resultMsg,
+    setMessage, startPolling
+  } = useUploadLoading('minutni');
+
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const keyId = auth.config.apiKey;
-  const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Loading messages
+  const messages = [
+    'Vzpostavljam povezavo s strežnikom...',
+    'Obdelujem podatke iz datoteke...',
+    'Zapisujem vsebino v podatkovno bazo...',
+    'Pripravljam analitične vpoglede...',
+    'Obdelava lahko traja nekaj sekund, prosimo za potrpežljivost.',
+  ];
+  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
+
+  // Rotacija sporočil
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingMsgIndex((prev) => (prev + 1) % messages.length);
+      }, 2200);
+    }
+    return () => { if (interval) clearInterval(interval); };
+  }, [isLoading, messages.length]);
+
+  // UID extraction
+  const keyId = auth.config.apiKey;
+  const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
+  const getUid = async () => {
+    const sessionUser = sessionStorage.getItem(userSessionid);
+    if (sessionUser) {
+      try {
+        const user = JSON.parse(sessionUser);
+        if ('uid' in user) return user.uid as string;
+      } catch {}
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    setError(null);
+    setMessage('');
+    // Če hočeš reset polling na mount:
+    // resetPolling();
+  }, []);
+
+  // Change handler
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
       setError(null);
-      setSuccess(null);
+      setMessage('');
     }
   };
 
+  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
+    setMessage('');
 
     if (!file) {
       setError('Naloži datoteko.');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
+    setIsLoading(true);
+    setProgress(10);
 
     try {
       const uid = await getUid();
       if (!uid) {
         setError('Napaka: uporabnik ni prijavljen.');
+        setIsLoading(false);
+        setProgress(0);
         return;
       }
-
-      const numOfDocsBefore = (await getUserDocIds(uid as string)).length;
-      formData.append('uid', uid);
-
-      let agreedPowers: Record<string, number> | null = null;
+      let agreedPowers = null;
       try {
         agreedPowers = await getAgreedPowers(uid);
-      } catch (err) {
+      } catch {
         setError('Najprej nastavi dogovorjene moči v razdelku "Moj profil"!');
+        setIsLoading(false);
+        setProgress(0);
         return;
       }
       if (!agreedPowers || Object.keys(agreedPowers).length === 0) {
         setError('Najprej nastavi dogovorjene moči v razdelku "Moj profil"!');
+        setIsLoading(false);
+        setProgress(0);
         return;
       }
-      // Divide all agreed powers by 1000
-      agreedPowers = Object.fromEntries(Object.entries(agreedPowers).map(([key, value]) => [key, value / 1000]));
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('uid', uid);
+      agreedPowers = Object.fromEntries(
+        Object.entries(agreedPowers).map(([key, value]) => [key, (value as number) / 1000])
+      );
       formData.append('power_by_months', JSON.stringify(agreedPowers));
+      setProgress(25);
 
       await uploadMonthlyPower(formData);
+      setProgress(70);
       await uploadMonthlyOptimal(formData);
+      setProgress(90);
 
-      const numOfDocsAfter = (await getUserDocIds(uid as string)).length;
+      // --- VKLJUČI GLOBAL POLLING (UID OBVEZNO!) ---
+      startPolling(uid);
 
-      if (numOfDocsAfter > numOfDocsBefore) {
-        setSuccess('Podatki uspešno naloženi!');
-        setFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } else {
-        setError('Napaka pri nalaganju podatkov.');
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setFile(null);
     } catch (err) {
-      console.error(err);
       setError('Prišlo je do napake med nalaganjem.');
-    }
-  };
-
-  const getUid = async () => {
-    const sessionUser = sessionStorage.getItem(userSessionid);
-
-    if (sessionUser) {
-      try {
-        const user = JSON.parse(sessionUser);
-        if ('uid' in user) {
-          const id = user.uid;
-          return id;
-        }
-      } catch (error) {
-        //    console.log(error);
-      }
+      setIsLoading(false);
+      setProgress(0);
     }
   };
 
   return (
     <div className="bg-white dark:bg-darkgray p-6 relative w-full break-words">
-      <h5 className="card-title text-xl font-semibold mb-4">
-        Nalaganje izpiska iz MojElektro.si za prekoračitve in optimum dogovorjene moči
-      </h5>
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-12 gap-6">
-          <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
-            <div>
-              <Label htmlFor="fileInput" value="Izberi datoteko" className="mb-1 block" />
-              <FileInput
-                id="fileInput"
-                ref={fileInputRef}
-                accept=".xlsx,.csv"
-                onChange={handleFileChange}
-                className={error === 'Naloži datoteko.' ? 'border border-red-500 rounded-lg' : ''}
-              />
-              {file ? (
-                <p className="text-sm text-green-600 mt-1">Izbrana datoteka: {file.name}</p>
-              ) : (
-                error === 'Naloži datoteko.' && <p className="text-sm text-red-600 mt-1">⚠️ Naložite datoteko.</p>
-              )}
-            </div>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center p-10 gap-4">
+          <div className="w-40 h-40">
+            <Lottie animationData={plugLoading} loop autoplay />
           </div>
-
-          <div className="col-span-12 flex gap-3 mt-2">
-            <Button type="submit" color="primary">
-              Naloži csv ali excel
-            </Button>
-            <Button
-              type="reset"
-              color="gray"
-              onClick={() => {
-                setFile(null);
-                setError(null);
-                setSuccess(null);
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = '';
-                }
-              }}
-            >
-              Prekliči
-            </Button>
+          <p className="text-sm text-center font-medium animate-pulse">
+            {messages[loadingMsgIndex]}
+          </p>
+          <div className="w-full max-w-md text-center">
+            <Progress progress={progress} color="blue" size="md" />
+            <p className="text-sm mt-1 text-gray-600 font-medium">{progress}%</p>
           </div>
-          {error && error !== 'Naloži datoteko.' && (
-            <div className="col-span-12 mt-3 text-red-600 text-sm font-medium">⚠️ {error}</div>
-          )}
-
-          {success && <div className="col-span-12 mt-3 text-green-600 text-sm font-medium">✅ {success}</div>}
         </div>
-      </form>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-12 gap-6">
+            <div className="lg:col-span-6 col-span-12 flex flex-col gap-4">
+              <div>
+                <Label htmlFor="fileInput" value="Izberi datoteko" className="mb-1 block" />
+                <FileInput
+                  id="fileInput"
+                  ref={fileInputRef}
+                  accept=".xlsx,.csv"
+                  onChange={handleFileChange}
+                  className={error === 'Naloži datoteko.' ? 'border border-red-500 rounded-lg' : ''}
+                />
+                {file ? (
+                  <p className="text-sm text-green-600 mt-1">Izbrana datoteka: {file.name}</p>
+                ) : (
+                  error === 'Naloži datoteko.' && <p className="text-sm text-red-600 mt-1">Naložite datoteko.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="col-span-12 flex gap-3 mt-2">
+              <Button type="submit" color="primary" disabled={isLoading}>
+                Naloži csv ali excel
+              </Button>
+              <Button
+                type="reset"
+                color="gray"
+                onClick={() => {
+                  setFile(null);
+                  setError(null);
+                  setMessage('');
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                disabled={isLoading}
+              >
+                Prekliči
+              </Button>
+            </div>
+            {error && error !== 'Naloži datoteko.' && (
+              <div className="col-span-12 mt-3 text-red-600 text-sm font-medium">{error}</div>
+            )}
+            {resultMsg && <div className="col-span-12 mt-3 text-green-600 text-sm font-medium">{resultMsg}</div>}
+          </div>
+        </form>
+      )}
 
       <div className="mt-8">
         <Accordion collapseAll>
@@ -166,12 +215,8 @@ export default function Upload15min() {
                   </a>
                   .
                 </li>
-                <li>
-                  V meniju klikni na <strong>Merilna mesta / merilne točke</strong>.
-                </li>
-                <li>
-                  Nato izberi zavihek <strong>15 minutni podatki</strong>.
-                </li>
+                <li>V meniju klikni na <strong>Merilna mesta / merilne točke</strong>.</li>
+                <li>Nato izberi zavihek <strong>15 minutni podatki</strong>.</li>
                 <li>
                   Izberi prikaz <strong>Moč</strong>, da se prikažejo podatki o odjemni in oddani delovni moči.
                 </li>

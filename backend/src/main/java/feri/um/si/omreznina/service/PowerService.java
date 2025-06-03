@@ -21,11 +21,8 @@ public class PowerService {
 	}
 
 	public Tariff getTariff(String uid) {
-		Tariff firestoreTariff = firestoreService.getTariff(uid);
-		if (firestoreTariff != null) {
-			return firestoreTariff;
-		}
-		return new Tariff(setType(uid));
+		Tariff tariff = new Tariff(setType(uid));
+		return tariff;
 	}
 
 	public double getPricePerHour(double energyConsumed, String uid) {
