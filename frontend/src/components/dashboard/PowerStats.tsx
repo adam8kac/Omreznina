@@ -323,16 +323,14 @@ export const PowerStats = () => {
               </p>
             </div>
             <p className="mt-3 text-blue-700 dark:text-blue-400 italic">
-              <p>
-                <b>
-                  To ni cena celotnega računa ampak zgolj koliko ste plačali zaradi vaše dogovorjene moči ter 15
-                  minutnih prekoračitev.
-                </b>
-                <br />
-                <br />
-                Naše priporočitve so izračunane glede na vaše naložene podatke, če se bi poraba spremenila, bi se lahko
-                spremenila tudi cena in priporočena dogovorjena moč.
-              </p>
+              <b>
+                To ni cena celotnega računa ampak zgolj koliko ste plačali zaradi vaše dogovorjene moči ter 15 minutnih
+                prekoračitev.
+              </b>
+              <br />
+              <br />
+              Naše priporočitve so izračunane glede na vaše naložene podatke, če se bi poraba spremenila, bi se lahko
+              spremenila tudi cena in priporočena dogovorjena moč.
             </p>
           </Accordion.Content>
         </Accordion.Panel>

@@ -385,7 +385,6 @@ public class FirestoreServiceTest {
 		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
 
 		MfaSettings settings = new MfaSettings();
-		// Če imaš set metode: settings.setEnabled(true); settings.setSecret("XYZ");
 
 		when(mockDb.collection("uid123")).thenReturn(mockCollection);
 		when(mockCollection.document("mfa")).thenReturn(mockDocRef);
@@ -420,6 +419,24 @@ public class FirestoreServiceTest {
 
 		verify(mockDocRef).set(any(MfaSettings.class));
 		verify(mockFuture).get();
+	}
+
+	@Test
+	void testRemoveDocument_deletesCorrectly() {
+		Firestore mockDb = mock(Firestore.class);
+		CollectionReference mockCollection = mock(CollectionReference.class);
+		DocumentReference mockDocRef = mock(DocumentReference.class);
+
+		when(mockDb.collection("user123")).thenReturn(mockCollection);
+		when(mockCollection.document("to-delete")).thenReturn(mockDocRef);
+
+		FirestoreService service = new FirestoreService(mockDb);
+
+		service.removeDocument("user123", "to-delete");
+
+		verify(mockDb).collection("user123");
+		verify(mockCollection).document("to-delete");
+		verify(mockDocRef).delete();
 	}
 
 }

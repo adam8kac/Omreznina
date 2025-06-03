@@ -12,34 +12,43 @@ import feri.um.si.omreznina.type.TariffType;
 
 @Service
 public class PowerService {
-	private Tariff tariff;
 	private final HolidayChecker holidayChecker;
+	private final FirestoreService firestoreService;
 
-	public PowerService(HolidayChecker holidayChecker) {
+	public PowerService(HolidayChecker holidayChecker, FirestoreService firestoreService) {
 		this.holidayChecker = holidayChecker;
+		this.firestoreService = firestoreService;
 	}
 
-	public Tariff getTariff() {
-		tariff = new Tariff(setType());
-		return tariff;
+	public Tariff getTariff(String uid) {
+		Tariff firestoreTariff = firestoreService.getTariff(uid);
+		if (firestoreTariff != null) {
+			return firestoreTariff;
+		}
+		return new Tariff(setType(uid));
 	}
 
-	public double getPricePerHour(double energyConsumed) {
-		Tariff tariff = getTariff();
+	public double getPricePerHour(double energyConsumed, String uid) {
+		Tariff tariff = getTariff(uid);
 		double pricePerkWH = tariff.getPrice();
 		double priceToPay = pricePerkWH * energyConsumed;
 		return priceToPay;
 	}
 
-	private TariffType setType() {
+	public void removeEtFromDb(String uid) {
+		firestoreService.removeDocument(uid, "et");
+	}
+
+	private TariffType setType(String uid) {
 		LocalDate date = LocalDate.now();
 
-		if (holidayChecker.isHoliday(date) || isInTimeRnage() || isWeekend()) {
+		if (firestoreService.getTariff(uid) instanceof Tariff) {
+			return TariffType.ET;
+		} else if (holidayChecker.isHoliday(date) || isInTimeRnage() || isWeekend()) {
 			return TariffType.MT;
 		} else {
 			return TariffType.VT;
 		}
-
 	}
 
 	private boolean isInTimeRnage() {

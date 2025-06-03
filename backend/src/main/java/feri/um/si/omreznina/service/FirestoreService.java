@@ -6,6 +6,7 @@ import com.google.cloud.firestore.*;
 
 import feri.um.si.omreznina.model.ManualInvoice;
 import feri.um.si.omreznina.model.MfaSettings;
+import feri.um.si.omreznina.model.Tariff;
 
 import org.springframework.stereotype.Service;
 
@@ -284,6 +285,29 @@ public class FirestoreService {
 			logger.warning("could not get MFA Settings: " + e.toString());
 		}
 		return null;
+	}
+
+	public Tariff getTariff(String uid) {
+		try {
+			DocumentReference docRef = db.collection(uid).document("et");
+			DocumentSnapshot snapshot = docRef.get().get();
+
+			return snapshot.toObject(Tariff.class);
+		} catch (InterruptedException | ExecutionException | RuntimeException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+		}
+		return null;
+	}
+
+	public void removeDocument(String uid, String docId) {
+		try {
+			db.collection(uid).document(docId)
+					.delete();
+		} catch (Exception e) {
+			logger.warning("Could not delete: document");
+		}
 	}
 
 }

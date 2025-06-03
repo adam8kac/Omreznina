@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
-const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-// const api = axios.create({ baseURL: 'http://localhost:8080/' });
+// const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -112,14 +112,14 @@ export const getAgreedPowers = async (uid: string): Promise<Record<number, numbe
   return res.data;
 };
 
-export const getCurrentTariff = async () => {
-  const response = await api.get(`power/tariff`);
+export const getCurrentTariff = async (uid: string) => {
+  const response = await api.get(`power/tariff?uid=${uid}`);
   console.log(response.data);
   return response.data;
 };
 
-export const getKiloWattHourPrice = async (consumption: number) => {
-  const response = await api.get(`power/energy-price?consumption=${consumption}`);
+export const getKiloWattHourPrice = async (consumption: number, uid: string) => {
+  const response = await api.get(`power/energy-price?consumption=${consumption}&uid=${uid}`);
   return response.data;
 };
 
@@ -190,7 +190,11 @@ export const getCurrentTimeBlock = async () => {
 
 export const saveEt = async (uid: string) => {
   const response = await api.post(`firestore/setEt?uid=${uid}`);
-  console.log(uid);
+  return response.data;
+};
+
+export const removeEtFromDb = async (uid: string) => {
+  const response = await api.delete(`power/remove-et?uid=${uid}`);
   return response.data;
 };
 
