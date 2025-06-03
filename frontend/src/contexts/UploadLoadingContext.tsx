@@ -103,7 +103,6 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
     const poll = async () => {
         if (pollingRef.current[type]?.finished) return;
 
-        let anyChange = false;
         for (let docId of docIds) {
         try {
             const curSub = await getSubcollectionsConsumption(uid, docId);
@@ -115,7 +114,6 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
             ) {
             completed[docId] = true;
             prevSubColRef.current[type + docId] = curSub;
-            anyChange = true;
             }
         } catch (err) {
             // silent fail

@@ -14,7 +14,6 @@ import feri.um.si.omreznina.type.TariffType;
 public class PowerService {
 	private final HolidayChecker holidayChecker;
 	private final FirestoreService firestoreService;
-	private Tariff tariff;
 
 	public PowerService(HolidayChecker holidayChecker, FirestoreService firestoreService) {
 		this.holidayChecker = holidayChecker;
@@ -22,7 +21,7 @@ public class PowerService {
 	}
 
 	public Tariff getTariff(String uid) {
-		tariff = new Tariff(setType(uid));
+		Tariff tariff = new Tariff(setType(uid));
 		return tariff;
 	}
 
