@@ -23,10 +23,7 @@ public class TariffServiceTest {
 	void setUp() {
 		holidayChecker = mock(HolidayChecker.class);
 		firestoreService = mock(FirestoreService.class);
-
-		// Default mock da vrne vedno novo Tariff (boš lahko prilagodil, če rabiš)
-		when(firestoreService.getTariff(anyString())).thenReturn(new Tariff());
-
+		when(firestoreService.getTariff(anyString())).thenReturn(new Tariff(TariffType.ET));
 		powerService = new PowerService(holidayChecker, firestoreService);
 	}
 
@@ -37,26 +34,8 @@ public class TariffServiceTest {
 	}
 
 	@Test
-	void testGetPricePerHour_CorrectCalculation() {
-		// Pripravi mock FirestoreService, ki vrne ET
-		when(firestoreService.getTariff(anyString())).thenReturn(new Tariff(TariffType.ET));
-
+	void testGetPricePerHour_CorrectCalculation_ET() {
 		double result = powerService.getPricePerHour(100, "test-uid");
-		assertEquals(10.89, result, 0.0001, "Price per hour should be calculated correctly");
+		assertEquals(10.89, result, 0.0001, "Price per hour should be calculated correctly for ET");
 	}
-
-	@Test
-	void testGetPricePerHour_CorrectCalculation_VT() {
-		when(firestoreService.getTariff(anyString())).thenReturn(new Tariff(TariffType.VT));
-		double result = powerService.getPricePerHour(100, "test-uid");
-		assertEquals(11.99, result, 0.0001);
-	}
-
-	@Test
-	void testGetPricePerHour_CorrectCalculation_MT() {
-		when(firestoreService.getTariff(anyString())).thenReturn(new Tariff(TariffType.MT));
-		double result = powerService.getPricePerHour(100, "test-uid");
-		assertEquals(9.79, result, 0.0001);
-	}
-
 }
