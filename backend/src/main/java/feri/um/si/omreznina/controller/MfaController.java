@@ -28,7 +28,7 @@ public class MfaController {
 	public ResponseEntity<String> setupMfa(@RequestBody SetupRequest request) {
 		try {
 			mfaService.saveSettings(request.getUid(), request.getSecret(), request.isEnabled());
-			return ResponseEntity.ok("MFA nastavitve uspeÅ¡no shranjene.");
+			return ResponseEntity.ok("MFA nastavitve uspešno shranjene.");
 		} catch (Exception e) {
 			return ResponseEntity.status(500).body("Napaka: " + e.getMessage());
 		}
