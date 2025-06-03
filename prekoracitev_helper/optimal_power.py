@@ -26,7 +26,8 @@ def process_file_optimal(file, agreed_power_map, step=0.1, min_power=4.6, max_de
         if month_str not in year_month_result[year_str]:
             year_month_result[year_str][month_str] = {}
 
-        monthly_total_price = 0  
+        monthly_total_price = 0
+
         for block_num in sorted(month_group["block"].dropna().unique()):
             block_num_str = str(int(block_num))
             best_agreed_power = None
@@ -40,16 +41,30 @@ def process_file_optimal(file, agreed_power_map, step=0.1, min_power=4.6, max_de
 
             for agreed_power in np.arange(start_power, stop_power + step, step):
                 agreed_power = round(agreed_power, 2)
-                total_price = 0
-                entries = []
-                overruns = block_group[block_group["P+ Prejeta delovna moč"] > agreed_power]
                 agreed_power_price = agreed_power * block_price
-                total_price += agreed_power_price
 
-                if overruns.empty:
+                max_overrun_row = block_group[block_group["P+ Prejeta delovna moč"] > agreed_power]
+                if not max_overrun_row.empty:
+                    max_row = max_overrun_row.loc[max_overrun_row["P+ Prejeta delovna moč"].idxmax()]
+                    max_power = round(max_row["P+ Prejeta delovna moč"], 2)
+                    overrun_delta = max_power - agreed_power
+                    penalty_price = round(overrun_delta * block_price * 0.9, 2)
+                    total_price = agreed_power_price + penalty_price
+                    entries = [{
+                        "block": block_num,
+                        "blockPrice": block_price,
+                        "agreedPower": agreed_power,
+                        "timestamp": max_row["timestamp"].strftime("%d-%m %H:%M"),
+                        "maxPowerRecieved": max_power,
+                        "overrun_delta": round(overrun_delta, 2),
+                        "agreed_power_price": round(agreed_power_price, 2),
+                        "penalty_price": penalty_price
+                    }]
+                else:
                     max_power_row = block_group.loc[block_group["P+ Prejeta delovna moč"].idxmax()]
                     max_power = round(max_power_row["P+ Prejeta delovna moč"], 2)
-                    entries.append({
+                    total_price = agreed_power_price
+                    entries = [{
                         "block": block_num,
                         "blockPrice": block_price,
                         "agreedPower": agreed_power,
@@ -58,23 +73,8 @@ def process_file_optimal(file, agreed_power_map, step=0.1, min_power=4.6, max_de
                         "overrun_delta": 0.0,
                         "agreed_power_price": round(agreed_power_price, 2),
                         "penalty_price": 0.0
-                    })
-                else:
-                    for _, row2 in overruns.iterrows():
-                        power = round(row2["P+ Prejeta delovna moč"], 2)
-                        delta = power - agreed_power
-                        penalty_price = round(delta * block_price * 0.9, 2)
-                        total_price += penalty_price
-                        entries.append({
-                            "block": block_num,
-                            "blockPrice": block_price,
-                            "agreedPower": agreed_power,
-                            "timestamp": row2["timestamp"].strftime("%d-%m %H:%M"),
-                            "maxPowerRecieved": power,
-                            "overrun_delta": round(delta, 2),
-                            "agreed_power_price": round(agreed_power_price, 2),
-                            "penalty_price": penalty_price
-                        })
+                    }]
+
                 if total_price < min_total_price:
                     min_total_price = total_price
                     best_agreed_power = agreed_power
@@ -85,8 +85,8 @@ def process_file_optimal(file, agreed_power_map, step=0.1, min_power=4.6, max_de
                 "data": best_entries,
                 "total price": round(min_total_price, 2)
             }
-            monthly_total_price += min_total_price  
+            monthly_total_price += min_total_price
 
-        year_month_result[year_str][month_str]["total monthly price"] = round(monthly_total_price, 2)  
+        year_month_result[year_str][month_str]["total monthly price"] = round(monthly_total_price, 2)
 
     return year_month_result
