@@ -10,7 +10,7 @@ import com.google.firebase.internal.FirebaseService;
 
 import feri.um.si.omreznina.config.FirebaseTestConfig;
 
-@SpringBootTest
+@SpringBootTest(properties = "mfa.secret.encryption-key=testniKey123456")
 @ActiveProfiles("test")
 @Import(FirebaseTestConfig.class)
 class OmrezninaApplicationTests {
