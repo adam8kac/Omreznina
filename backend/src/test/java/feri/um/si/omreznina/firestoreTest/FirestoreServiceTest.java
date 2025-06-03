@@ -416,7 +416,7 @@ public class FirestoreServiceTest {
 
 		FirestoreService testService = new FirestoreService(mockDb);
 
-		testService.saveMfaSettings("uid", new MfaSettings());
+		assertDoesNotThrow(() -> testService.saveMfaSettings("uid", new MfaSettings()));
 
 		verify(mockDocRef).set(any(MfaSettings.class));
 		verify(mockFuture).get();

@@ -262,7 +262,7 @@ public class FirestoreService {
 					.document("mfa")
 					.set(settings)
 					.get();
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (InterruptedException | ExecutionException | RuntimeException e) {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();
 			}
@@ -277,7 +277,7 @@ public class FirestoreService {
 			if (snapshot.exists()) {
 				return snapshot.toObject(MfaSettings.class);
 			}
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (InterruptedException | ExecutionException | RuntimeException e) {
 			if (e instanceof InterruptedException) {
 				Thread.currentThread().interrupt();
 			}

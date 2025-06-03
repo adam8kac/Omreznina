@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 import de.taimos.totp.TOTP;
@@ -68,18 +72,31 @@ public class MfaService {
 		}
 	}
 
-	private String decrypt(String encryptedSecret) throws Exception {
-		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-		cipher.init(Cipher.DECRYPT_MODE, aesKeySpec);
-		byte[] decoded = Base64.getDecoder().decode(encryptedSecret);
-		byte[] decrypted = cipher.doFinal(decoded);
-		return new String(decrypted, StandardCharsets.UTF_8);
-	}
-
 	private String encrypt(String secret) throws Exception {
 		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-		cipher.init(Cipher.ENCRYPT_MODE, aesKeySpec);
+		byte[] iv = new byte[12];
+		SecureRandom random = new SecureRandom();
+		random.nextBytes(iv);
+		GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
+		cipher.init(Cipher.ENCRYPT_MODE, aesKeySpec, gcmSpec);
 		byte[] encrypted = cipher.doFinal(secret.getBytes(StandardCharsets.UTF_8));
-		return Base64.getEncoder().encodeToString(encrypted);
+		ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + encrypted.length);
+		byteBuffer.put(iv);
+		byteBuffer.put(encrypted);
+		return Base64.getEncoder().encodeToString(byteBuffer.array());
+	}
+
+	private String decrypt(String encryptedSecret) throws Exception {
+		byte[] decoded = Base64.getDecoder().decode(encryptedSecret);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(decoded);
+		byte[] iv = new byte[12];
+		byteBuffer.get(iv);
+		byte[] encrypted = new byte[byteBuffer.remaining()];
+		byteBuffer.get(encrypted);
+		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+		GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
+		cipher.init(Cipher.DECRYPT_MODE, aesKeySpec, gcmSpec);
+		byte[] decrypted = cipher.doFinal(encrypted);
+		return new String(decrypted, StandardCharsets.UTF_8);
 	}
 }
