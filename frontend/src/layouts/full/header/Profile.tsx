@@ -1,10 +1,11 @@
 
 import { Button, Dropdown } from "flowbite-react";
 import { Icon } from "@iconify/react";
-import user1 from "/src/assets/images/profile/user-1.jpg";
 import { Link, useNavigate } from "react-router";
 import { signOut } from "firebase/auth";
 import { auth } from "src/firebase-config"; 
+import user1 from 'src/assets/images/profile/avatar1.png';
+
 
 
 const Profile = () => {
@@ -26,13 +27,13 @@ const Profile = () => {
         dismissOnClick={false}
         renderTrigger={() => (
           <span className="h-10 w-10 hover:text-primary hover:bg-lightprimary rounded-full flex justify-center items-center cursor-pointer group-hover/menu:bg-lightprimary group-hover/menu:text-primary">
-            <img
-              src={user1}
-              alt="logo"
-              height="35"
-              width="35"
-              className="rounded-full"
-            />
+          <img
+            src={auth.currentUser?.photoURL || user1}
+            alt="avatar"
+            height="35"
+            width="35"
+            className="rounded-full"
+          />
           </span>
         )}
       >

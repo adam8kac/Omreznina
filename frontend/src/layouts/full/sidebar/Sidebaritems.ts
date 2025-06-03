@@ -1,3 +1,5 @@
+import { uniqueId } from "lodash";
+
 export interface ChildItem {
   id?: number | string;
   name?: string;
@@ -19,22 +21,20 @@ export interface MenuItem {
   url?: any;
 }
 
-import { uniqueId } from "lodash";
-
 const SidebarContent: MenuItem[] = [
   {
-    heading: "DOMOV",
+    heading: "PREGLED",
     children: [
       {
         name: "Nadzorna plošča",
-        icon: "solar:widget-add-line-duotone",
+        icon: "solar:home-2-linear", // ikona hiše
         id: uniqueId(),
         url: "/",
       },
     ],
   },
   {
-    heading: "SIMULACIJA",
+    heading: "PORABA IN OMREŽNINA",
     children: [
       {
         name: "Simulacija porabe",
@@ -48,10 +48,22 @@ const SidebarContent: MenuItem[] = [
         id: uniqueId(),
         url: "/network-fee",
       },
+      {
+        name: "Poraba po mesecih",
+        icon: "solar:graph-linear",
+        id: uniqueId(),
+        url: "/monthly-consumption",
+      },
+      {
+        name: "Statistika moči",
+        icon: "solar:bolt-circle-linear",
+        id: uniqueId(),
+        url: "/power-stats",
+      },
     ],
   },
   {
-    heading: "UPORABNO",
+    heading: "PODATKI IN RAZLAGE",
     children: [
       {
         name: "Naloži podatke",
@@ -66,7 +78,7 @@ const SidebarContent: MenuItem[] = [
         url: "/reciept-explanation",
       },
     ],
-  }
+  },
 ];
 
 export default SidebarContent;

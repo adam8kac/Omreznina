@@ -20,7 +20,9 @@ const UploadData = Loadable(lazy(() => import('../views/forms/UploadDataForm')))
 const UploadPage = Loadable(lazy(() => import('../views/forms/UploadForm')));
 const UploadReciept = Loadable(lazy(() => import('../views/forms/UploadRecieptForm')));
 const ReceiptExplanation = Loadable(lazy(() => import('../views/tables/RecieptExplanationTable')));
-
+const MonthlyConsumption = Loadable(lazy(() => import('../views/simulation/MonthlyConsumptionView')));
+const PowerStats = Loadable(lazy(() => import('../views/simulation/PowerStatsView')));
+const DashboardGuide = Loadable(lazy(() => import('../views/dashboards/DashboardGuide')));
 
 // authentication
 const Login = Loadable(lazy(() => import('../views/auth/login/Login')));
@@ -53,6 +55,9 @@ const Router = [
       { path: '/upload-invoice', exact: true, element: <UploadPage /> },
       { path: '/upload-reciept', exact: true, element: <UploadReciept /> },
       { path: '/reciept-explanation', exact: true, element: <ReceiptExplanation /> },
+      { path: '/monthly-consumption', exact: true, element: <MonthlyConsumption /> },
+      { path: '/power-stats', exact: true, element: <PowerStats /> },
+      { path: '/dashboard-guide', exact: true, element: <DashboardGuide /> },
       { path: '*', element: <Navigate to="/auth/404" /> },
       { path: '/about-us', exact: true, element: <AboutUs /> },
 

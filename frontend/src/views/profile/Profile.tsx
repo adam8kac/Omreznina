@@ -10,10 +10,14 @@ import {
 import zxcvbn from 'zxcvbn';
 import { getAgreedPowers, getCurrentTariff, removeEtFromDb, saveAgreedPowers, saveEt } from 'src/index';
 import MfaSettingsPanel from './MfaSettingsPanel';
+import { avatars } from 'src/components/shared/avatars';
 
 const ProfilePage = () => {
   const user = auth.currentUser!;
-  const [section, setSection] = useState<'profile' | 'password' | 'delete' | 'mfa'>('profile');
+  const [selectedIndex, setSelectedIndex] = useState(
+    avatars.findIndex((a) => a === (user.photoURL || avatars[0]))
+  );
+  const [section, setSection] = useState<'profile' | 'password' | 'mfa' | 'moci'>('profile');
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [nameLoading, setNameLoading] = useState(false);
@@ -37,6 +41,7 @@ const ProfilePage = () => {
   });
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isEt, setIsEt] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (status.message) {
@@ -154,8 +159,11 @@ const ProfilePage = () => {
     setPasswordLoading(false);
   };
 
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('Ste prepričani, da želite izbrisati svoj račun? To je nepovratno!')) return;
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = async () => {
     setDeleteLoading(true);
     setStatus({ message: '', type: '' });
     try {
@@ -165,6 +173,7 @@ const ProfilePage = () => {
       setStatus({ message: 'Napaka pri brisanju računa. Prijavite se ponovno.', type: 'error' });
     }
     setDeleteLoading(false);
+    setShowDeleteModal(false);
   };
 
   function validatePassword(password: string) {
@@ -186,169 +195,250 @@ const ProfilePage = () => {
   const pwColors = ['bg-gray-300', 'bg-red-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-500'];
   const pwLabels = ['Zelo šibko', 'Šibko', 'Srednje', 'Dobro', 'Odlično'];
 
+  useEffect(() => {
+    const saveAvatar = async () => {
+      try {
+        await updateProfile(user, { photoURL: avatars[selectedIndex] });
+        await user.reload();
+        setStatus({ message: 'Avatar posodobljen.', type: 'success' });
+      } catch {
+        setStatus({ message: 'Napaka pri posodabljanju avatarja.', type: 'error' });
+      }
+    };
+    if (user.photoURL !== avatars[selectedIndex]) {
+      saveAvatar();
+    }
+  }, [selectedIndex]);
+
   return (
     <div className="w-full min-h-screen flex justify-center items-start py-16 bg-white rounded-2xl shadow-xl">
       <div className="w-full max-w-3xl">
         <h1 className="text-3xl font-bold text-center mb-7">Moj profil</h1>
-
-        {status.message && (
-          <div
-            className={`mb-4 text-center text-sm font-medium ${status.type === 'success' ? 'text-green-600' : 'text-red-600'}`}
-          >
-            {status.message}
-          </div>
-        )}
-
         <div className="flex gap-3 justify-center mb-10 flex-wrap">
           <button
             onClick={() => setSection('profile')}
-            className={`px-5 py-2 rounded-full font-semibold ${section === 'profile' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'}`}
+            className={`px-5 py-2 rounded-full font-semibold ${
+              section === 'profile' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
+            }`}
           >
             Uredi profil
           </button>
           <button
+            onClick={() => setSection('moci')}
+            className={`px-5 py-2 rounded-full font-semibold ${
+              section === 'moci' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            Dogovorjene moči
+          </button>
+          <button
             onClick={() => setSection('password')}
-            className={`px-5 py-2 rounded-full font-semibold ${section === 'password' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'}`}
+            className={`px-5 py-2 rounded-full font-semibold ${
+              section === 'password' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
+            }`}
           >
             Spremeni geslo
           </button>
           <button
             onClick={() => setSection('mfa')}
-            className={`px-5 py-2 rounded-full font-semibold ${section === 'mfa' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'}`}
+            className={`px-5 py-2 rounded-full font-semibold ${
+              section === 'mfa' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
+            }`}
           >
             Dvofaktorska avtentikacija
-          </button>
-          <button
-            onClick={() => setSection('delete')}
-            className={`px-5 py-2 rounded-full font-semibold ${section === 'delete' ? 'bg-red-500 text-white' : 'bg-gray-100 text-red-700'}`}
-          >
-            Izbriši profil
           </button>
         </div>
 
         {section === 'profile' && (
-          <div className="max-w-xl mx-auto flex flex-col items-center gap-5">
-            <div className="w-full">
-              <div className="mb-3">
-                <div className="text-gray-500 text-xs font-medium">Email</div>
-                <input
-                  type="text"
-                  value={user.email ?? ''}
-                  disabled
-                  className="w-full mt-1 px-4 py-2 rounded bg-gray-100 border-none text-gray-700"
-                />
-              </div>
-              <div className="mb-3">
-                <div className="text-gray-500 text-xs font-medium">Prikazno ime</div>
-                {!editing ? (
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      value={displayName}
-                      disabled
-                      className="w-full px-4 py-2 rounded bg-gray-100 border-none"
-                    />
-                    <button
-                      className="px-4 py-2 bg-primary text-white rounded font-medium"
-                      onClick={() => setEditing(true)}
-                    >
-                      Uredi
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full px-4 py-2 rounded border border-primary"
-                    />
-                    <button
-                      className="px-4 py-2 bg-primary text-white rounded font-medium"
-                      disabled={nameLoading}
-                      onClick={handleProfileUpdate}
-                    >
-                      Shrani
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-medium"
-                      onClick={() => setEditing(false)}
-                    >
-                      Prekliči
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-3 text-center">Dogovorjene moči (v kW)</h3>
-                {[1, 2, 3, 4, 5].map((block) => (
-                  <div key={block} className="mb-3 flex items-center gap-3">
-                    <label className="text-sm font-medium w-1/2">Blok {block}</label>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      className="w-full px-4 py-2 border rounded"
-                      placeholder={`${agreedPowers[block] / 1000} kW`}
-                      value={agreedPowersInput[block] || ''}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        setAgreedPowersInput((prev) => ({ ...prev, [block]: raw }));
-                        const parsed = parseFloat(raw.replace(',', '.'));
-                        setAgreedPowers((prev) => ({
-                          ...prev,
-                          [block]: isNaN(parsed) ? 0 : parsed,
-                        }));
-                      }}
-                    />
-                  </div>
-                ))}
-
-                {validationError && <div className="mb-3 text-red-600 text-center text-sm">{validationError}</div>}
-                <div className="flex items-center">
-                  <label className="text-sm font-medium ">Tip tarife ki jo imate</label>
-                  <button className="px-5 py-2 text-white bg-primary rounded ml-20" onClick={() => handleEt()}>
-                    {isEt ? 'ET' : 'VT/MT'}
-                  </button>
-                </div>
-
+          <>
+            <div className="mt-6 flex flex-col items-center">
+              <h3 className="text-lg font-semibold mb-6 text-center">Izberite avatar</h3>
+              <div className="flex items-center justify-center gap-6">
                 <button
-                  className="mt-4 w-full bg-primary text-white rounded py-2 font-medium"
-                  onClick={handleSaveAgreedPowers}
+                  aria-label="Prejšnji avatar"
+                  className="text-3xl px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+                  onClick={() => setSelectedIndex((prev) => (prev - 1 + avatars.length) % avatars.length)}
                 >
-                  Shrani dogovorjene moči
+                  &#8592;
+                </button>
+                <img
+                  src={avatars[selectedIndex]}
+                  alt="Izbran avatar"
+                  className="rounded-full w-40 h-40 object-cover border-4 border-primary shadow-lg transition"
+                />
+                <button
+                  aria-label="Naslednji avatar"
+                  className="text-3xl px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+                  onClick={() => setSelectedIndex((prev) => (prev + 1) % avatars.length)}
+                >
+                  &#8594;
                 </button>
               </div>
             </div>
+
+            <div className="max-w-xl mx-auto flex flex-col items-center gap-5 mt-10">
+              <div className="w-full">
+                <div className="mb-3">
+                  <div className="text-gray-500 text-xs font-medium">Email</div>
+                  <input
+                    type="text"
+                    value={user.email ?? ''}
+                    disabled
+                    className="w-full mt-1 px-4 py-2 rounded-lg bg-gray-100 border-none text-gray-700"
+                  />
+                </div>
+                <div className="mb-3">
+                  <div className="text-gray-500 text-xs font-medium">Prikazno ime</div>
+                  {!editing ? (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={displayName}
+                        disabled
+                        className="w-full px-4 py-2 rounded-lg bg-gray-100 border-none"
+                      />
+                      <button
+                        className="px-4 py-2 bg-primary text-white rounded font-medium"
+                        onClick={() => setEditing(true)}
+                      >
+                        Uredi
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border border-primary"
+                      />
+                      <button
+                        className="px-4 py-2 bg-primary text-white rounded font-medium"
+                        disabled={nameLoading}
+                        onClick={handleProfileUpdate}
+                      >
+                        Shrani
+                      </button>
+                      <button
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded font-medium"
+                        onClick={() => setEditing(false)}
+                      >
+                        Prekliči
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-xl mx-auto flex flex-col gap-6 items-center mt-10">
+              <div className="text-center text-red-700 font-medium">
+                Izbris računa je nepovraten. Vsi vaši podatki bodo trajno odstranjeni.
+              </div>
+              <button
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg py-3 transition"
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+              >
+                Izbriši račun
+              </button>
+            </div>
+          </>
+        )}
+
+        {section === 'moci' && (
+          <div className="mt-8 max-w-xl mx-auto">
+            <h3 className="text-lg font-semibold mb-3 text-center">Dogovorjene moči (v kW)</h3>
+            <div className="flex flex-col gap-4">
+              {[1, 2, 3, 4, 5].map((block) => (
+                <div key={block} className="flex flex-row items-center gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm">
+                  <label className="text-sm font-medium w-28 shrink-0">Blok {block}</label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    className="flex-1 px-4 py-2 border border-primary/40 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-base bg-white"
+                    placeholder={`${agreedPowers[block] / 1000} kW`}
+                    value={agreedPowersInput[block] || ''}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setAgreedPowersInput((prev) => ({ ...prev, [block]: raw }));
+                      const parsed = parseFloat(raw.replace(',', '.'));
+                      setAgreedPowers((prev) => ({
+                        ...prev,
+                        [block]: isNaN(parsed) ? 0 : parsed,
+                      }));
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {validationError && (
+              <div className="mb-3 text-red-600 text-center text-sm">{validationError}</div>
+            )}
+            <div className="flex items-center gap-4 mt-6 mb-2">
+              <label className="text-sm font-medium">Tip tarife ki jo imate</label>
+              <div className="flex bg-gray-100 rounded-full p-1 shadow-sm w-fit ml-6">
+                <button
+                  type="button"
+                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${isEt ? 'bg-primary text-white shadow' : 'text-gray-700 hover:bg-gray-200'}`}
+                  onClick={() => { if (!isEt) { setIsEt(true); handleEt(); setStatus({ message: 'Tarifa spremenjena na ET.', type: 'success' }); } }}
+                >
+                  ET
+                </button>
+                <button
+                  type="button"
+                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${!isEt ? 'bg-primary text-white shadow' : 'text-gray-700 hover:bg-gray-200'}`}
+                  onClick={() => { if (isEt) { setIsEt(false); handleEt(); setStatus({ message: 'Tarifa spremenjena na VT/MT.', type: 'success' }); } }}
+                >
+                  VT/MT
+                </button>
+              </div>
+              {status.message && (status.message.includes('Tarifa spremenjena')) && (
+                <span className="ml-4 text-primary font-medium animate-fade-in">{status.message}</span>
+              )}
+            </div>
+
+            <button
+              className="mt-4 w-full bg-primary text-white rounded-lg py-3 font-medium shadow-sm hover:bg-primary/90 transition"
+              onClick={handleSaveAgreedPowers}
+            >
+              Shrani dogovorjene moči
+            </button>
           </div>
         )}
 
         {section === 'password' && (
           <div className="max-w-xl mx-auto flex flex-col gap-3">
-            <div className="text-gray-600 text-sm mb-4">Geslo mora imeti vsaj 6 znakov, številko in simbol.</div>
+            <div className="text-gray-600 text-sm mb-4">
+              Geslo mora imeti vsaj 6 znakov, številko in simbol.
+            </div>
             <input
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Trenutno geslo"
-              className="w-full px-4 py-3 rounded border mb-1"
+              className="w-full px-4 py-3 rounded-lg border mb-1"
             />
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Novo geslo"
-              className="w-full px-4 py-3 rounded border mb-1"
+              className="w-full px-4 py-3 rounded-lg border mb-1"
             />
             <div className="flex items-center gap-3 mb-1">
               <div className={`h-2 rounded w-1/3 ${pwColors[passwordStrength]}`}></div>
-              <div className="text-xs text-gray-500">{newPassword.length > 0 && pwLabels[passwordStrength]}</div>
+              <div className="text-xs text-gray-500">
+                {newPassword.length > 0 && pwLabels[passwordStrength]}
+              </div>
             </div>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Potrdite novo geslo"
-              className="w-full px-4 py-3 rounded border mb-4"
+              className="w-full px-4 py-3 rounded-lg border mb-4"
             />
             <button
               className={`w-full bg-primary text-white hover:bg-primary/80 font-semibold rounded-lg py-3 transition`}
@@ -366,19 +456,28 @@ const ProfilePage = () => {
             <MfaSettingsPanel uid={user.uid} />
           </div>
         )}
-
-        {section === 'delete' && (
-          <div className="max-w-xl mx-auto flex flex-col gap-6 items-center">
-            <div className="text-center text-red-700 font-medium">
-              Izbris računa je nepovraten. Vsi vaši podatki bodo trajno odstranjeni.
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full text-center">
+              <div className="text-lg font-semibold mb-4 text-red-700">Ste prepričani, da želite izbrisati svoj račun?</div>
+              <div className="mb-6 text-gray-600 text-sm">To je nepovratno! Vsi vaši podatki bodo trajno odstranjeni.</div>
+              <div className="flex gap-4 justify-center">
+                <button
+                  className="px-5 py-2 rounded bg-gray-200 text-gray-700 font-medium"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleteLoading}
+                >
+                  Prekliči
+                </button>
+                <button
+                  className="px-5 py-2 rounded bg-red-600 text-white font-medium"
+                  onClick={confirmDeleteAccount}
+                  disabled={deleteLoading}
+                >
+                  Izbriši račun
+                </button>
+              </div>
             </div>
-            <button
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg py-3 transition"
-              onClick={handleDeleteAccount}
-              disabled={deleteLoading}
-            >
-              Izbriši račun
-            </button>
           </div>
         )}
       </div>
