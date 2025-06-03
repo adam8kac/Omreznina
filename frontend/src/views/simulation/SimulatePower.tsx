@@ -65,6 +65,7 @@ export const SimulatePower = () => {
   const [loadingPowers, setLoadingPowers] = useState(true);
   const [priceTariff, setPriceTariff] = useState<number>(0);
   const [tariff, setTariff] = useState(null);
+  const [uid, setUid] = useState<string>('');
 
   useEffect(() => {
     getAvailableDevices().then(setAvailableDevices);
@@ -75,6 +76,7 @@ export const SimulatePower = () => {
       const user = auth.currentUser;
       if (!user) return;
       try {
+        setUid(user.uid);
         const data = await getAgreedPowers(user.uid);
         const defaultPowers = { 1: 4000, 2: 4000, 3: 4000, 4: 4000, 5: 4000 };
         setAgreedPowers({ ...defaultPowers, ...data });
@@ -106,10 +108,10 @@ export const SimulatePower = () => {
 
         const totalUsedPower = simResult.totalUsedPower;
         const powerUsed = totalUsedPower / 1000;
-        const simPrice = await getKiloWattHourPrice(powerUsed);
+        const simPrice = await getKiloWattHourPrice(powerUsed, uid);
         setPriceTariff(parseFloat(simPrice.toFixed(2)));
 
-        const currentTariff = await getCurrentTariff();
+        const currentTariff = await getCurrentTariff(uid);
         setTariff(currentTariff.type);
       };
       simulate();

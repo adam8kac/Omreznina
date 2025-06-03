@@ -8,7 +8,7 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import zxcvbn from 'zxcvbn';
-import { getAgreedPowers, getDocumentData, saveAgreedPowers, saveEt } from 'src/index';
+import { getAgreedPowers, getCurrentTariff, removeEtFromDb, saveAgreedPowers, saveEt } from 'src/index';
 import MfaSettingsPanel from './MfaSettingsPanel';
 
 const ProfilePage = () => {
@@ -36,8 +36,7 @@ const ProfilePage = () => {
     5: '',
   });
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [et, setEt] = useState<string>();
-  const [isEt, setIsEt] = useState(true);
+  const [isEt, setIsEt] = useState(false);
 
   useEffect(() => {
     if (status.message) {
@@ -65,15 +64,15 @@ const ProfilePage = () => {
     if (!user.uid) return;
     (async () => {
       try {
-        await getDocumentData(user.uid, 'et');
-        setEt('et');
+        const userChoice = await getCurrentTariff(user.uid);
+        if (userChoice && userChoice['type'] === 'ET') {
+          setIsEt(true);
+        } else {
+          setIsEt(false);
+        }
       } catch (err) {}
     })();
-  }, []);
-
-  if (et == undefined) {
-    setEt('Vt/Mt');
-  }
+  }, [user.uid]);
 
   useEffect(() => {
     if (newPassword.length > 0) {
@@ -85,12 +84,16 @@ const ProfilePage = () => {
   }, [newPassword]);
 
   const handleEt = async () => {
-    if (et == 'Vt/Mt') {
-      setEt('et');
-      setIsEt(true);
-    } else {
-      setEt('Vt/Mt');
-      setIsEt(false);
+    try {
+      if (isEt) {
+        await removeEtFromDb(user.uid);
+        setIsEt(false);
+      } else {
+        await saveEt(user.uid);
+        setIsEt(true);
+      }
+    } catch (err) {
+      setStatus({ message: 'Napaka pri shranjevanju tarife.', type: 'error' });
     }
   };
 
@@ -304,7 +307,7 @@ const ProfilePage = () => {
                 <div className="flex items-center">
                   <label className="text-sm font-medium ">Tip tarife ki jo imate</label>
                   <button className="px-5 py-2 text-white bg-primary rounded ml-20" onClick={() => handleEt()}>
-                    {isEt ? 'Vt/Mt' : 'Et'}
+                    {isEt ? 'ET' : 'VT/MT'}
                   </button>
                 </div>
 
