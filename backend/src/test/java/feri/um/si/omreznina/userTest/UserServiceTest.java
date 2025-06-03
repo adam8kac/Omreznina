@@ -20,9 +20,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+
 @SuppressWarnings("removal")
 @ActiveProfiles("test")
+@SpringBootTest(properties = "mfa.secret.encryption-key=nekTestKey123456")
 public class UserServiceTest {
 
 	@MockBean

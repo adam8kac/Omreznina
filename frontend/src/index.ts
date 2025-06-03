@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
-const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-// const api = axios.create({ baseURL: 'http://localhost:8080/' });
+// const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -39,6 +39,12 @@ export interface SimulationRequest {
   agreedPowers: Record<number, number>;
   season: 'VISJA' | 'NIZJA';
   dayType: 'DELOVNI_DAN' | 'DELA_PROST_DAN';
+}
+
+export interface MfaSettings {
+  uid: string;
+  enabled: boolean;
+  secretHash: string;
 }
 
 export const getDocumentData = async (uid: string, docId: string): Promise<Record<string, MonthRecord>> => {
@@ -186,4 +192,37 @@ export const saveEt = async (uid: string) => {
   const response = await api.post(`firestore/setEt?uid=${uid}`);
   console.log(uid);
   return response.data;
+};
+
+export const getMfaSettings = async (uid: string): Promise<MfaSettings | null> => {
+  try {
+    const res = await api.get(`firestore/mfa/${uid}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+};
+
+export const verifyTotpCode = async (uid: string, code: string): Promise<boolean> => {
+  try {
+    const res = await api.post('firestore/mfa/verify', { uid, code });
+    return res.data === true;
+  } catch {
+    return false;
+  }
+};
+
+export const setupMfaSettings = async (uid: string, secret: string, enabled: boolean): Promise<boolean> => {
+  try {
+    const res: AxiosResponse = await api.post(`firestore/mfa/setup`, {
+      uid,
+      secret,
+      enabled,
+    });
+
+    return res.status === 200;
+  } catch (error) {
+    console.error('Napaka pri setupMfaSettings:', error);
+    return false;
+  }
 };

@@ -22,7 +22,7 @@ import feri.um.si.omreznina.OmrezninaApplication;
 import feri.um.si.omreznina.config.FirebaseTestConfig;
 import feri.um.si.omreznina.service.UserService;
 
-@SpringBootTest(classes = { OmrezninaApplication.class, FirebaseTestConfig.class })
+@SpringBootTest(classes = { OmrezninaApplication.class, FirebaseTestConfig.class }, properties = "mfa.secret.encryption-key=nekTestKey123456")
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @SuppressWarnings("removal")

@@ -11,6 +11,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import feri.um.si.omreznina.model.ManualInvoice;
+import feri.um.si.omreznina.model.MfaSettings;
+
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -353,26 +355,71 @@ public class FirestoreServiceTest {
 		assertTrue(ex.getMessage().contains("Firestore fail"));
 	}
 
-@Test
-void testSaveTariff_savesCorrectly() throws Exception {
-    Firestore mockDb = mock(Firestore.class);
-    CollectionReference mockCollection = mock(CollectionReference.class);
-    DocumentReference mockDocRef = mock(DocumentReference.class);
-    ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
+	@Test
+	void testSaveTariff_savesCorrectly() throws Exception {
+		Firestore mockDb = mock(Firestore.class);
+		CollectionReference mockCollection = mock(CollectionReference.class);
+		DocumentReference mockDocRef = mock(DocumentReference.class);
+		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
 
-    when(mockDb.collection("someUid")).thenReturn(mockCollection);
-    when(mockCollection.document("et")).thenReturn(mockDocRef);
-    when(mockDocRef.set(any(Map.class))).thenReturn(mockFuture);
-    when(mockFuture.get()).thenReturn(null);
+		when(mockDb.collection("someUid")).thenReturn(mockCollection);
+		when(mockCollection.document("et")).thenReturn(mockDocRef);
+		when(mockDocRef.set(any(Map.class))).thenReturn(mockFuture);
+		when(mockFuture.get()).thenReturn(null);
 
-    FirestoreService firestoreService = new FirestoreService(mockDb);
+		FirestoreService firestoreService = new FirestoreService(mockDb);
 
-    firestoreService.saveTariff("someUid");
+		firestoreService.saveTariff("someUid");
 
-    verify(mockDb).collection("someUid");
-    verify(mockCollection).document("et");
-    verify(mockDocRef).set(eq(Map.of("price", 0.10890)));
-    verify(mockFuture).get();
-}
+		verify(mockDb).collection("someUid");
+		verify(mockCollection).document("et");
+		verify(mockDocRef).set(eq(Map.of("price", 0.10890)));
+		verify(mockFuture).get();
+	}
+
+	@Test
+	void testSaveMfaSettings_savesCorrectly() throws Exception {
+		Firestore mockDb = mock(Firestore.class);
+		CollectionReference mockCollection = mock(CollectionReference.class);
+		DocumentReference mockDocRef = mock(DocumentReference.class);
+		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
+
+		MfaSettings settings = new MfaSettings();
+		// Če imaš set metode: settings.setEnabled(true); settings.setSecret("XYZ");
+
+		when(mockDb.collection("uid123")).thenReturn(mockCollection);
+		when(mockCollection.document("mfa")).thenReturn(mockDocRef);
+		when(mockDocRef.set(eq(settings))).thenReturn(mockFuture);
+		when(mockFuture.get()).thenReturn(null);
+
+		FirestoreService firestoreService = new FirestoreService(mockDb);
+
+		firestoreService.saveMfaSettings("uid123", settings);
+
+		verify(mockDb).collection("uid123");
+		verify(mockCollection).document("mfa");
+		verify(mockDocRef).set(eq(settings));
+		verify(mockFuture).get();
+	}
+
+	@Test
+	void testSaveMfaSettings_handlesException() throws Exception {
+		Firestore mockDb = mock(Firestore.class);
+		CollectionReference mockCollection = mock(CollectionReference.class);
+		DocumentReference mockDocRef = mock(DocumentReference.class);
+		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
+
+		when(mockDb.collection(anyString())).thenReturn(mockCollection);
+		when(mockCollection.document(anyString())).thenReturn(mockDocRef);
+		when(mockDocRef.set(any(MfaSettings.class))).thenReturn(mockFuture);
+		when(mockFuture.get()).thenThrow(new RuntimeException("Firestore fail"));
+
+		FirestoreService testService = new FirestoreService(mockDb);
+
+		assertDoesNotThrow(() -> testService.saveMfaSettings("uid", new MfaSettings()));
+
+		verify(mockDocRef).set(any(MfaSettings.class));
+		verify(mockFuture).get();
+	}
 
 }

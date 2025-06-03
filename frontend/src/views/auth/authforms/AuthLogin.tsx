@@ -11,6 +11,8 @@ import {
 import { useNavigate } from "react-router";
 import { auth } from "src/firebase-config";
 import { Icon } from "@iconify/react";
+import VerifyMfa from "src/views/mfa/VerifyMfa";
+import { getMfaSettings } from "src/index";
 
 const AuthLogin = () => {
   const navigate = useNavigate();
@@ -20,11 +22,12 @@ const AuthLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [uid, setUid] = useState("");
+  const [showMfa, setShowMfa] = useState(false);
 
   const [openModal, setOpenModal] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetStatus, setResetStatus] = useState("");
-
   const [showResendVerify, setShowResendVerify] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -63,7 +66,14 @@ const AuthLogin = () => {
         return;
       }
 
-      navigate("/");
+      const mfa = await getMfaSettings(user.uid);
+      if (mfa?.enabled) {
+        setUid(user.uid);
+        setShowMfa(true);
+      } else {
+        navigate("/");
+      }
+
     } catch (error: any) {
       if (error.code === "auth/user-not-found") {
         setError("Uporabnik s tem emailom ne obstaja.");
@@ -76,7 +86,6 @@ const AuthLogin = () => {
       }
     }
   };
-
 
   const handlePasswordReset = async () => {
     if (!resetEmail.trim()) {
@@ -111,9 +120,14 @@ const AuthLogin = () => {
     }
   };
 
+  if (showMfa) {
+    return (
+      <VerifyMfa uid={uid} onVerified={() => navigate("/")} />
+    );
+  }
+
   return (
     <>
-
       <Modal
         show={openModal}
         onClose={() => {
@@ -134,13 +148,7 @@ const AuthLogin = () => {
               placeholder="email@primer.com"
             />
             {resetStatus && (
-              <p
-                className={`text-sm ${
-                  resetStatus.includes("poslana")
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
+              <p className={`text-sm ${resetStatus.includes("poslana") ? "text-green-600" : "text-red-600"}`}>
                 {resetStatus}
               </p>
             )}
@@ -148,12 +156,9 @@ const AuthLogin = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={handlePasswordReset}>Pošlji povezavo</Button>
-          <Button color="gray" onClick={() => setOpenModal(false)}>
-            Zapri
-          </Button>
+          <Button color="gray" onClick={() => setOpenModal(false)}>Zapri</Button>
         </Modal.Footer>
       </Modal>
-
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -163,7 +168,6 @@ const AuthLogin = () => {
             type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="form-control form-rounded-xl"
           />
         </div>
 
@@ -174,7 +178,7 @@ const AuthLogin = () => {
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="form-control form-rounded-xl pr-10"
+            className="pr-10"
           />
           <span
             className="absolute right-3 top-[38px] cursor-pointer text-gray-600"
@@ -209,24 +213,14 @@ const AuthLogin = () => {
 
         {showResendVerify && (
           <div className="mb-4">
-            <p className="text-sm text-gray-700">
-              Niste prejeli potrditvenega emaila?
-            </p>
-            <Button
-              onClick={handleResendVerification}
-              size="xs"
-              className="mt-2"
-            >
+            <p className="text-sm text-gray-700">Niste prejeli potrditvenega emaila?</p>
+            <Button onClick={handleResendVerification} size="xs" className="mt-2">
               Pošlji ponovno potrditveni email
             </Button>
           </div>
         )}
 
-        <Button
-          type="submit"
-          color="primary"
-          className="w-full bg-primary text-white rounded-xl"
-        >
+        <Button type="submit" color="primary" className="w-full bg-primary text-white rounded-xl">
           Prijava
         </Button>
       </form>
