@@ -262,7 +262,10 @@ public class FirestoreService {
 					.document("mfa")
 					.set(settings)
 					.get();
-		} catch (Exception e) {
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 			logger.warning("Failed to save mfa settings: " + e.toString());
 		}
 	}
@@ -274,8 +277,11 @@ public class FirestoreService {
 			if (snapshot.exists()) {
 				return snapshot.toObject(MfaSettings.class);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
+			logger.warning("could not get MFA Settings: " + e.toString());
 		}
 		return null;
 	}

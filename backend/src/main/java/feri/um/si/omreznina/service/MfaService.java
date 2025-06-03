@@ -69,7 +69,7 @@ public class MfaService {
 	}
 
 	private String decrypt(String encryptedSecret) throws Exception {
-		Cipher cipher = Cipher.getInstance("AES");
+		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 		cipher.init(Cipher.DECRYPT_MODE, aesKeySpec);
 		byte[] decoded = Base64.getDecoder().decode(encryptedSecret);
 		byte[] decrypted = cipher.doFinal(decoded);
@@ -77,7 +77,7 @@ public class MfaService {
 	}
 
 	private String encrypt(String secret) throws Exception {
-		Cipher cipher = Cipher.getInstance("AES");
+		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 		cipher.init(Cipher.ENCRYPT_MODE, aesKeySpec);
 		byte[] encrypted = cipher.doFinal(secret.getBytes(StandardCharsets.UTF_8));
 		return Base64.getEncoder().encodeToString(encrypted);
