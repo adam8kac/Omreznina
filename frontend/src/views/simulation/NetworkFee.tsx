@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Accordion } from 'flowbite-react';
 import { Link } from 'react-router';
 import { getCurrentTimeBlock } from 'src/index';
+import '../../css/theme/accordion.css';
 
 const blockColors: Record<number, string> = {
   1: 'bg-[#fa144d]',
@@ -28,6 +29,9 @@ const HourBlock = ({ hour, block, isCurrent }: { hour: number; block: number; is
 const HourRing = ({ title, blocks, active = false }: { title: string; blocks: number[]; active?: boolean }) => {
   const nowHour = new Date().getHours();
 
+  const firstRow = blocks.slice(0, 12);
+  const secondRow = blocks.slice(12, 24);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -37,7 +41,7 @@ const HourRing = ({ title, blocks, active = false }: { title: string; blocks: nu
     >
       <p className="font-semibold text-sm text-center">{title}</p>
 
-      <div className="flex gap-[4px] justify-center w-full">
+      <div className="hidden sm:flex gap-[4px] justify-center w-full">
         {blocks.map((_, i) => (
           <div key={i} className="w-6 h-5 flex items-end justify-center">
             {i === 0 && <FaSun className="text-yellow-400 text-sm mb-1" />}
@@ -46,7 +50,17 @@ const HourRing = ({ title, blocks, active = false }: { title: string; blocks: nu
         ))}
       </div>
 
-      <div className="flex gap-[4px] justify-center w-full">
+      <div className="flex gap-[4px] justify-center w-full sm:hidden">
+        {firstRow.map((block, i) => (
+          <HourBlock key={i} hour={i} block={block} isCurrent={active && i === nowHour} />
+        ))}
+      </div>
+      <div className="flex gap-[4px] justify-center w-full sm:hidden">
+        {secondRow.map((block, i) => (
+          <HourBlock key={i + 12} hour={i + 12} block={block} isCurrent={active && i + 12 === nowHour} />
+        ))}
+      </div>
+      <div className="hidden sm:flex gap-[4px] justify-center w-full">
         {blocks.map((block, i) => (
           <HourBlock key={i} hour={i} block={block} isCurrent={active && i === nowHour} />
         ))}
@@ -54,6 +68,7 @@ const HourRing = ({ title, blocks, active = false }: { title: string; blocks: nu
     </motion.div>
   );
 };
+
 
 type TimeBlockNow = {
   seasonType: 'HIGH' | 'LOW';

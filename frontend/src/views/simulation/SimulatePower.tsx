@@ -26,6 +26,8 @@ import {
 import { Accordion } from 'flowbite-react';
 import instructions1 from '../../assets/images/instructions/instructions1.png';
 import instructions3 from '../../assets/images/instructions/instructions3.png';
+import '../../css/theme/accordion.css';
+ 
 
 const deviceIcons: Record<string, JSX.Element> = {
   'Sušilni stroj': <FaTshirt />,
@@ -120,6 +122,7 @@ export const SimulatePower = () => {
   }, [selectedDevices, agreedPowers, loadingPowers]);
 
   return (
+  <div className="rounded-xl dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
     <div className="p-4 space-y-4">
       <h2 className="text-3xl font-bold mb-4 text-center">Izberi naprave</h2>
       <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
@@ -225,32 +228,35 @@ export const SimulatePower = () => {
           <Accordion.Panel>
             <Accordion.Title>Kaj pomeni obračunska moč?</Accordion.Title>
             <Accordion.Content>
-              <p className="text-sm text-gray-700">
-                Obračunska moč je količina električne moči, ki jo uporabnik zagotovi, da bo potrebna za napajanje svojih
-                naprav v določenem časovnem bloku. Če uporabnik preseže to dogovorjeno moč, lahko plača višjo
-                omrežninsko tarifo.
-              </p>
-              <p className="mt-4 text-sm text-gray-600">
-                Na spodnjih slikah si lahko ogledate postopek, kako preveriti svojo obračunsko moč na portalu{' '}
-                <a
-                  href="https://mojelektro.si"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  mojelektro.si
-                </a>
-                :
-              </p>
-              <div className="mt-4 space-y-4">
-                <img src={instructions1} alt="Koraki 1–2" className="rounded-md border shadow-sm" />
-                <img src={instructions3} alt="Koraki 3–6" className="rounded-md border shadow-sm" />
+              <div className="accordion-content-transition">
+                <p className="text-sm text-gray-700">
+                  Obračunska moč je količina električne moči, ki jo uporabnik zagotovi, da bo potrebna za napajanje svojih
+                  naprav v določenem časovnem bloku. Če uporabnik preseže to dogovorjeno moč, lahko plača višjo
+                  omrežninsko tarifo.
+                </p>
+                <p className="mt-4 text-sm text-gray-600">
+                  Na spodnjih slikah si lahko ogledate postopek, kako preveriti svojo obračunsko moč na portalu{' '}
+                  <a
+                    href="https://mojelektro.si"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    mojelektro.si
+                  </a>
+                  :
+                </p>
+                <div className="mt-4 space-y-4">
+                  <img src={instructions1} alt="Koraki 1–2" className="rounded-md border shadow-sm" />
+                  <img src={instructions3} alt="Koraki 3–6" className="rounded-md border shadow-sm" />
+                </div>
               </div>
             </Accordion.Content>
           </Accordion.Panel>
         </Accordion>
       </div>
     </div>
+  </div>
   );
 };
 
