@@ -52,8 +52,6 @@ public class ChatController {
             chatResponse = restTemplate.postForObject(apiUrl, request, ChatResponse.class);
             return ResponseEntity.ok(chatResponse.toString());
         } catch (Exception e) {
-            System.out.println(request);
-            System.out.println(restTemplate.toString());
             return ResponseEntity.badRequest().body("Interaction with OpenAi failed" + e.toString());
         }
     }

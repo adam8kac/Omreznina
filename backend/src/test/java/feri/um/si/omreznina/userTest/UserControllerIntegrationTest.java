@@ -1,5 +1,6 @@
 package feri.um.si.omreznina.userTest;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import feri.um.si.omreznina.service.UserService;
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @SuppressWarnings("removal")
+@Tag("integration")
 public class UserControllerIntegrationTest {
 
 	@Autowired

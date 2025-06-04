@@ -17,7 +17,6 @@ public class ChatGPTConfiguration {
 
         restTemplate.getInterceptors().add((request, body, execution) -> {
             request.getHeaders().add("Authorization", "Bearer " + apiKey);
-            System.out.println(request.getHeaders());
             return execution.execute(request, body);
         });
 
