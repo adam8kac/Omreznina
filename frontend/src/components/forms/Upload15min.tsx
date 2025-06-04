@@ -10,7 +10,6 @@ import { auth } from 'src/firebase-config';
 import { useUploadLoading } from '../../contexts/UploadLoadingContext';
 
 export default function Upload15min() {
-  // Uporabiš context hook za 'minutni'
   const {
     isLoading, setIsLoading, progress, setProgress, message: resultMsg,
     setMessage, startPolling
@@ -20,7 +19,6 @@ export default function Upload15min() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Loading messages
   const messages = [
     'Vzpostavljam povezavo s strežnikom...',
     'Obdelujem podatke iz datoteke...',
@@ -30,7 +28,6 @@ export default function Upload15min() {
   ];
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
 
-  // Rotacija sporočil
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
     if (isLoading) {
@@ -41,7 +38,6 @@ export default function Upload15min() {
     return () => { if (interval) clearInterval(interval); };
   }, [isLoading, messages.length]);
 
-  // UID extraction
   const keyId = auth.config.apiKey;
   const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
   const getUid = async () => {
@@ -58,11 +54,9 @@ export default function Upload15min() {
   useEffect(() => {
     setError(null);
     setMessage('');
-    // Če hočeš reset polling na mount:
-    // resetPolling();
+
   }, []);
 
-  // Change handler
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
@@ -71,7 +65,6 @@ export default function Upload15min() {
     }
   };
 
-  // Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -123,7 +116,6 @@ export default function Upload15min() {
       await uploadMonthlyOptimal(formData);
       setProgress(90);
 
-      // --- VKLJUČI GLOBAL POLLING (UID OBVEZNO!) ---
       startPolling(uid);
 
       if (fileInputRef.current) fileInputRef.current.value = '';
