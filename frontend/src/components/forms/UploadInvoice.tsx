@@ -24,7 +24,7 @@ const UploadInvoice: React.FC = () => {
     'Obdelujem podatke iz računa...',
     'Shranjujem vsebino v bazo...',
     'Pripravljam vpoglede...',
-    'Obdelava lahko traja nekaj sekund, prosimo za potrpežljivost.',
+    'Obdelava lahko traja nekaj minut, prosimo za potrpežljivost.',
   ];
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
 
@@ -33,12 +33,11 @@ const UploadInvoice: React.FC = () => {
     if (isLoading) {
       interval = setInterval(() => {
         setLoadingMsgIndex((prev) => (prev + 1) % messages.length);
-      }, 2200);
+      }, 8000);
     }
     return () => { if (interval) clearInterval(interval); };
   }, [isLoading, messages.length]);
 
-  // UID extraction
   const keyId = auth.config.apiKey;
   const userSessionid = 'firebase:authUser:' + keyId + ':[DEFAULT]';
   const getUid = async () => {
