@@ -210,6 +210,12 @@ const ProfilePage = () => {
     }
   }, [selectedIndex]);
 
+  useEffect(() => {
+    if (!user.photoURL) {
+      updateProfile(user, { photoURL: avatars[0] });
+    }
+  }, []);
+
   return (
     <div className="w-full min-h-screen flex justify-center items-start py-16 bg-white rounded-2xl shadow-xl">
       <div className="w-full max-w-3xl">
