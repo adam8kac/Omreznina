@@ -33,7 +33,7 @@ export default function Upload15min() {
     if (isLoading) {
       interval = setInterval(() => {
         setLoadingMsgIndex((prev) => (prev + 1) % messages.length);
-      }, 2200);
+      }, 8000);
     }
     return () => { if (interval) clearInterval(interval); };
   }, [isLoading, messages.length]);
