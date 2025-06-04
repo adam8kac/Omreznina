@@ -1,5 +1,6 @@
 package feri.um.si.omreznina.userTest;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,10 +23,14 @@ import feri.um.si.omreznina.OmrezninaApplication;
 import feri.um.si.omreznina.config.FirebaseTestConfig;
 import feri.um.si.omreznina.service.UserService;
 
-@SpringBootTest(classes = { OmrezninaApplication.class, FirebaseTestConfig.class }, properties = "mfa.secret.encryption-key=nekTestKey123456")
+@SpringBootTest(classes = { OmrezninaApplication.class,
+		FirebaseTestConfig.class }, properties = {
+				"mfa.secret.encryption-key=nekTestKey123456",
+				"spring.ai.openai.api-key=dummy_test_key" })
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @SuppressWarnings("removal")
+@Tag("integration")
 public class UserControllerIntegrationTest {
 
 	@Autowired

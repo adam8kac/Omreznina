@@ -8,9 +8,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
+import com.maxmind.geoip2.DatabaseReader;
+import com.maxmind.geoip2.model.CityResponse;
 
+import feri.um.si.omreznina.exceptions.IpAddressException;
 import feri.um.si.omreznina.exceptions.UserException;
+import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +28,6 @@ public class UserService {
 	private final Logger logger = Logger.getLogger(getClass().getName());
 
 	private FileService fileService;
-
 
 	FirestoreService firestoreService;
 
@@ -60,6 +66,47 @@ public class UserService {
 
 		String parser = "optimum";
 		processAndStoreFile(file, uid, powerByMonths, parser);
+	}
+
+	public Map<String, Double> getClientLocation(HttpServletRequest request) {
+		try {
+			String ipAddress = getIpAddress(request);
+			Map<String, Double> location = new HashMap<>();
+
+			try {
+				InputStream database = getClass().getResourceAsStream(
+						"/geoip/GeoLite2-City.mmdb");
+				DatabaseReader dbReader = new DatabaseReader.Builder(database).build();
+				CityResponse response = dbReader.city(InetAddress.getByName(ipAddress));
+
+				double latitude = response.getLocation().getLatitude();
+				double longitude = response.getLocation().getLongitude();
+
+				location.put("latitude", latitude);
+				location.put("longitude", longitude);
+
+				return location;
+			} catch (Exception e) {
+				logger.warning(e.toString());
+			}
+		} catch (IpAddressException e) {
+			logger.warning(e.getMessage());
+		}
+
+		return null;
+	}
+
+	private String getIpAddress(HttpServletRequest request) throws IpAddressException {
+		String ipAddress = request.getHeader("X-Real-IP");
+
+		if (ipAddress == null || ipAddress.isEmpty()) {
+			ipAddress = request.getHeader("X-Forwarded-For");
+			if (ipAddress == null || ipAddress.isEmpty()) {
+				ipAddress = request.getRemoteAddr();
+			}
+			return ipAddress;
+		}
+		throw new IpAddressException("Getting ip address failed: " + ipAddress);
 	}
 
 	private void processAndStoreFile(MultipartFile file, String uid, String powerByMonths, String parser) {

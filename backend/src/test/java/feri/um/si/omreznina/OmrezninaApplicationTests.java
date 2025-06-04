@@ -1,25 +1,23 @@
 package feri.um.si.omreznina;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
-import com.google.firebase.internal.FirebaseService;
-
-import feri.um.si.omreznina.config.FirebaseTestConfig;
-
-@SpringBootTest(properties = "mfa.secret.encryption-key=testniKey123456")
+@SuppressWarnings("removal")
+@SpringBootTest(classes = { feri.um.si.omreznina.OmrezninaApplication.class,
+		feri.um.si.omreznina.config.FirebaseTestConfig.class }, properties = {
+				"mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key" })
 @ActiveProfiles("test")
-@Import(FirebaseTestConfig.class)
+@TestPropertySource(locations = "classpath:application-test.properties")
 class OmrezninaApplicationTests {
 
-	@Mock
-	private FirebaseService<Object> firebaseService;
+	@MockBean
+	private feri.um.si.omreznina.service.FileService fileService;
 
 	@Test
 	void contextLoads() {
 	}
-
 }

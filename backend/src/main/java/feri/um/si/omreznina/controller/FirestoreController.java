@@ -94,7 +94,6 @@ public class FirestoreController {
 	public ResponseEntity<String> saveManualInvoice(@RequestBody ManualInvoice invoice) {
 		try {
 			service.saveManualInvoice(invoice);
-			System.out.println(invoice);
 			return ResponseEntity.ok("Račun uspešno shranjen.");
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Napaka pri shranjevanju računa", e);

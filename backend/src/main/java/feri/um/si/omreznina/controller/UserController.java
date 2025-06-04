@@ -3,16 +3,20 @@ package feri.um.si.omreznina.controller;
 import feri.um.si.omreznina.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @Tag(name = "User", description = "User actions")
 @RequestMapping("/user")
-// @CrossOrigin(origins = "*")
 public class UserController {
 
 	@Autowired
@@ -51,6 +55,11 @@ public class UserController {
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().build();
 		}
+	}
+
+	@GetMapping("/location")
+	public ResponseEntity<Map<String, Double>> getLocation(HttpServletRequest request) {
+		return ResponseEntity.ok(userService.getClientLocation(request));
 	}
 
 }
