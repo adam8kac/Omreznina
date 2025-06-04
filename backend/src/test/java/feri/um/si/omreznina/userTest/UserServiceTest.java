@@ -4,8 +4,11 @@ import feri.um.si.omreznina.exceptions.UserException;
 import feri.um.si.omreznina.service.FileService;
 import feri.um.si.omreznina.service.FirestoreService;
 import feri.um.si.omreznina.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockMultipartFile;
@@ -19,6 +22,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Map;
 
 
 @SuppressWarnings("removal")
@@ -86,5 +92,18 @@ public class UserServiceTest {
 			}
 		}
 	}
+
+	    @Test
+    void testGetClientLocation_realDB() {
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+
+		UserService userService = new UserService(null, null);
+
+        Map<String, Double> result = userService.getClientLocation(mockRequest);
+
+        assertNotNull(result);
+        assertEquals(46.0543, result.get("latitude"), 0.1);   
+        assertEquals(14.5044, result.get("longitude"), 0.1);  
+    }
 
 }
