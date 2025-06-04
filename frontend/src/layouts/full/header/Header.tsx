@@ -26,7 +26,7 @@ const Header = () => {
     };
   }, []);
 
-  // mobile-sidebar
+  //mobile-sidebar
   const [isOpen, setIsOpen] = useState(false);
   const handleClose = () => setIsOpen(false);
   return (
@@ -41,8 +41,6 @@ const Header = () => {
           fluid
           className={`rounded-none bg-transparent dark:bg-transparent py-4 sm:px-30 px-4`}
         >
-          {/* Mobile Toggle Icon */}
-
           <div className="flex gap-3 items-center justify-between w-full ">
             <div className="flex gap-2 items-center">
               <span
@@ -59,8 +57,6 @@ const Header = () => {
           </div>
         </Navbar>
       </header>
-
-      {/* Mobile Sidebar */}
       <Drawer open={isOpen} onClose={handleClose} className="w-130">
         <Drawer.Items>
           <MobileSidebar />

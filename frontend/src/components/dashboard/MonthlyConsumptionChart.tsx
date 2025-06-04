@@ -11,6 +11,7 @@ import {
   saveAgreedPowers,
 } from 'src/index';
 import { Link } from 'react-router';
+import '../../css/theme/accordion.css';
 
 interface DayRecord {
   poraba: number;
@@ -351,37 +352,32 @@ useEffect(() => {
               <Accordion.Content className="bg-gray-50 dark:bg-gray-900">
                 <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
                   <p className="mb-2">
-                    V mesecu <strong>{formatMonth(selectedMonth!)}</strong>{' '}
-                    {netoOddaja ? (
-                      <>ste oddali v omrežje več energije, kot ste jo prejeli.</>
-                    ) : (
-                      <>
-                        ste porabili <strong>{currentMonthData.totalPoraba.toFixed(2)} kWh</strong>.
-                      </>
+                    {currentMonthData.totalPrejeta > 0 && (
+                      <>Iz omrežja ste prejeli <strong>{currentMonthData.totalPrejeta.toFixed(2)} kWh</strong>{currentMonthData.totalSolar > 0 ? ', ' : '.'}</>
+                    )}
+                    {currentMonthData.totalSolar > 0 && (
+                      <>v omrežje pa oddali <strong>{currentMonthData.totalSolar.toFixed(2)} kWh</strong>.</>
                     )}
                   </p>
                   <p className="mb-2">
-                    Največ ste {netoOddaja ? 'prejeli iz omrežja' : 'porabili'} v{' '}
-                    <strong>{maxDay ? formatDaySl(maxDay) : '-'}</strong> (<strong>{maxValue?.toFixed(2)} kWh</strong>
-                    ), najmanj pa v <strong>{minDay ? formatDaySl(minDay) : '-'}</strong> (
-                    <strong>{minValue?.toFixed(2)} kWh</strong>).
+                    Največ {netoOddaja ? 'ste prejeli iz omrežja' : 'ste porabili'} dne <strong>{maxDay ? formatDaySl(maxDay) : '-'}</strong>, 
+                    in sicer <strong>{maxValue?.toFixed(2)} kWh</strong>. 
+                    Najmanj pa <strong>{minDay ? formatDaySl(minDay) : '-'}</strong> (<strong>{minValue?.toFixed(2)} kWh</strong>).
                   </p>
                   <p className="mb-2">
-                    Povprečna dnevna {netoOddaja ? 'prejeta energija' : 'poraba'} znaša{' '}
-                    <strong>{avgValue?.toFixed(2)} kWh</strong>.
+                    Povprečna dnevna {netoOddaja ? 'prejeta energija' : 'poraba'} je znašala <strong>{avgValue?.toFixed(2)} kWh</strong>.
                   </p>
                   <p className="mb-2">
-                    Iz omrežja ste prejeli <strong>{currentMonthData.totalPrejeta.toFixed(2)} kWh</strong>, oddali pa{' '}
-                    <strong>{currentMonthData.totalSolar.toFixed(2)} kWh</strong>.
+                    Iz omrežja ste prejeli <strong>{currentMonthData.totalPrejeta.toFixed(2)} kWh</strong>, 
+                    v omrežje pa oddali <strong>{currentMonthData.totalSolar.toFixed(2)} kWh</strong>.
                   </p>
                   {netoOddaja ? (
                     <p className="mb-2 text-green-700 dark:text-green-400 font-semibold">
-                      V tem mesecu ste v omrežje oddali več energije, kot ste jo prejeli. Neto oddaja:{' '}
-                      <strong>{Math.abs(realUsage).toFixed(2)} kWh</strong>
+                      Odlično! V tem mesecu ste proizvedli več energije, kot ste je porabili. Neto oddaja znaša <strong>{Math.abs(realUsage).toFixed(2)} kWh</strong>.
                     </p>
                   ) : (
                     <p className="mb-2">
-                      Vaša neto poraba je znašala <strong>{realUsage.toFixed(2)} kWh</strong>.
+                      Vaša neto poraba energije ta mesec je bila <strong>{realUsage.toFixed(2)} kWh</strong>.
                     </p>
                   )}
                   {yearComparison.length > 0 && (
@@ -402,61 +398,106 @@ useEffect(() => {
 
   return (
     <div className="rounded-xl dark:shadow-dark-md shadow-md bg-white dark:bg-darkgray p-6 relative w-full">
-      {isLoading ? (
-        <div className="flex justify-center items-center h-40">
-          <Spinner aria-label="Nalaganje..." size="xl" />
-        </div>
-      ) : hasError ? (
-        <p className="text-red-600">Napaka pri nalaganju podatkov.</p>
-      ) : months.length === 0 ? (
-        <div className="flex flex-col items-center py-16">
-          <svg width={50} height={50} viewBox="0 0 24 24" fill="none" className="mb-4 text-blue-500">
-            <path
-              d="M3 6a1 1 0 0 1 1-1h1V4a1 1 0 1 1 2 0v1h8V4a1 1 0 1 1 2 0v1h1a1 1 0 0 1 1 1v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm2 0v14h14V6H5Zm2 4a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm5 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0ZM7 18h10v-2H7v2Z"
-              fill="currentColor"
-            />
-          </svg>
-          <div className="text-lg font-semibold mb-2">Ni podatkov za prikaz</div>
-          <div className="text-gray-600 mb-6 text-center max-w-xs">
-            Niste še naložili podatkov o porabi elektrike. Za prikaz analiz in grafov najprej dodajte vsaj en račun ali
-            CSV datoteko s podatki.
-          </div>
-          <Link
-            to="/upload-data"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-xl shadow transition"
-          >
-            Naloži podatke
-          </Link>
-        </div>
-      ) : (
-        <>
-          {Object.entries(netoOddajaMeseci).length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {Object.entries(netoOddajaMeseci).map(([month, oddaja]) => (
-                <div
-                  key={month}
-                  className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold"
-                >
-                  <svg width={18} height={18} className="inline" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M11.3 1.046a1 1 0 0 1 1.339.482l6.364 12.728a1 1 0 0 1-.447 1.34A1 1 0 0 1 18 16H2a1 1 0 0 1-.89-1.453l8-16A1 1 0 0 1 10.3 1.046ZM10 5.382 4.618 16h10.764L10 5.382Z" />
-                  </svg>
-                  <span>
-                    {formatMonth(month)}: Neto oddaja <b>{oddaja.toFixed(2)} kWh</b>
-                  </span>
-                </div>
-              ))}
+      <div className="block sm:hidden">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          {years.length > 1 && (
+            <div className="flex gap-2 items-center">
+              <label htmlFor="leto">Izberi leto:</label>
+              <Select
+                id="leto"
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="max-w-[150px]"
+              >
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </Select>
             </div>
           )}
-          <div className="mb-6 flex items-center justify-between gap-4">
+        </div>
+        {selectedMonth && (
+          <div className="flex items-center justify-between mt-2 mb-4">
+            <h2 className="text-lg font-bold">Poraba za {formatMonth(selectedMonth)}</h2>
+            <Select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="max-w-[200px]"
+            >
+              {filteredMonths.map((month) => (
+                <option key={month} value={month}>
+                  {formatMonth(month)}
+                </option>
+              ))}
+            </Select>
+          </div>
+        )}
+        <div className="my-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded">
+          Za prikaz grafov in podrobnih analiz uporabite aplikacijo na računalniku.
+        </div>
+        {summaryText}
+      </div>
+      <div className="hidden sm:block">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40">
+            <Spinner aria-label="Nalaganje..." size="xl" />
+          </div>
+        ) : hasError ? (
+          <p className="text-red-600">Napaka pri nalaganju podatkov.</p>
+        ) : months.length === 0 ? (
+          <div className="flex flex-col items-center py-16">
+            <svg width={50} height={50} viewBox="0 0 24 24" fill="none" className="mb-4 text-blue-500">
+              <path
+                d="M3 6a1 1 0 0 1 1-1h1V4a1 1 0 1 1 2 0v1h8V4a1 1 0 1 1 2 0v1h1a1 1 0 0 1 1 1v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm2 0v14h14V6H5Zm2 4a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm5 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0ZM7 18h10v-2H7v2Z"
+                fill="currentColor"
+              />
+            </svg>
+            <div className="text-lg font-semibold mb-2">Ni podatkov za prikaz</div>
+            <div className="text-gray-600 mb-6 text-center max-w-xs">
+              Niste še naložili podatkov o porabi elektrike. Za prikaz analiz in grafov najprej dodajte vsaj en račun ali
+              CSV datoteko s podatki.
+            </div>
+            <Link
+              to="/upload-data"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-xl shadow transition"
+            >
+              Naloži podatke
+            </Link>
+          </div>
+        ) : (
+          <>
+            {Object.entries(netoOddajaMeseci).length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {Object.entries(netoOddajaMeseci).map(([month, oddaja]) => (
+                  <div
+                    key={month}
+                    className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold"
+                  >
+                    <svg width={18} height={18} className="inline" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M11.3 1.046a1 1 0 0 1 1.339.482l6.364 12.728a1 1 0 0 1-.447 1.34A1 1 0 0 1 18 16H2a1 1 0 0 1-.89-1.453l8-16A1 1 0 0 1 10.3 1.046ZM10 5.382 4.618 16h10.764L10 5.382Z" />
+                    </svg>
+                    <span>
+                      {formatMonth(month)}: Neto oddaja <b>{oddaja.toFixed(2)} kWh</b>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h5 className="card-title">Prikaz mesečne porabe</h5>
+
             {years.length > 1 && (
               <div className="flex gap-2 items-center">
-                <label htmlFor="leto">Izberi leto:</label>
+                <label htmlFor="leto" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                  Izberi leto:
+                </label>
                 <Select
                   id="leto"
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
-                  className="max-w-[150px]"
+                  className="max-w-[150px] border-violet-500 focus:ring-violet-500 focus:border-violet-500 rounded-xl"
                 >
                   {years.map((year) => (
                     <option key={year} value={year}>
@@ -467,66 +508,67 @@ useEffect(() => {
               </div>
             )}
           </div>
-          <Chart
-            options={optionsBarChart}
-            series={[
-              {
-                name: 'Poraba (kWh)',
-                data: barSeriesPoraba,
-              },
-              {
-                name: 'Oddana energija (kWh)',
-                data: barSeriesSolar,
-              },
-              {
-                name: 'Prejeta energija (kWh)',
-                data: barSeriesPrejeta,
-              },
-            ]}
-            type="bar"
-            height="315px"
-            width="100%"
-          />
-          {selectedMonth && currentMonthData && (
-            <>
-              <div className="flex items-center justify-between mt-8 mb-4">
-                <h2 className="text-lg font-bold">Poraba po dnevih za {formatMonth(selectedMonth)}</h2>
-                <Select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="max-w-[200px]"
-                >
-                  {filteredMonths.map((month) => (
-                    <option key={month} value={month}>
-                      {formatMonth(month)}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Modra linija prikazuje prejeta energijo iz omrežja, rumena pa oddano energijo iz sončne elektrarne.
-              </p>
-              <Chart
-                options={optionsDailyChart}
-                series={[
-                  {
-                    name: 'Prejeta energija (kWh)',
-                    data: currentMonthData.dni.map(([_, e]) => e.poraba),
-                  },
-                  {
-                    name: 'Oddana solarna (kWh)',
-                    data: currentMonthData.dni.map(([_, e]) => e.solar),
-                  },
-                ]}
-                type="line"
-                height="300px"
-                width="100%"
-              />
-              {summaryText}
-            </>
-          )}
-        </>
-      )}
+            <Chart
+              options={optionsBarChart}
+              series={[
+                {
+                  name: 'Poraba (kWh)',
+                  data: barSeriesPoraba,
+                },
+                {
+                  name: 'Oddana energija (kWh)',
+                  data: barSeriesSolar,
+                },
+                {
+                  name: 'Prejeta energija (kWh)',
+                  data: barSeriesPrejeta,
+                },
+              ]}
+              type="bar"
+              height="315px"
+              width="100%"
+            />
+            {selectedMonth && currentMonthData && (
+              <>
+                <div className="flex items-center justify-between mt-8 mb-4">
+                  <h2 className="text-lg font-bold">Poraba po dnevih za {formatMonth(selectedMonth)}</h2>
+                  <Select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="max-w-[200px]"
+                  >
+                    {filteredMonths.map((month) => (
+                      <option key={month} value={month}>
+                        {formatMonth(month)}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  Modra linija prikazuje prejeta energijo iz omrežja, rumena pa oddano energijo iz sončne elektrarne.
+                </p>
+                <Chart
+                  options={optionsDailyChart}
+                  series={[
+                    {
+                      name: 'Prejeta energija (kWh)',
+                      data: currentMonthData.dni.map(([_, e]) => e.poraba),
+                    },
+                    {
+                      name: 'Oddana solarna (kWh)',
+                      data: currentMonthData.dni.map(([_, e]) => e.solar),
+                    },
+                  ]}
+                  type="line"
+                  height="300px"
+                  width="100%"
+                />
+                {summaryText}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

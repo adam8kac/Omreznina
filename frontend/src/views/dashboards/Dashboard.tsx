@@ -6,7 +6,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-10 p-6">
       <div className="text-center space-y-4 relative" style={{ zIndex: 1 }}>
-        <div className="absolute left-1/2 top-0 w-[300vw] -translate-x-1/2 pointer-events-none select-none" style={{ height: 300, zIndex: 0, opacity: 0.5 }}>
+        <div className="absolute left-1/2 top-[100px] md:top-0 w-[300vw] -translate-x-1/2 pointer-events-none select-none" style={{ height: 300, zIndex: 0, opacity: 0.5 }}>
          <div className="py-10"></div>
           <Lottie 
             animationData={animationLine} 

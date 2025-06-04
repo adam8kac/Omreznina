@@ -7,6 +7,7 @@ import {
 } from 'src/index';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts';
 import { Spinner } from 'flowbite-react';
+import '../../css/theme/accordion.css';
 
 const formatEUR = (value: any) => `${parseFloat(value || 0).toFixed(2)} €`;
 const formatKW = (value: any) => `${parseFloat(value || 0).toFixed(1)} kW`;
@@ -18,15 +19,15 @@ const BlockPricePieChart = ({ blockNumber, totalCost, excessCost }: {
 }) => {
   const optimalCost = totalCost - excessCost;
   const blockColors: Record<number, string> = {
-    1: '#fa144d',
-    2: '#faa63e',
-    3: '#FFD900',
-    4: '#2FBE8F',
-    5: '#B8D900',
+    1: '#60A5FA',
+    2: '#7DD3FC',
+    3: '#6EE7B7',
+    4: '#FCD34D',
+    5: '#FCA5A5',
   };
 
   return (
-    <div className="flex flex-col items-center p-4 border rounded-2xl shadow bg-white w-full max-w-xs">
+    <div className="flex flex-col items-center p-4 bg-white w-full max-w-xs">
       <h3 className="text-center font-semibold mb-2 text-lg">Blok {blockNumber}</h3>
       <PieChart
         hideLegend
@@ -52,8 +53,8 @@ const BlockPricePieChart = ({ blockNumber, totalCost, excessCost }: {
       />
       <div className="text-sm mt-3 text-center">
         <p><strong>Dogovorjena poraba:</strong> {formatEUR(optimalCost)}</p>
-        <p><strong>Prekoračitve:</strong> {formatEUR(excessCost)}</p>
-        <p><strong>Skupaj plačano:</strong> {formatEUR(totalCost)}</p>
+        <p><strong>Prekoračitev:</strong> {formatEUR(excessCost)}</p>
+        <p><strong>Plačano:</strong> {formatEUR(totalCost)}</p>
       </div>
     </div>
   );
@@ -74,29 +75,84 @@ const PowerComparisonTable = ({ chartData, prekoracitveData, optimumData }: {
   const overpaid = paid - optimal;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-      <div className="grid grid-cols-3 text-sm bg-gray-50 text-gray-700 font-semibold">
-        <div className="p-4 border-r">Skupna prekoračitev</div>
-        <div className="p-4 border-r">Plačali ste</div>
-        <div className="p-4">Preplačali ste</div>
+    <div className="rounded-2xl bg-white border border-gray-200 text-sm overflow-hidden divide-y divide-gray-100">
+      <div className="sm:grid sm:grid-cols-3 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
+        <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3 border-b sm:border-b-0">
+          <span>Skupna prekoračitev</span>
+          <span className="sm:hidden font-medium">{formatKW(totalExcess)}</span>
+        </div>
+        <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3 border-b sm:border-b-0">
+          <span>Plačano</span>
+          <span className="sm:hidden font-medium">{formatEUR(paid)}</span>
+        </div>
+        <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3">
+          <span>Možni prihranek</span>
+          <span className="sm:hidden font-semibold text-rose-600">{formatEUR(overpaid)}</span>
+        </div>
       </div>
-      <div className="grid grid-cols-3 text-center text-sm">
-        <div className="p-4 border-t">{formatKW(totalExcess)}</div>
-        <div className="p-4 border-t">{formatEUR(paid)}</div>
-        <div className="p-4 border-t text-red-600 font-bold">{formatEUR(overpaid)}</div>
+      <div className="hidden sm:grid sm:grid-cols-3 text-center">
+        <div className="p-4">{formatKW(totalExcess)}</div>
+        <div className="p-4">{formatEUR(paid)}</div>
+        <div className="p-4 text-rose-600 font-semibold">{formatEUR(overpaid)}</div>
       </div>
-
-      <div className="grid grid-cols-2 text-sm bg-gray-50 text-gray-700 font-semibold mt-6">
-        <div className="p-4 border-r">Optimum dogovorjene moči za vas</div>
-        <div className="p-4">Bi plačali z dogovorjeno močjo</div>
+      <div className="sm:grid sm:grid-cols-2 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
+        <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3 border-b sm:border-b-0">
+          <span>Priporočena dogovorjena moč</span>
+          <span className="sm:hidden">{formatKW(totalExcess)}</span>
+        </div>
+        <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3">
+          <span>Plačilo ob upoštevanju priporočil</span>
+          <span className="sm:hidden">{formatEUR(optimal)}</span>
+        </div>
       </div>
-      <div className="grid grid-cols-2 text-center text-sm">
-        <div className="p-4 border-t">{formatKW(totalExcess)}</div>
-        <div className="p-4 border-t">{formatEUR(optimal)}</div>
+      <div className="hidden sm:grid sm:grid-cols-2 text-center">
+        <div className="p-4">{formatKW(totalExcess)}</div>
+        <div className="p-4">{formatEUR(optimal)}</div>
       </div>
     </div>
   );
 };
+
+const PricePieChart = ({ optimum, actual }: { optimum: number; actual: number }) => {
+  const excess = Math.max(actual - optimum, 0);
+  const normal = actual - excess;
+
+  const formatEUR = (value: number) => `${value.toFixed(2)} €`;
+
+  return (
+    <div className="mx-auto mt-8 mb-8 p-4 bg-white w-full max-w-md">
+      <h3 className="text-center text-lg font-semibold mb-4">Skupna mesečna poraba</h3>
+      <PieChart
+        hideLegend
+        series={[
+          {
+            arcLabel: (item) => formatEUR(item.value),
+            arcLabelMinAngle: 15,
+            outerRadius: 90,
+            data: [
+              { id: 0, value: normal, label: 'Optimalna poraba', color: '#A78BFA' },
+              { id: 1, value: excess, label: 'Prekoračitev', color: 'rgba(255, 0, 0, 0.7)' },
+            ],
+          },
+        ]}
+        width={300}
+        height={240}
+        sx={{
+          [`& .${pieArcLabelClasses.root}`]: {
+            fill: '#000',
+            fontSize: 12,
+          },
+        }}
+      />
+      <div className="text-sm mt-4 text-center">
+        <p><strong>Plačilo ob upoštevanju priporočil:</strong> {formatEUR(optimum)}</p>
+        <p><strong>Možni prihranek:</strong> {formatEUR(excess)}</p>
+        <p><strong>Plačano:</strong> {formatEUR(actual)} ({formatEUR(excess)} + {formatEUR(optimum)})</p>
+      </div>
+    </div>
+  );
+};
+
 
 export const PowerStats = () => {
   const [years, setYears] = useState<string[] | null>(null);
@@ -217,26 +273,36 @@ export const PowerStats = () => {
   }
 
   return (
-    <div className="p-6 bg-white rounded-2xl shadow-md space-y-8">
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
-        <div className="flex-1">
+    <div className="p-6 bg-white space-y-8">
+      <div className="w-full max-w-5xl mx-auto mt-10 px-4">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-4">Statistika porabe</h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Preglej svojo mesečno porabo elektrike, prekoračitve in možnosti prihrankov na podlagi analiziranih podatkov.
+            Uporabi spodnje grafe in tabele za boljše razumevanje in optimizacijo svoje obračunske moči.
+          </p>
+        </div>
+      </div>
+        <div className="flex flex-wrap gap-4 justify-center sm:justify-start items-end">
+        <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">Izberi leto</label>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 p-2 bg-white shadow-sm text-sm"
+            className="rounded-lg border border-violet-400 px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition min-w-[120px]"
           >
             {years?.map((year) => (
               <option key={year} value={year}>{year}</option>
             ))}
           </select>
         </div>
-        <div className="flex-1">
+
+        <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">Izberi mesec</label>
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 p-2 bg-white shadow-sm text-sm"
+            className="rounded-lg border border-violet-400 px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition min-w-[120px]"
           >
             {months?.map((month) => (
               <option key={month} value={month}>{month}</option>
@@ -249,6 +315,11 @@ export const PowerStats = () => {
         chartData={chartData}
         prekoracitveData={prekoracitveData}
         optimumData={optimumData}
+      />
+
+      <PricePieChart
+        optimum={parseFloat(optimumData['total monthly price'] || 0)}
+        actual={parseFloat(prekoracitveData['total monthly price'] || 0)}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
