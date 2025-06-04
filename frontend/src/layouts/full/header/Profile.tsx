@@ -1,10 +1,9 @@
-
 import { Button, Dropdown } from "flowbite-react";
 import { Icon } from "@iconify/react";
 import { Link, useNavigate } from "react-router";
 import { signOut } from "firebase/auth";
 import { auth } from "src/firebase-config"; 
-import user1 from 'src/assets/images/profile/avatar1.png';
+import { avatars } from 'src/components/shared/avatars';
 
 
 
@@ -28,7 +27,7 @@ const Profile = () => {
         renderTrigger={() => (
           <span className="h-10 w-10 hover:text-primary hover:bg-lightprimary rounded-full flex justify-center items-center cursor-pointer group-hover/menu:bg-lightprimary group-hover/menu:text-primary">
           <img
-            src={auth.currentUser?.photoURL || user1}
+            src={auth.currentUser?.photoURL && auth.currentUser.photoURL !== '' ? auth.currentUser.photoURL : avatars[0]}
             alt="avatar"
             height="35"
             width="35"
