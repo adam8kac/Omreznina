@@ -3,23 +3,19 @@ package feri.um.si.omreznina;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
-import feri.um.si.omreznina.config.FirebaseTestConfig;
-
 @SuppressWarnings("removal")
-
-@Import(FirebaseTestConfig.class)
-@SpringBootTest(classes = { feri.um.si.omreznina.OmrezninaApplication.class, feri.um.si.omreznina.config.FirebaseTestConfig.class },
-  properties = { "mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key" })
+@SpringBootTest(classes = { feri.um.si.omreznina.OmrezninaApplication.class,
+		feri.um.si.omreznina.config.FirebaseTestConfig.class }, properties = {
+				"mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key" })
 @ActiveProfiles("test")
 class OmrezninaApplicationTests {
 
-    @MockBean
-    private feri.um.si.omreznina.service.FileService fileService;
+	@MockBean
+	private feri.um.si.omreznina.service.FileService fileService;
 
-    @Test
-    void contextLoads() {}
+	@Test
+	void contextLoads() {
+	}
 }
-
