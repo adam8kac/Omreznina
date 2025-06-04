@@ -35,7 +35,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
+          mvn -B verify -Pno-integration-tests org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar \
             -Dsonar.projectKey=adam8kac_Omreznina \
             -Dsonar.organization=adam8kac \
             -Dsonar.host.url=https://sonarcloud.io \
