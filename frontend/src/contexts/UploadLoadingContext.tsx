@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useRef } from 'react';
-import { getSubcollectionsConsumption } from 'src/index'; // ← tvoj api hook
+import { getSubcollectionsConsumption } from 'src/index';
 
 type UploadTypes = 'invoice' | 'receipt' | 'minutni';
 
@@ -30,7 +30,6 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
     minutni: { isLoading: false, progress: 0 },
   });
 
-  // Tracking polling state per type
   const pollingRef = useRef<{[key in UploadTypes]?: { interval?: number, timeout?: number, finished?: boolean } }>({});
   const prevSubColRef = useRef<{[key: string]: string[]}>({});
 
@@ -55,7 +54,6 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
     }));
   };
 
-  // --- NOVA POLLING LOGIKA ---
     const startPolling = async (type: UploadTypes, uid: string) => {
     if (pollingRef.current[type]?.interval) return;
 
@@ -74,13 +72,11 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
     );
     docIds.forEach((docId, i) => {
         prevSubColRef.current[type + docId] = prevResults[i] || [];
-        // POPRAVEK
         if ((prevResults[i] || []).length > 0) {
         completed[docId] = true;
         }
     });
 
-    // POPRAVEK: če je že vse completed, končaj zdaj
     if (docIds.every(docId => completed[docId])) {
         setLoading(type, false);
         setProgress(type, 100);
@@ -89,7 +85,6 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
         return;
     }
 
-    // Nastavi timeout za max polling čas (npr. 5 min)
     if (!pollingRef.current[type]) pollingRef.current[type] = {};
     pollingRef.current[type]!.finished = false;
     pollingRef.current[type]!.timeout = window.setTimeout(() => {
@@ -116,7 +111,6 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
             prevSubColRef.current[type + docId] = curSub;
             }
         } catch (err) {
-            // silent fail
         }
         }
 
@@ -155,7 +149,6 @@ export const UploadLoadingProvider = ({ children }: { children: ReactNode }) => 
   );
 };
 
-// --- Hook za uporabo v komponenti za določen tip ---
 export const useUploadLoading = (type: UploadTypes) => {
   const ctx = useContext(UploadLoadingContext);
   if (!ctx) throw new Error('useUploadLoading moraš uporabljati znotraj UploadLoadingProvider');
