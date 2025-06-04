@@ -28,7 +28,7 @@ import feri.um.si.omreznina.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @SpringBootTest(classes = { OmrezninaApplication.class,
-		FirebaseTestConfig.class }, properties = "mfa.secret.encryption-key=nekTestKey123456")
+		FirebaseTestConfig.class }, properties = {"mfa.secret.encryption-key=nekTestKey123456", "spring.ai.openai.api-key=dummy_test_key"})
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @SuppressWarnings("removal")

@@ -17,8 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserRecord;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -29,7 +27,7 @@ import java.util.Map;
 
 @SuppressWarnings("removal")
 @ActiveProfiles("test")
-@SpringBootTest(properties = "mfa.secret.encryption-key=nekTestKey123456")
+@SpringBootTest(properties = {"mfa.secret.encryption-key=nekTestKey123456", "spring.ai.openai.api-key=dummy_test_key"})
 public class UserServiceTest {
 
 	@MockBean
@@ -93,17 +91,18 @@ public class UserServiceTest {
 		}
 	}
 
-	    @Test
-    void testGetClientLocation_realDB() {
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+	 @Test
+void testGetClientLocation_realDB() {
+    HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(mockRequest.getRemoteAddr()).thenReturn("176.76.226.45");
 
-		UserService userService = new UserService(null, null);
+    UserService userService = new UserService(null, null);
+    Map<String, Double> result = userService.getClientLocation(mockRequest);
 
-        Map<String, Double> result = userService.getClientLocation(mockRequest);
+    assertNotNull(result, "Result should not be null!");
+    assertEquals(46.0543, result.get("latitude"), 0.1);
+    assertEquals(14.5044, result.get("longitude"), 0.1);
+}
 
-        assertNotNull(result);
-        assertEquals(46.0543, result.get("latitude"), 0.1);   
-        assertEquals(14.5044, result.get("longitude"), 0.1);  
-    }
 
 }

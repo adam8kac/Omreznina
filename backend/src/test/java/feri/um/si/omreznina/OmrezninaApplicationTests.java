@@ -12,7 +12,7 @@ import feri.um.si.omreznina.service.FileService;
 import feri.um.si.omreznina.service.FirestoreService;
 
 @SuppressWarnings("removal")
-@SpringBootTest(properties = "mfa.secret.encryption-key=testniKey123456")
+@SpringBootTest(properties = {"mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key"})
 @ActiveProfiles("test")
 @Import(FirebaseTestConfig.class)
 class OmrezninaApplicationTests {
