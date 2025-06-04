@@ -1,5 +1,6 @@
 package feri.um.si.omreznina.userTest;
 
+import feri.um.si.omreznina.controller.ChatController;
 import feri.um.si.omreznina.exceptions.UserException;
 import feri.um.si.omreznina.service.FileService;
 import feri.um.si.omreznina.service.FirestoreService;
@@ -11,6 +12,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -27,9 +30,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Map;
 
 @SuppressWarnings("removal")
-@ActiveProfiles("test")
-@SpringBootTest(properties = { "mfa.secret.encryption-key=nekTestKey123456",
+@SpringBootTest(classes = { UserService.class, FileService.class, FirestoreService.class }, properties = {
+		"mfa.secret.encryption-key=nekTestKey123456",
 		"spring.ai.openai.api-key=dummy_test_key" })
+@ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = ChatController.class))
+@ActiveProfiles("test")
 public class UserServiceTest {
 
 	@MockBean
