@@ -16,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserRecord;
+import com.maxmind.geoip2.DatabaseReader;
+import com.maxmind.geoip2.model.CityResponse;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -24,10 +26,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Map;
 
-
 @SuppressWarnings("removal")
 @ActiveProfiles("test")
-@SpringBootTest(properties = {"mfa.secret.encryption-key=nekTestKey123456", "spring.ai.openai.api-key=dummy_test_key"})
+@SpringBootTest(properties = { "mfa.secret.encryption-key=nekTestKey123456",
+		"spring.ai.openai.api-key=dummy_test_key" })
 public class UserServiceTest {
 
 	@MockBean
@@ -91,18 +93,27 @@ public class UserServiceTest {
 		}
 	}
 
-	 @Test
-void testGetClientLocation_realDB() {
-    HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-    Mockito.when(mockRequest.getRemoteAddr()).thenReturn("176.76.226.45");
+	@Test
+	void testGetClientLocation_realDB() throws Exception {
+		HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+		Mockito.when(mockRequest.getRemoteAddr()).thenReturn("176.76.226.45");
 
-    UserService userService = new UserService(null, null);
-    Map<String, Double> result = userService.getClientLocation(mockRequest);
+		CityResponse mockCityResponse = Mockito.mock(CityResponse.class);
+		com.maxmind.geoip2.record.Location mockLocation = Mockito.mock(com.maxmind.geoip2.record.Location.class);
 
-    assertNotNull(result, "Result should not be null!");
-    assertEquals(46.0543, result.get("latitude"), 0.1);
-    assertEquals(14.5044, result.get("longitude"), 0.1);
-}
+		Mockito.when(mockLocation.getLatitude()).thenReturn(46.0543);
+		Mockito.when(mockLocation.getLongitude()).thenReturn(14.5044);
+		Mockito.when(mockCityResponse.getLocation()).thenReturn(mockLocation);
 
+		DatabaseReader mockDbReader = Mockito.mock(DatabaseReader.class);
+		Mockito.when(mockDbReader.city(any())).thenReturn(mockCityResponse);
+
+		UserService userService = new UserService(null, null);
+		Map<String, Double> result = userService.getClientLocation(mockRequest);
+
+		assertNotNull(result, "Result should not be null!");
+		assertEquals(46.0543, result.get("latitude"), 0.1);
+		assertEquals(14.5044, result.get("longitude"), 0.1);
+	}
 
 }
