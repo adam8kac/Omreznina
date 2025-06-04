@@ -11,22 +11,21 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import feri.um.si.omreznina.OmrezninaApplication;
 import feri.um.si.omreznina.config.FirebaseTestConfig;
 import feri.um.si.omreznina.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @SpringBootTest(classes = { OmrezninaApplication.class,
 		FirebaseTestConfig.class }, properties = "mfa.secret.encryption-key=nekTestKey123456")
@@ -143,18 +142,17 @@ public class UserControllerIntegrationTest {
 	}
 
 	@Test
-	public void testGetLocation() throws Exception {
-		Map<String, Double> mockLocation = new HashMap<>();
-		mockLocation.put("latitude", 46.0503);
-		mockLocation.put("longitude", 14.5046);
+	void testGetClientLocation_realDB() {
+		HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
 
-		Mockito.when(userService.getClientLocation(any())).thenReturn(mockLocation);
+		Mockito.when(mockRequest.getRemoteAddr()).thenReturn("176.76.226.45");
 
-		mockMvc.perform(get("/user/location")
-				.accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.latitude").value(46.0503))
-				.andExpect(jsonPath("$.longitude").value(14.5046));
+		UserService userService = new UserService(null, null);
+		Map<String, Double> result = userService.getClientLocation(mockRequest);
+
+		assertNotNull(result, "Result should not be null!");
+		assertEquals(46.0543, result.get("latitude"), 0.1);
+		assertEquals(14.5044, result.get("longitude"), 0.1);
 	}
 
 }
