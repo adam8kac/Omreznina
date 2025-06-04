@@ -6,7 +6,7 @@ import {
   getSubcollectionsConsumption,
 } from 'src/index';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts';
-import { Spinner } from 'flowbite-react';
+import { Accordion, Spinner } from 'flowbite-react';
 import '../../css/theme/accordion.css';
 
 const formatEUR = (value: any) => `${parseFloat(value || 0).toFixed(2)} €`;
@@ -52,9 +52,9 @@ const BlockPricePieChart = ({ blockNumber, totalCost, excessCost }: {
         }}
       />
       <div className="text-sm mt-3 text-center">
-        <p><strong>Dogovorjena poraba:</strong> {formatEUR(optimalCost)}</p>
-        <p><strong>Prekoračitev:</strong> {formatEUR(excessCost)}</p>
-        <p><strong>Plačano:</strong> {formatEUR(totalCost)}</p>
+        <p><strong>Plačilo ob upoštevanju priporočil:</strong> {formatEUR(optimalCost)}</p>
+        <p><strong>Presežek plačila:</strong> {formatEUR(excessCost)}</p>
+        <p><strong>Plačali ste:</strong> {formatEUR(totalCost)}</p>
       </div>
     </div>
   );
@@ -73,7 +73,7 @@ const PowerComparisonTable = ({ chartData, prekoracitveData, optimumData }: {
   const paid = parseFloat(prekoracitveData?.['total monthly price'] ?? 0);
   const optimal = parseFloat(optimumData?.['total monthly price'] ?? 0);
   const overpaid = paid - optimal;
-
+console.log(optimumData);
   return (
     <div className="rounded-2xl bg-white border border-gray-200 text-sm overflow-hidden divide-y divide-gray-100">
       <div className="sm:grid sm:grid-cols-3 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
@@ -98,7 +98,7 @@ const PowerComparisonTable = ({ chartData, prekoracitveData, optimumData }: {
       <div className="sm:grid sm:grid-cols-2 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
         <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3 border-b sm:border-b-0">
           <span>Priporočena dogovorjena moč</span>
-          <span className="sm:hidden">{formatKW(totalExcess)}</span>
+          <span className="sm:hidden">{formatKW(optimumData)}</span>
         </div>
         <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3">
           <span>Plačilo ob upoštevanju priporočil</span>
@@ -164,6 +164,8 @@ export const PowerStats = () => {
   const [optimumData, setOptimumData] = useState<Record<string, any> | null>(null);
   const [chartData, setChartData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [showSummary] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -340,6 +342,71 @@ export const PowerStats = () => {
           );
         })}
       </div>
+      <Accordion collapseAll className="mt-4 border rounded-lg">
+        <Accordion.Panel>
+          <Accordion.Title className="text-blue-700 dark:text-blue-400">
+            {showSummary ? 'Skrij razlago vaših podatkov' : 'Prikaži razlago vaših podatkov'}
+          </Accordion.Title>
+          <Accordion.Content className="bg-gray-50 dark:bg-gray-900">
+            {[1, 2, 3, 4].map((blockNumber) => {
+              const totalPrice = Number(prekoracitveData?.[blockNumber]?.['total price']);
+              const optimalPrice = Number(optimumData?.[blockNumber]?.['total price']);
+              const excessPrice = totalPrice - optimalPrice;
+
+              const dataArr = prekoracitveData?.[blockNumber]?.data || [];
+              const optimumArr = optimumData?.[blockNumber]?.data || [];
+              const agreedPower = dataArr[0]?.agreedPower ?? '-';
+              const optimalAgreedPower = optimumArr[0]?.agreedPower ?? '-';
+
+              if (!totalPrice || !optimalPrice) return null;
+
+              return (
+                <div key={blockNumber} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 mb-2">
+                  <p className="mb-2">
+                    V bloku: <b>{blockNumber}</b> ste plačali <b>{totalPrice.toFixed(2)} €</b>, saj imate zakupljenih{' '}
+                    <b>{agreedPower} kW</b> dogovorjene moči.
+                  </p>
+                  <p className="mb-2">
+                    To pomeni da ste preplačali <b>{excessPrice.toFixed(2)} €</b>, in bi lahko plačali{' '}
+                    <b>{optimalPrice.toFixed(2)} €</b>, če bi imeli zakupljenih <b>{optimalAgreedPower} kW</b>.
+                  </p>
+                </div>
+              );
+            })}
+            {(() => {
+              const moneySpent = parseFloat(prekoracitveData?.['total monthly price'] ?? 0);
+              const optimumMoneySpent = parseFloat(optimumData?.['total monthly price'] ?? 0);
+              const formatedDate = selectedMonth && selectedYear ? `${selectedMonth}.${selectedYear}` : '';
+              return (
+                <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                  <p className="mb-2">
+                    V mesecu: <b>{formatedDate}</b>, ste skupaj plačali <b>{moneySpent}€</b>.
+                  </p>
+                  <p className="mb-2">
+                    To pomeni da ste{' '}
+                    <b>
+                      preplačali {((moneySpent ?? 0) - (optimumMoneySpent ?? 0)).toFixed(2)}€, in bi lahko palčali {optimumMoneySpent}€
+                    </b>
+                    , če bi imeli v vsakem bloku naše priporočene dogovorjene moči.
+                  </p>
+                </div>
+              );
+            })()}
+            <p className="mt-3 text-blue-700 dark:text-blue-400 italic">
+              <p>
+                <b>
+                  To ni cena celotnega računa ampak zgolj koliko ste plačali zaradi vaše dogovorjene moči ter 15
+                  minutnih prekoračitev.
+                </b>
+                <br />
+                <br />
+                Naše priporočitve so izračunane glede na vaše naložene podatke, če se bi poraba spremenila, bi se lahko
+                spremenila tudi cena in priporočena dogovorjena moč.
+              </p>
+            </p>
+          </Accordion.Content>
+        </Accordion.Panel>
+      </Accordion>
     </div>
   );
 };
