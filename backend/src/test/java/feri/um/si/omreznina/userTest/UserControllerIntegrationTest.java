@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -20,10 +22,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import feri.um.si.omreznina.OmrezninaApplication;
 import feri.um.si.omreznina.config.FirebaseTestConfig;
+import feri.um.si.omreznina.controller.ChatController;
 import feri.um.si.omreznina.service.UserService;
 
-@SpringBootTest(classes = { OmrezninaApplication.class,
-		FirebaseTestConfig.class }, properties = {"mfa.secret.encryption-key=nekTestKey123456", "spring.ai.openai.api-key=dummy_test_key"})
+		@SpringBootTest(classes = { OmrezninaApplication.class,
+		FirebaseTestConfig.class }, properties = {
+		"mfa.secret.encryption-key=nekTestKey123456",
+		"spring.ai.openai.api-key=dummy_test_key" })
+@ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = ChatController.class))
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @SuppressWarnings("removal")
