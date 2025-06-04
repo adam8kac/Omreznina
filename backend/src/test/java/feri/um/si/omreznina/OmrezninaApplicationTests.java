@@ -7,23 +7,19 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import feri.um.si.omreznina.config.FirebaseTestConfig;
-import feri.um.si.omreznina.service.FileService;
-import feri.um.si.omreznina.service.FirestoreService;
 
 @SuppressWarnings("removal")
-@SpringBootTest(properties = { "mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key" })
-@ActiveProfiles("test")
+
 @Import(FirebaseTestConfig.class)
+@SpringBootTest(classes = { feri.um.si.omreznina.OmrezninaApplication.class, feri.um.si.omreznina.config.FirebaseTestConfig.class },
+  properties = { "mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key" })
+@ActiveProfiles("test")
 class OmrezninaApplicationTests {
 
-	@MockBean
-	private FileService fileService;
+    @MockBean
+    private feri.um.si.omreznina.service.FileService fileService;
 
-	@MockBean
-	private FirestoreService firestoreService;
-
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void contextLoads() {}
 }
+
