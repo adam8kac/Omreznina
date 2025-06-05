@@ -23,6 +23,7 @@ const ReceiptExplanation = Loadable(lazy(() => import('../views/tables/RecieptEx
 const MonthlyConsumption = Loadable(lazy(() => import('../views/simulation/MonthlyConsumptionView')));
 const PowerStats = Loadable(lazy(() => import('../views/simulation/PowerStatsView')));
 const DashboardGuide = Loadable(lazy(() => import('../views/dashboards/DashboardGuide')));
+const Prediction = Loadable(lazy(() => import('../views/tables/PredictionView')));
 
 // authentication
 const Login = Loadable(lazy(() => import('../views/auth/login/Login')));
@@ -60,6 +61,7 @@ const Router = [
       { path: '/dashboard-guide', exact: true, element: <DashboardGuide /> },
       { path: '*', element: <Navigate to="/auth/404" /> },
       { path: '/about-us', exact: true, element: <AboutUs /> },
+      { path: '/prediction', exact: true, element: <Prediction /> },
 
     ],
   },

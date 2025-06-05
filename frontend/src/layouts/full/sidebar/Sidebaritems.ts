@@ -27,7 +27,7 @@ const SidebarContent: MenuItem[] = [
     children: [
       {
         name: "Nadzorna plošča",
-        icon: "solar:home-2-linear", // ikona hiše
+        icon: "solar:home-2-linear",
         id: uniqueId(),
         url: "/",
       },
@@ -60,6 +60,12 @@ const SidebarContent: MenuItem[] = [
         id: uniqueId(),
         url: "/power-stats",
       },
+      {
+        name: "Napoved",
+        icon: "material-symbols:insights",
+        id: uniqueId(),
+        url: "/prediction",
+      }
     ],
   },
   {
