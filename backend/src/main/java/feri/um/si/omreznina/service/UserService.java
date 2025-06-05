@@ -2,6 +2,7 @@ package feri.um.si.omreznina.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,15 +10,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
-import com.maxmind.geoip2.DatabaseReader;
-import com.maxmind.geoip2.model.CityResponse;
 
 import feri.um.si.omreznina.exceptions.IpAddressException;
 import feri.um.si.omreznina.exceptions.UserException;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.InputStream;
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Service
+@SuppressWarnings("unchecked")
 public class UserService {
 
 	private final Logger logger = Logger.getLogger(getClass().getName());
@@ -75,35 +73,29 @@ public class UserService {
 		try {
 			String ipAddress = getIpAddress(request);
 
-			if (!ipAddress.matches("^([0-9]{1,3}\\.){3}[0-9]{1,3}$") && !ipAddress.contains(":")) {
+			if (!ipAddress.matches("^([0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
 				throw new IllegalArgumentException("Invalid IP address format: " + ipAddress);
 			}
 
 			logger.info("ip v getClient " + ipAddress);
 			Map<String, Double> location = new HashMap<>();
 
-			try {
-				InputStream database = getClass().getResourceAsStream(
-						"/geoip/GeoLite2-City.mmdb");
-				DatabaseReader dbReader = new DatabaseReader.Builder(database).build();
-				CityResponse response = dbReader.city(InetAddress.getByName(ipAddress));
-				logger.info("response user service " + response);
+			RestTemplate restTemplate = new RestTemplate();
+			Map<String, Object> response = restTemplate.getForObject(
+					"https://ipapi.co/" + ipAddress + "/json/", Map.class);
 
-				double latitude = response.getLocation().getLatitude();
-				double longitude = response.getLocation().getLongitude();
-				logger.info("lat: " + latitude + " lon " + longitude);
-
-				location.put("latitude", latitude);
-				location.put("longitude", longitude);
-
-				return location;
-			} catch (Exception e) {
-				logger.warning(e.toString());
+			if (response != null) {
+				Object lat = response.get("latitude");
+				Object lon = response.get("longitude");
+				if (lat != null && lon != null) {
+					location.put("latitude", ((Number) lat).doubleValue());
+					location.put("longitude", ((Number) lon).doubleValue());
+					return location;
+				}
 			}
-		} catch (IpAddressException e) {
-			logger.warning(e.getMessage());
+		} catch (Exception e) {
+			logger.warning("IP location fetch failed: " + e.getMessage());
 		}
-
 		return null;
 	}
 
