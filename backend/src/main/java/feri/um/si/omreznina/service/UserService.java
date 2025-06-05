@@ -74,7 +74,11 @@ public class UserService {
 	public Map<String, Double> getClientLocation(HttpServletRequest request) {
 		try {
 			String ipAddress = getIpAddress(request);
-			ipAddress = "46.122.64.70";
+
+			if (!ipAddress.matches("^([0-9]{1,3}\\.){3}[0-9]{1,3}$") && !ipAddress.contains(":")) {
+				throw new IllegalArgumentException("Invalid IP address format: " + ipAddress);
+			}
+
 			logger.info("ip v getClient " + ipAddress);
 			Map<String, Double> location = new HashMap<>();
 
@@ -141,7 +145,6 @@ public class UserService {
 	}
 
 	private String getIpAddress(HttpServletRequest request) throws IpAddressException {
-		logger.info("req: " + request);
 		String ipAddress = request.getHeader("X-Real-IP");
 		logger.info("ip address: " + ipAddress);
 		if (ipAddress != null && !ipAddress.isEmpty()) {

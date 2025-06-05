@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @Tag(name = "User", description = "User actions")
@@ -78,6 +76,11 @@ public class UserController {
 	public ResponseEntity<Map<String, Object>> getDataForLLM(HttpServletRequest request,
 			@RequestParam("uid") String uid) {
 		try {
+
+			if (uid == null || !uid.matches("^[a-zA-Z0-9_-]{28}$")) {
+				throw new UserException("Invalid UID format");
+			}
+
 			Map<String, Object> jsonObject = userService.getUserDataForML(uid, request);
 			return ResponseEntity.ok(jsonObject);
 		} catch (UserException e) {
