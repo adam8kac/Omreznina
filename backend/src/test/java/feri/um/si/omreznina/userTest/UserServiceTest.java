@@ -24,9 +24,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("removal")
+@SuppressWarnings({ "removal", "unchecked" })
 @SpringBootTest(classes = { UserService.class, FileService.class, FirestoreService.class }, properties = {
 		"mfa.secret.encryption-key=nekTestKey123456",
 		"spring.ai.openai.api-key=dummy_test_key" })
@@ -38,6 +40,9 @@ public class UserServiceTest {
 
 	@MockBean
 	private FirestoreService firestoreService;
+
+	@MockBean
+	private UserService userService;
 
 	@Test
 	void success_verified_user() throws Exception {
@@ -115,6 +120,52 @@ public class UserServiceTest {
 		assertNotNull(result, "Result should not be null!");
 		assertEquals(46.0543, result.get("latitude"), 0.1);
 		assertEquals(14.5044, result.get("longitude"), 0.1);
+	}
+
+	@Test
+	void testGetUserDataForML_allDataPresent() throws Exception {
+		String uid = "user123";
+		HttpServletRequest request = mock(HttpServletRequest.class);
+
+		Map<String, Double> location = Map.of("latitude", 46.0, "longitude", 14.5);
+		when(firestoreService.getDocumentData(uid, "dogovorjena-moc", null, null))
+				.thenReturn(new HashMap<>(Map.of(
+						"1", 2000.0, "2", 3000.0, "3", 4000.0, "4", 5000.0, "5", 6000.0)));
+		when(firestoreService.getSubcollections(uid, "prekoracitve"))
+				.thenReturn(List.of("2023", "2024"));
+		when(firestoreService.getDocumentNamesInSubcollection(uid, "prekoracitve", "2023"))
+				.thenReturn(List.of("01"));
+		when(firestoreService.getDocumentNamesInSubcollection(uid, "prekoracitve", "2024"))
+				.thenReturn(List.of("02"));
+		Map<String, Object> prekoracitevDoc = Map.of("value", 123);
+		when(firestoreService.getDocumentData(uid, "prekoracitve", "2023", "01"))
+				.thenReturn(prekoracitevDoc);
+		when(firestoreService.getDocumentData(uid, "prekoracitve", "2024", "02"))
+				.thenReturn(prekoracitevDoc);
+
+		UserService userServiceReal = new UserService(fileService, firestoreService);
+		UserService userService = Mockito.spy(userServiceReal);
+
+		doReturn(location).when(userService).getClientLocation(request);
+
+		Map<String, Object> result = userService.getUserDataForML(uid, request);
+
+		assertNotNull(result);
+		assertTrue(result.containsKey("location"));
+		assertTrue(result.containsKey("agreed-power"));
+		assertTrue(result.containsKey("prekoracitve"));
+
+		Map<String, Object> ap = (Map<String, Object>) result.get("agreed-power");
+		assertEquals(2.0, ap.get("1"));
+		assertEquals(6.0, ap.get("5"));
+
+		Map<String, Object> prec = (Map<String, Object>) result.get("prekoracitve");
+		assertTrue(prec.containsKey("2023"));
+		assertTrue(prec.containsKey("2024"));
+		Map<String, Object> months2023 = (Map<String, Object>) prec.get("2023");
+		assertEquals(prekoracitevDoc, months2023.get("01"));
+		Map<String, Object> months2024 = (Map<String, Object>) prec.get("2024");
+		assertEquals(prekoracitevDoc, months2024.get("02"));
 	}
 
 }
