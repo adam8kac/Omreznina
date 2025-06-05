@@ -18,8 +18,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -172,10 +170,12 @@ public class UserControllerIntegrationTest {
 		Map<String, Object> mlData = new HashMap<>();
 		mlData.put("something", "value");
 
-		Mockito.when(userService.getUserDataForML(eq("testuid"), any())).thenReturn(mlData);
+		String validUid = "1234567890123456789012345678";
+
+		Mockito.when(userService.getUserDataForML(eq(validUid), any())).thenReturn(mlData);
 
 		mockMvc.perform(get("/user/llm-data")
-				.param("uid", "testuid"))
+				.param("uid", validUid))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.something").value("value"));
 	}
