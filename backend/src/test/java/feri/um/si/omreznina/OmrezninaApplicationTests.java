@@ -9,7 +9,8 @@ import org.springframework.test.context.TestPropertySource;
 @SuppressWarnings("removal")
 @SpringBootTest(classes = { feri.um.si.omreznina.OmrezninaApplication.class,
 		feri.um.si.omreznina.config.FirebaseTestConfig.class }, properties = {
-				"mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key" })
+				"mfa.secret.encryption-key=testniKey123456", "spring.ai.openai.api-key=dummy_test_key",
+				"openweather.api.key=ffdfdsbfjdjfbdjsfbdsbfbdsjb" })
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
 class OmrezninaApplicationTests {
