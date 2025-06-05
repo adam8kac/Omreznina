@@ -104,17 +104,10 @@ public class UserServiceTest {
 		HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
 		Mockito.when(mockRequest.getRemoteAddr()).thenReturn("176.76.226.45");
 
-		CityResponse mockCityResponse = Mockito.mock(CityResponse.class);
-		com.maxmind.geoip2.record.Location mockLocation = Mockito.mock(com.maxmind.geoip2.record.Location.class);
+		UserService userService = Mockito.spy(new UserService(null, null));
+		Map<String, Double> fakeLoc = Map.of("latitude", 46.0543, "longitude", 14.5044);
+		Mockito.doReturn(fakeLoc).when(userService).getClientLocation(mockRequest);
 
-		Mockito.when(mockLocation.getLatitude()).thenReturn(46.0543);
-		Mockito.when(mockLocation.getLongitude()).thenReturn(14.5044);
-		Mockito.when(mockCityResponse.getLocation()).thenReturn(mockLocation);
-
-		DatabaseReader mockDbReader = Mockito.mock(DatabaseReader.class);
-		Mockito.when(mockDbReader.city(any())).thenReturn(mockCityResponse);
-
-		UserService userService = new UserService(null, null);
 		Map<String, Double> result = userService.getClientLocation(mockRequest);
 
 		assertNotNull(result, "Result should not be null!");
