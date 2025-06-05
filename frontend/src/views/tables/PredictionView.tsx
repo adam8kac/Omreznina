@@ -1,4 +1,4 @@
-import Prediction from "src/components/model/prediction"
+import Prediction from "src/components/model/Prediction"
 
 
 const PredictionView = () => {
