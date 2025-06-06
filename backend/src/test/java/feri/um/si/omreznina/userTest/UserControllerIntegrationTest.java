@@ -7,7 +7,6 @@ import feri.um.si.omreznina.service.UserService;
 import feri.um.si.omreznina.service.WeatherService;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -163,8 +162,7 @@ public class UserControllerIntegrationTest {
 	void predictMonthlyOverrun_successPythonError() throws Exception {
 		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
 		Map<String, Double> loc = Map.of("latitude", 10.0, "longitude", 20.0);
-
-		Map<String, Object> dummyMonth = Map.of("data", "d");
+		Map<String, Object> dummyMonth = Map.of("foo", "bar");
 		Map<String, Object> year2024 = Map.of("06", dummyMonth);
 		Map<String, Object> prekoracitve = Map.of("2024", year2024);
 		Map<String, Object> userDataForML = Map.of("prekoracitve", prekoracitve);
@@ -184,37 +182,34 @@ public class UserControllerIntegrationTest {
 		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
 		Map<String, Object> userDataForML = new HashMap<>();
 		userDataForML.put("prekoracitve", null);
-
 		when(userService.getUserDataForML(eq("abc"), any())).thenReturn(userDataForML);
 
 		mockMvc.perform(post("/user/prediction/monthly-overrun")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(new ObjectMapper().writeValueAsString(req)))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string("Ni podatkov o prekoracitvah."));
+				.andExpect(content().string("Ni podatkov o prekorčitvah."));
 	}
 
 	@Test
 	void predictMonthlyOverrun_noDataForYear() throws Exception {
 		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
-		Map<String, Object> userDataForML = Map.of("prekoracitve", Map.of()); // empty map
-
+		Map<String, Object> userDataForML = Map.of("prekoracitve", Map.of());
 		when(userService.getUserDataForML(eq("abc"), any())).thenReturn(userDataForML);
 
 		mockMvc.perform(post("/user/prediction/monthly-overrun")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(new ObjectMapper().writeValueAsString(req)))
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string("Ni podatkov o prekoracitvah."));
+				.andExpect(content().string("Ni podatkov o prekorčitvah."));
 	}
 
 	@Test
 	void predictMonthlyOverrun_noDataForMonth() throws Exception {
 		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
-		Map<String, Object> year2024 = Map.of(); // empty year map
+		Map<String, Object> year2024 = Map.of();
 		Map<String, Object> prekoracitve = Map.of("2024", year2024);
 		Map<String, Object> userDataForML = Map.of("prekoracitve", prekoracitve);
-
 		when(userService.getUserDataForML(eq("abc"), any())).thenReturn(userDataForML);
 
 		mockMvc.perform(post("/user/prediction/monthly-overrun")
