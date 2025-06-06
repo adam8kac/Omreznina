@@ -279,9 +279,7 @@ export const openAiResponse = async (message: string) => {
   }
 };
 
-export const predictMonthlyOverrun = async (
-  req: PredictionRequest
-): Promise<PredictionResponse> => {
+export const predictMonthlyOverrun = async (req: PredictionRequest): Promise<PredictionResponse> => {
   const { uid, year, month } = req;
   const res = await api.post('/user/prediction/monthly-overrun', {
     uid,
