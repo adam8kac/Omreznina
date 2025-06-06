@@ -1,10 +1,6 @@
 import { getAuth } from 'firebase/auth';
 import { useEffect, useState } from 'react';
-import {
-  getDocumentDataConsumption,
-  getSubcollectionDocsConsumption,
-  getSubcollectionsConsumption,
-} from 'src/index';
+import { getDocumentDataConsumption, getSubcollectionDocsConsumption, getSubcollectionsConsumption } from 'src/index';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts';
 import { Accordion, Spinner } from 'flowbite-react';
 import '../../css/theme/accordion.css';
@@ -12,7 +8,11 @@ import '../../css/theme/accordion.css';
 const formatEUR = (value: any) => `${parseFloat(value || 0).toFixed(2)} €`;
 const formatKW = (value: any) => `${parseFloat(value || 0).toFixed(1)} kW`;
 
-const BlockPricePieChart = ({ blockNumber, totalCost, excessCost }: {
+const BlockPricePieChart = ({
+  blockNumber,
+  totalCost,
+  excessCost,
+}: {
   blockNumber: number;
   totalCost: number;
   excessCost: number;
@@ -52,28 +52,37 @@ const BlockPricePieChart = ({ blockNumber, totalCost, excessCost }: {
         }}
       />
       <div className="text-sm mt-3 text-center">
-        <p><strong>Plačilo ob upoštevanju priporočil:</strong> {formatEUR(optimalCost)}</p>
-        <p><strong>Presežek plačila:</strong> {formatEUR(excessCost)}</p>
-        <p><strong>Plačali ste:</strong> {formatEUR(totalCost)}</p>
+        <p>
+          <strong>Plačilo ob upoštevanju priporočil:</strong> {formatEUR(optimalCost)}
+        </p>
+        <p>
+          <strong>Presežek plačila:</strong> {formatEUR(excessCost)}
+        </p>
+        <p>
+          <strong>Plačali ste:</strong> {formatEUR(totalCost)}
+        </p>
       </div>
     </div>
   );
 };
 
-const PowerComparisonTable = ({ chartData, prekoracitveData, optimumData }: {
+const PowerComparisonTable = ({
+  chartData,
+  prekoracitveData,
+  optimumData,
+}: {
   chartData: any[];
   prekoracitveData: Record<string, any>;
   optimumData: Record<string, any>;
 }) => {
   const totalExcess = [1, 2, 3, 4].reduce(
-    (sum, block) =>
-      sum + chartData.reduce((daySum, day) => daySum + (day[`b${block}_excess`] || 0), 0),
+    (sum, block) => sum + chartData.reduce((daySum, day) => daySum + (day[`b${block}_excess`] || 0), 0),
     0
   );
   const paid = parseFloat(prekoracitveData?.['total monthly price'] ?? 0);
   const optimal = parseFloat(optimumData?.['total monthly price'] ?? 0);
   const overpaid = paid - optimal;
-console.log(optimumData);
+  console.log(optimumData);
   return (
     <div className="rounded-2xl bg-white border border-gray-200 text-sm overflow-hidden divide-y divide-gray-100">
       <div className="sm:grid sm:grid-cols-3 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
@@ -145,14 +154,19 @@ const PricePieChart = ({ optimum, actual }: { optimum: number; actual: number })
         }}
       />
       <div className="text-sm mt-4 text-center">
-        <p><strong>Plačilo ob upoštevanju priporočil:</strong> {formatEUR(optimum)}</p>
-        <p><strong>Možni prihranek:</strong> {formatEUR(excess)}</p>
-        <p><strong>Plačano:</strong> {formatEUR(actual)} ({formatEUR(excess)} + {formatEUR(optimum)})</p>
+        <p>
+          <strong>Plačilo ob upoštevanju priporočil:</strong> {formatEUR(optimum)}
+        </p>
+        <p>
+          <strong>Možni prihranek:</strong> {formatEUR(excess)}
+        </p>
+        <p>
+          <strong>Plačano:</strong> {formatEUR(actual)} ({formatEUR(excess)} + {formatEUR(optimum)})
+        </p>
       </div>
     </div>
   );
 };
-
 
 export const PowerStats = () => {
   const [years, setYears] = useState<string[] | null>(null);
@@ -230,10 +244,10 @@ export const PowerStats = () => {
   }, [prekoracitveData]);
 
   useEffect(() => {
-  if (prekoracitveData && optimumData && chartData.length) {
-    setIsLoading(false);
-  }
-}, [prekoracitveData, optimumData, chartData]);
+    if (prekoracitveData && optimumData && chartData.length) {
+      setIsLoading(false);
+    }
+  }, [prekoracitveData, optimumData, chartData]);
 
   if (!uid || !years || !months || !selectedMonth || !selectedYear) {
     return (
@@ -244,12 +258,12 @@ export const PowerStats = () => {
   }
 
   if (isLoading) {
-  return (
-    <div className="flex justify-center items-center h-40">
-      <Spinner size="xl" />
-    </div>
-  );
-}
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Spinner size="xl" />
+      </div>
+    );
+  }
 
   if (!months.length || !chartData.length || !prekoracitveData || !optimumData) {
     return (
@@ -262,7 +276,8 @@ export const PowerStats = () => {
         </svg>
         <div className="text-lg font-semibold mb-2">Ni podatkov za prikaz</div>
         <div className="text-gray-600 mb-6 text-center max-w-xs">
-          Niste še naložili podatkov o prekoračitvah. Za prikaz analiz in grafov najprej dodajte vsaj en račun ali CSV datoteko s podatki.
+          Niste še naložili podatkov o prekoračitvah. Za prikaz analiz in grafov najprej dodajte vsaj en račun ali CSV
+          datoteko s podatki.
         </div>
         <a
           href="/upload-data"
@@ -280,12 +295,12 @@ export const PowerStats = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Statistika porabe</h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Preglej svojo mesečno porabo elektrike, prekoračitve in možnosti prihrankov na podlagi analiziranih podatkov.
-            Uporabi spodnje grafe in tabele za boljše razumevanje in optimizacijo svoje obračunske moči.
+            Preglej svojo mesečno porabo elektrike, prekoračitve in možnosti prihrankov na podlagi analiziranih
+            podatkov. Uporabi spodnje grafe in tabele za boljše razumevanje in optimizacijo svoje obračunske moči.
           </p>
         </div>
       </div>
-        <div className="flex flex-wrap gap-4 justify-center sm:justify-start items-end">
+      <div className="flex flex-wrap gap-4 justify-center sm:justify-start items-end">
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">Izberi leto</label>
           <select
@@ -294,7 +309,9 @@ export const PowerStats = () => {
             className="rounded-lg border border-violet-400 px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition min-w-[120px]"
           >
             {years?.map((year) => (
-              <option key={year} value={year}>{year}</option>
+              <option key={year} value={year}>
+                {year}
+              </option>
             ))}
           </select>
         </div>
@@ -307,17 +324,15 @@ export const PowerStats = () => {
             className="rounded-lg border border-violet-400 px-3 py-2 bg-white text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition min-w-[120px]"
           >
             {months?.map((month) => (
-              <option key={month} value={month}>{month}</option>
+              <option key={month} value={month}>
+                {month}
+              </option>
             ))}
           </select>
         </div>
       </div>
 
-      <PowerComparisonTable
-        chartData={chartData}
-        prekoracitveData={prekoracitveData}
-        optimumData={optimumData}
-      />
+      <PowerComparisonTable chartData={chartData} prekoracitveData={prekoracitveData} optimumData={optimumData} />
 
       <PricePieChart
         optimum={parseFloat(optimumData['total monthly price'] || 0)}
@@ -385,7 +400,8 @@ export const PowerStats = () => {
                   <p className="mb-2">
                     To pomeni da ste{' '}
                     <b>
-                      preplačali {((moneySpent ?? 0) - (optimumMoneySpent ?? 0)).toFixed(2)}€, in bi lahko palčali {optimumMoneySpent}€
+                      preplačali {((moneySpent ?? 0) - (optimumMoneySpent ?? 0)).toFixed(2)}€, in bi lahko palčali{' '}
+                      {optimumMoneySpent}€
                     </b>
                     , če bi imeli v vsakem bloku naše priporočene dogovorjene moči.
                   </p>
@@ -393,16 +409,14 @@ export const PowerStats = () => {
               );
             })()}
             <p className="mt-3 text-blue-700 dark:text-blue-400 italic">
-              <p>
-                <b>
-                  To ni cena celotnega računa ampak zgolj koliko ste plačali zaradi vaše dogovorjene moči ter 15
-                  minutnih prekoračitev.
-                </b>
-                <br />
-                <br />
-                Naše priporočitve so izračunane glede na vaše naložene podatke, če se bi poraba spremenila, bi se lahko
-                spremenila tudi cena in priporočena dogovorjena moč.
-              </p>
+              <b>
+                To ni cena celotnega računa ampak zgolj koliko ste plačali zaradi vaše dogovorjene moči ter 15 minutnih
+                prekoračitev.
+              </b>
+              <br />
+              <br />
+              Naše priporočitve so izračunane glede na vaše naložene podatke, če se bi poraba spremenila, bi se lahko
+              spremenila tudi cena in priporočena dogovorjena moč.
             </p>
           </Accordion.Content>
         </Accordion.Panel>

@@ -124,7 +124,7 @@ public class FirestoreController {
 		}
 	}
 
-	@PostMapping("remove-toplotna")
+	@DeleteMapping("remove-toplotna")
 	public ResponseEntity<String> removeToplotna(@RequestParam String uid) {
 		try {
 			service.removeDocument(uid, "toplotna-crpalka");
