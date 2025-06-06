@@ -205,10 +205,12 @@ http://localhost:8080
 
 ### 4. Alternativno (Docker)
 ```bash
-docker build -t omreznina-backend .
-docker run -p 8080:8080 omreznina-backend
+cd Omreznina/build_images
 ```
 
+```bash
+Pride kmalu
+```
 
 ## 🧪 Testiranje
 
