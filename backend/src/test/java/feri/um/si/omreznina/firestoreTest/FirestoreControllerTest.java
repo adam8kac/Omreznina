@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -219,7 +220,7 @@ public class FirestoreControllerTest {
 
 	@Test
 	void removeToplotna_shouldReturnOk() throws Exception {
-		mockMvc.perform(post("/firestore/remove-toplotna")
+		mockMvc.perform(delete("/firestore/remove-toplotna")
 				.param("uid", "user123"))
 				.andExpect(status().isOk());
 
@@ -230,7 +231,7 @@ public class FirestoreControllerTest {
 	void removeToplotna_shouldReturnBadRequest_onException() throws Exception {
 		doThrow(new RuntimeException("error")).when(firestoreService).removeDocument(anyString(), anyString());
 
-		mockMvc.perform(post("/firestore/remove-toplotna")
+		mockMvc.perform(delete("/firestore/remove-toplotna")
 				.param("uid", "user123"))
 				.andExpect(status().isBadRequest());
 	}

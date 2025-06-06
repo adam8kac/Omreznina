@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
-const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-// const api = axios.create({ baseURL: 'http://localhost:8080/' });
+// const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -287,4 +287,47 @@ export const predictMonthlyOverrun = async (req: PredictionRequest): Promise<Pre
     month,
   });
   return res.data;
+};
+
+export const saveToplotna = async (uid: string, power: number, temparature: number) => {
+  try {
+    const response = await api.post(`firestore/set-toplotna?uid=${uid}&power=${power}&temparature=${temparature}`);
+    return response.data;
+  } catch (error) {
+    console.log('Could not save toplotna ' + uid + ' power ' + power, error);
+  }
+};
+
+export const deleteToplotna = async (uid: string) => {
+  try {
+    const response = await api.delete(`firestore/remove-toplotna?uid=${uid}`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getCurrentWorkinGpowerToplotna = async (uid: string) => {
+  try {
+    const response = await api.get('/toplotna/get-current-working-power?uid=' + uid);
+    return response.data;
+  } catch (error) {
+    console.log('napaka pri pridobivanju trenutnega delovvanja topotne črpalke');
+    return false;
+  }
+};
+
+export const getToplotnPower = async (uid: string) => {
+  const response = await api.get(`firestore/data?uid=${uid}&docId=toplotna-crpalka`);
+  return response.data;
+};
+
+export const getClientTemparature = async () => {
+  try {
+    const response = await api.get('/user/current-temparature');
+    return response.data;
+  } catch (error) {
+    console.log('napaka pri pridobivanju trenutne temparature');
+    return false;
+  }
 };

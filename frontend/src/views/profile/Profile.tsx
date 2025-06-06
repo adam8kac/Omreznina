@@ -8,16 +8,23 @@ import {
   deleteUser,
 } from 'firebase/auth';
 import zxcvbn from 'zxcvbn';
-import { getAgreedPowers, getCurrentTariff, removeEtFromDb, saveAgreedPowers, saveEt } from 'src/index';
+import {
+  deleteToplotna,
+  getAgreedPowers,
+  getCurrentTariff,
+  getToplotnPower,
+  removeEtFromDb,
+  saveAgreedPowers,
+  saveEt,
+  saveToplotna,
+} from 'src/index';
 import MfaSettingsPanel from './MfaSettingsPanel';
 import { avatars } from 'src/components/shared/avatars';
 
 const ProfilePage = () => {
   const user = auth.currentUser!;
-  const [selectedIndex, setSelectedIndex] = useState(
-    avatars.findIndex((a) => a === (user.photoURL || avatars[0]))
-  );
-  const [section, setSection] = useState<'profile' | 'password' | 'mfa' | 'moci'>('profile');
+  const [selectedIndex, setSelectedIndex] = useState(avatars.findIndex((a) => a === (user.photoURL || avatars[0])));
+  const [section, setSection] = useState<'profile' | 'password' | 'mfa' | 'moci' | 'toplotna'>('profile');
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [nameLoading, setNameLoading] = useState(false);
@@ -42,6 +49,10 @@ const ProfilePage = () => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isEt, setIsEt] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [toplotnaTemp, setToplotnaTemp] = useState('');
+  const [toplotnaPower, setToplotnaPower] = useState('');
+  const [showDeleteToplotnaModal, setShowDeleteToplotnaModal] = useState(false);
 
   useEffect(() => {
     if (status.message) {
@@ -79,6 +90,35 @@ const ProfilePage = () => {
     })();
   }, [user.uid]);
 
+  useEffect(() => {
+    if (!user.uid) return;
+    (async () => {
+      const ap = await getAgreedPowers(user.uid);
+      setAgreedPowers(ap);
+      setAgreedPowersInput({
+        1: ap[1] ? (ap[1] / 1000).toString() : '',
+        2: ap[2] ? (ap[2] / 1000).toString() : '',
+        3: ap[3] ? (ap[3] / 1000).toString() : '',
+        4: ap[4] ? (ap[4] / 1000).toString() : '',
+        5: ap[5] ? (ap[5] / 1000).toString() : '',
+      });
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!user.uid) return;
+    (async () => {
+      try {
+        const toplotnaData = (await getToplotnPower(user.uid)) as any;
+        const temp = Object.values(toplotnaData)[1];
+        if (toplotnaData) {
+          setToplotnaPower(toplotnaData?.power.toString());
+          setToplotnaTemp(String(temp));
+        }
+      } catch (err) {}
+    })();
+  }, [user.uid]);
+ 
   useEffect(() => {
     if (newPassword.length > 0) {
       const res = zxcvbn(newPassword);
@@ -216,6 +256,36 @@ const ProfilePage = () => {
     }
   }, []);
 
+  const handleSaveToplotna = async () => {
+    if (!user.uid) return;
+    try {
+      await saveToplotna(user.uid, parseFloat(toplotnaPower), parseFloat(toplotnaTemp));
+      setStatus({ message: 'Podatki toplotne črpalke so uspešno shranjeni.', type: 'success' });
+    } catch (err) {
+      setStatus({ message: 'Napaka pri shranjevanju moči.', type: 'error' });
+    }
+  };
+
+  const handleDeleteToplotna = () => {
+    setShowDeleteToplotnaModal(true);
+  };
+
+  const confirmDeleteToplotna = async () => {
+    if (!user.uid) return;
+    setDeleteLoading(true);
+    setStatus({ message: '', type: '' });
+    try {
+      await deleteToplotna(user.uid);
+      setToplotnaPower('');
+      setToplotnaTemp('');
+      setStatus({ message: 'Toplotna črpalka izbrisana.', type: 'success' });
+    } catch (err) {
+      setStatus({ message: 'Napaka pri brisanju toplotne črpalke.', type: 'error' });
+    }
+    setDeleteLoading(false);
+    setShowDeleteToplotnaModal(false);
+  };
+
   return (
     <div className="w-full min-h-screen flex justify-center items-start py-16 bg-white rounded-2xl shadow-xl">
       <div className="w-full max-w-3xl">
@@ -237,6 +307,16 @@ const ProfilePage = () => {
           >
             Dogovorjene moči
           </button>
+
+          <button
+            onClick={() => setSection('toplotna')}
+            className={`px-5 py-2 rounded-full font-semibold ${
+              section === 'toplotna' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            Dodaj toplotno črpalko
+          </button>
+
           <button
             onClick={() => setSection('password')}
             className={`px-5 py-2 rounded-full font-semibold ${
@@ -379,28 +459,38 @@ const ProfilePage = () => {
               ))}
             </div>
 
-            {validationError && (
-              <div className="mb-3 text-red-600 text-center text-sm">{validationError}</div>
-            )}
+            {validationError && <div className="mb-3 text-red-600 text-center text-sm">{validationError}</div>}
             <div className="flex items-center gap-4 mt-6 mb-2">
               <label className="text-sm font-medium">Tip tarife ki jo imate</label>
               <div className="flex bg-gray-100 rounded-full p-1 shadow-sm w-fit ml-6">
                 <button
                   type="button"
                   className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${isEt ? 'bg-primary text-white shadow' : 'text-gray-700 hover:bg-gray-200'}`}
-                  onClick={() => { if (!isEt) { setIsEt(true); handleEt(); setStatus({ message: 'Tarifa spremenjena na ET.', type: 'success' }); } }}
+                  onClick={() => {
+                    if (!isEt) {
+                      setIsEt(true);
+                      handleEt();
+                      setStatus({ message: 'Tarifa spremenjena na ET.', type: 'success' });
+                    }
+                  }}
                 >
                   ET
                 </button>
                 <button
                   type="button"
                   className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${!isEt ? 'bg-primary text-white shadow' : 'text-gray-700 hover:bg-gray-200'}`}
-                  onClick={() => { if (isEt) { setIsEt(false); handleEt(); setStatus({ message: 'Tarifa spremenjena na VT/MT.', type: 'success' }); } }}
+                  onClick={() => {
+                    if (isEt) {
+                      setIsEt(false);
+                      handleEt();
+                      setStatus({ message: 'Tarifa spremenjena na VT/MT.', type: 'success' });
+                    }
+                  }}
                 >
                   VT/MT
                 </button>
               </div>
-              {status.message && (status.message.includes('Tarifa spremenjena')) && (
+              {status.message && status.message.includes('Tarifa spremenjena') && (
                 <span className="ml-4 text-primary font-medium animate-fade-in">{status.message}</span>
               )}
             </div>
@@ -414,11 +504,95 @@ const ProfilePage = () => {
           </div>
         )}
 
+        {/* TULE DELAM JS */}
+        {section === 'toplotna' && (
+          <div className="mt-8 max-w-xl mx-auto">
+            <h3 className="text-lg font-semibold mb-3 text-center">Dodajte toplotno črpalko</h3>
+            <div className="flex flex-col gap-4">
+              <div
+                key={'toplotna-input'}
+                className="flex flex-row items-center gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
+              >
+                <label className="text-sm font-medium w-28 shrink-0">Moč toplotne črpalke (kW)</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="flex-1 px-4 py-2 border border-primary/40 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-base bg-white"
+                  placeholder="npr. 5.5 kW"
+                  value={toplotnaPower}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(',', '.');
+                    setToplotnaPower(val);
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div
+                key={'toplotna-input'}
+                className="flex flex-row items-center gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
+              >
+                <label className="text-sm font-medium w-28 shrink-0">Temperatura pri kateri se vklopi (°C)</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="flex-1 px-4 py-2 border border-primary/40 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-base bg-white"
+                  placeholder="npr. 15 °C"
+                  value={toplotnaTemp}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(',', '.');
+                    setToplotnaTemp(val);
+                  }}
+                />
+              </div>
+            </div>
+            <button
+              className="mt-4 w-full bg-primary text-white rounded-lg py-3 font-medium shadow-sm hover:bg-primary/90 transition"
+              onClick={handleSaveToplotna}
+            >
+              Shrani podatke toplotne črpalke
+            </button>
+            <button
+              className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white rounded-lg py-3 font-medium shadow-sm transition"
+              onClick={handleDeleteToplotna}
+              disabled={deleteLoading}
+            >
+              Izbriši toplotno črpalko
+            </button>
+            {showDeleteToplotnaModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full text-center">
+                  <div className="text-lg font-semibold mb-4 text-red-700">
+                    Ste prepričani, da želite izbrisati toplotno črpalko?
+                  </div>
+                  <div className="mb-6 text-gray-600 text-sm">Podatki o toplotni črpalki bodo odstranjeni!</div>
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      className="px-5 py-2 rounded bg-gray-200 text-gray-700 font-medium"
+                      onClick={() => setShowDeleteToplotnaModal(false)}
+                      disabled={deleteLoading}
+                    >
+                      Prekliči
+                    </button>
+                    <button
+                      className="px-5 py-2 rounded bg-red-600 text-white font-medium"
+                      onClick={confirmDeleteToplotna}
+                      disabled={deleteLoading}
+                    >
+                      Izbriši
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {/* do tule */}
+
         {section === 'password' && (
           <div className="max-w-xl mx-auto flex flex-col gap-3">
-            <div className="text-gray-600 text-sm mb-4">
-              Geslo mora imeti vsaj 6 znakov, številko in simbol.
-            </div>
+            <div className="text-gray-600 text-sm mb-4">Geslo mora imeti vsaj 6 znakov, številko in simbol.</div>
             <input
               type="password"
               value={currentPassword}
@@ -435,9 +609,7 @@ const ProfilePage = () => {
             />
             <div className="flex items-center gap-3 mb-1">
               <div className={`h-2 rounded w-1/3 ${pwColors[passwordStrength]}`}></div>
-              <div className="text-xs text-gray-500">
-                {newPassword.length > 0 && pwLabels[passwordStrength]}
-              </div>
+              <div className="text-xs text-gray-500">{newPassword.length > 0 && pwLabels[passwordStrength]}</div>
             </div>
             <input
               type="password"
@@ -465,8 +637,12 @@ const ProfilePage = () => {
         {showDeleteModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
             <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full text-center">
-              <div className="text-lg font-semibold mb-4 text-red-700">Ste prepričani, da želite izbrisati svoj račun?</div>
-              <div className="mb-6 text-gray-600 text-sm">To je nepovratno! Vsi vaši podatki bodo trajno odstranjeni.</div>
+              <div className="text-lg font-semibold mb-4 text-red-700">
+                Ste prepričani, da želite izbrisati svoj račun?
+              </div>
+              <div className="mb-6 text-gray-600 text-sm">
+                To je nepovratno! Vsi vaši podatki bodo trajno odstranjeni.
+              </div>
               <div className="flex gap-4 justify-center">
                 <button
                   className="px-5 py-2 rounded bg-gray-200 text-gray-700 font-medium"
