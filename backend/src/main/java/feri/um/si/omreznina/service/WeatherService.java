@@ -21,7 +21,6 @@ public class WeatherService {
 
     public Object getWeatherInfo(double lat, double lon) {
         String newUrl = url + "lat=" + lat + "&lon=" + lon + "&appid=" + openWeatehrApiKey + "&units=metric";
-        System.out.println(openWeatehrApiKey);
         Map<String, Object> response = restTemplate.getForObject(newUrl, Map.class);
         if (response == null || response.isEmpty()) {
             return null;

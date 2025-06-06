@@ -67,7 +67,6 @@ public class MfaService {
 			return generatedCode.equals(code);
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			return false;
 		}
 	}

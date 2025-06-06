@@ -7,13 +7,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+@SuppressWarnings("unchecked")
 @RestController
 @Tag(name = "User", description = "User actions")
 @RequestMapping("/user")
@@ -85,6 +88,66 @@ public class UserController {
 			return ResponseEntity.ok(jsonObject);
 		} catch (UserException e) {
 			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@PostMapping("/prediction/monthly-overrun")
+	public ResponseEntity<?> predictMonthlyOverrun(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+		String uid = (String) body.get("uid");
+		String predictionYear = body.get("year").toString();
+		String predictionMonth = body.get("month").toString();
+
+		Map<String, Double> location = userService.getClientLocation(request);
+
+		Double lat = (location != null && location.get("latitude") != null) ? location.get("latitude") : 46.0569;
+		Double lon = (location != null && location.get("longitude") != null) ? location.get("longitude") : 14.5058;
+
+		Map<String, Object> dataForML;
+		try {
+			dataForML = userService.getUserDataForML(uid, request);
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body("Napaka pri pripravi podatkov za napoved.");
+		}
+
+		Map<String, Object> allYears = (Map<String, Object>) dataForML.get("prekoracitve");
+		if (allYears == null || allYears.isEmpty()) {
+			return ResponseEntity.badRequest().body("Ni podatkov o prekoracitvah.");
+		}
+
+		int refYear = Integer.parseInt(predictionYear) - 1;
+		String refYearStr = Integer.toString(refYear);
+
+		Map<String, Object> yearMap = null;
+		if (allYears.containsKey(refYearStr)) {
+			yearMap = (Map<String, Object>) allYears.get(refYearStr);
+		}
+		if (yearMap == null) {
+			return ResponseEntity.badRequest().body("Ni podatkov za izbran mesec (" + refYearStr + "-" + predictionMonth + ")!");
+		}
+		Map<String, Object> monthMap = null;
+		if (yearMap.containsKey(predictionMonth)) {
+			monthMap = (Map<String, Object>) yearMap.get(predictionMonth);
+		}
+		if (monthMap == null) {
+			return ResponseEntity.badRequest().body("Ni podatkov za izbran mesec (" + refYearStr + "-" + predictionMonth + ")!");
+		}
+
+		// Če pride do napake pri python klicu, ujemi napako
+		try {
+			Map<String, Object> pythonReq = new HashMap<>();
+			pythonReq.put("lat", lat);
+			pythonReq.put("lon", lon);
+			pythonReq.put("year", refYearStr);
+			pythonReq.put("month", predictionMonth);
+			pythonReq.put("data", monthMap);
+
+			RestTemplate restTemplate = new RestTemplate();
+			String pythonUrl = "http://localhost:8000/detailed_stats";
+			Object result = restTemplate.postForObject(pythonUrl, pythonReq, Object.class);
+
+			return ResponseEntity.ok(result);
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body("Napaka pri pripravi podatkov za napoved.");
 		}
 	}
 }

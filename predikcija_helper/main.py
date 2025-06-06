@@ -6,9 +6,7 @@ import datetime
 
 app = FastAPI()
 
-
 def get_weather_month(lat, lon, year, month):
-    # Povleče zgodovinske dnevne temperature iz Open-Meteo
     start_date = f"{year}-{int(month):02d}-01"
     if int(month) == 12:
         end_date = f"{int(year) + 1}-01-01"
@@ -35,13 +33,10 @@ def get_weather_month(lat, lon, year, month):
     return None
 
 def get_weather_forecast(lat, lon, year, month):
-    # Povleče forecast (max 16 dni vnaprej)
     today = datetime.date.today()
     first_of_month = datetime.date(int(year), int(month), 1)
-    # forecast ima smisel samo za tekoči ali prihodnji mesec
     if first_of_month >= today:
         start_date = first_of_month.isoformat()
-        # forecast imajo max 16 dni, gremo do konca meseca ali 16 dni
         end_date = min(
             (first_of_month + datetime.timedelta(days=27)),  # max 28 dni v mesecu
             today + datetime.timedelta(days=16)
@@ -99,20 +94,17 @@ async def detailed_stats(request: Request):
     if df.empty:
         return {"error": "Ni podatkov za ta mesec."}
 
-    # Povleci vreme (zgodovinsko)
     avg_temp = None
     if lat and lon and year and month:
         weather = get_weather_month(lat, lon, year, month)
         avg_temp = weather["temp_mean"].mean() if weather is not None else None
 
-    # Povleci forecast, če je mesec >= zdaj
     forecasted_avg_temp = None
     today = datetime.date.today()
     first_of_month = datetime.date(year, month, 1)
     if lat and lon and (first_of_month >= today):
         forecasted_avg_temp = get_weather_forecast(lat, lon, year, month)
 
-    # Analize
     overruns = df[df["maxPowerRecieved"] > df["agreedPower"]]
     overruns_count = len(overruns)
     avg_penalty = overruns["penalty_price"].mean() if overruns_count else 0
@@ -127,7 +119,6 @@ async def detailed_stats(request: Request):
         count=("block", "count")
     ).reset_index().to_dict(orient="records")
 
-    # Day of week / hour analize
     dow_counter = Counter()
     hour_counter = Counter()
     dom_counter = Counter()
@@ -145,7 +136,6 @@ async def detailed_stats(request: Request):
     most_common_dom = max(dom_counter, key=dom_counter.get) if dom_counter else None
     day_map = ['pon', 'tor', 'sre', 'čet', 'pet', 'sob', 'ned']
 
-    # Heuristična verjetnost prekoračitve (simple risk score)
     probability_overrun = 0
     if len(df) > 0:
         probability_overrun = min(1.0, round((overruns_count / len(df)) + 0.25 * frac_over_85, 2)) # basic heuristic

@@ -20,6 +20,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -188,5 +191,85 @@ public class UserControllerIntegrationTest {
 		mockMvc.perform(get("/user/llm-data")
 				.param("uid", "baduid"))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void testPredictMonthlyOverrun_success() throws Exception {
+		Map<String, Object> req = new HashMap<>();
+		req.put("uid", "abc123");
+		req.put("year", "2025");
+		req.put("month", "06");
+
+		// Dummy location
+		Map<String, Double> dummyLocation = new HashMap<>();
+		dummyLocation.put("latitude", 46.06);
+		dummyLocation.put("longitude", 14.51);
+
+		// Dummy month data
+		Map<String, Object> dummyMonth = new HashMap<>();
+		dummyMonth.put("data", "testdata");
+
+		// Structure: prekoracitve -> leto -> mesec -> podatki
+		Map<String, Object> year2024 = new HashMap<>();
+		year2024.put("06", dummyMonth);
+		Map<String, Object> prekoracitve = new HashMap<>();
+		prekoracitve.put("2024", year2024);
+
+		Map<String, Object> userDataForML = new HashMap<>();
+		userDataForML.put("prekoracitve", prekoracitve);
+
+		when(userService.getClientLocation(any())).thenReturn(dummyLocation);
+		when(userService.getUserDataForML(eq("abc123"), any())).thenReturn(userDataForML);
+
+		// Python endpoint ni gor: pričakujemo napako
+		mockMvc.perform(post("/user/prediction/monthly-overrun")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(new ObjectMapper().writeValueAsString(req)))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Napaka pri pripravi podatkov za napoved."));
+	}
+
+	@Test
+	void testPredictMonthlyOverrun_noPrekoracitve() throws Exception {
+		Map<String, Object> req = new HashMap<>();
+		req.put("uid", "abc123");
+		req.put("year", "2025");
+		req.put("month", "06");
+
+		Map<String, Object> userDataForML = new HashMap<>();
+		userDataForML.put("prekoracitve", null);
+
+		when(userService.getUserDataForML(eq("abc123"), any())).thenReturn(userDataForML);
+
+		mockMvc.perform(post("/user/prediction/monthly-overrun")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(new ObjectMapper().writeValueAsString(req)))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Ni podatkov o prekoracitvah."));
+	}
+
+	@Test
+	void testPredictMonthlyOverrun_noDataForMonth() throws Exception {
+		Map<String, Object> req = new HashMap<>();
+		req.put("uid", "abc123");
+		req.put("year", "2025");
+		req.put("month", "06");
+
+		// year 2024 je prisoten, meseca "06" NI!
+		Map<String, Object> year2024 = new HashMap<>();
+		// year2024.put("06", dummyMonth); // month je missing!
+		Map<String, Object> prekoracitve = new HashMap<>();
+		prekoracitve.put("2024", year2024);
+
+		Map<String, Object> userDataForML = new HashMap<>();
+		userDataForML.put("prekoracitve", prekoracitve);
+
+		when(userService.getUserDataForML(eq("abc123"), any())).thenReturn(userDataForML);
+
+		mockMvc.perform(post("/user/prediction/monthly-overrun")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(new ObjectMapper().writeValueAsString(req)))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Ni podatkov za izbran mesec (2024-06)!"));
 	}
 }
