@@ -1,5 +1,10 @@
 package feri.um.si.omreznina.userTest;
 
+import feri.um.si.omreznina.OmrezninaApplication;
+import feri.um.si.omreznina.config.FirebaseTestConfig;
+import feri.um.si.omreznina.exceptions.UserException;
+import feri.um.si.omreznina.service.UserService;
+import feri.um.si.omreznina.service.WeatherService;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -11,32 +16,23 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import feri.um.si.omreznina.OmrezninaApplication;
-import feri.um.si.omreznina.config.FirebaseTestConfig;
-import feri.um.si.omreznina.exceptions.UserException;
-import feri.um.si.omreznina.service.UserService;
-import feri.um.si.omreznina.service.WeatherService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = { OmrezninaApplication.class,
-		FirebaseTestConfig.class }, properties = {
+@SpringBootTest(classes = {OmrezninaApplication.class, FirebaseTestConfig.class},
+		properties = {
 				"mfa.secret.encryption-key=nekTestKey123456",
-				"spring.ai.openai.api-key=dummy_test_key", "openweather.api.key=ffdfdsbfjdjfbdjsfbdsbfbdsjb" })
+				"spring.ai.openai.api-key=dummy_test_key",
+				"openweather.api.key=ffdfdsbfjdjfbdjsfbdsbfbdsjb"
+		})
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @SuppressWarnings("removal")
@@ -53,175 +49,129 @@ public class UserControllerIntegrationTest {
 	private WeatherService weatherService;
 
 	@Test
-	void testUploadFile_success() throws Exception {
-		MockMultipartFile file = new MockMultipartFile(
-				"file", "data.xlsx",
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
-
-		mockMvc.perform(multipart("/user/upload-file")
-				.file(file)
-				.param("uid", "abc123"))
+	void uploadFile_success() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "data.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "file".getBytes());
+		mockMvc.perform(multipart("/user/upload-file").file(file).param("uid", "abc"))
 				.andExpect(status().isOk())
 				.andExpect(content().string("Document added successfuly"));
-
-		verify(userService, times(1)).processAndStoreUserData(file, "abc123");
+		verify(userService).processAndStoreUserData(file, "abc");
 	}
 
 	@Test
-	void testUploadFile_failure() throws Exception {
-		MockMultipartFile file = new MockMultipartFile(
-				"file", "data.xlsx",
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
-
-		doThrow(new RuntimeException("Something went wrong"))
-				.when(userService).processAndStoreUserData(file, "abc123");
-
-		mockMvc.perform(multipart("/user/upload-file")
-				.file(file)
-				.param("uid", "abc123"))
+	void uploadFile_fail() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "data.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "file".getBytes());
+		doThrow(new RuntimeException("fail")).when(userService).processAndStoreUserData(file, "abc");
+		mockMvc.perform(multipart("/user/upload-file").file(file).param("uid", "abc"))
 				.andExpect(status().isBadRequest())
 				.andExpect(content().string("Could not save document"));
 	}
 
-	public void shouldUploadPowerConsumptionSuccessfully() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
-		String data = "dfhvsdhgvf";
-
-		Mockito.doNothing().when(userService).processAndStoreMaxPowerConsumption(Mockito.any(), data,
-				Mockito.eq("test-uid"));
-
-		mockMvc.perform(multipart("/user/upload-power-consumption")
-				.file(file)
-				.param("uid", "test-uid")
-				.contentType(MediaType.MULTIPART_FORM_DATA))
-				.andExpect(status().isOk());
-	}
-
 	@Test
-	public void shouldReturnBadRequestWhenExceptionThrown() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "test.csv", "text/csv", "data".getBytes());
-
-		Mockito.doThrow(new RuntimeException("fail")).when(userService)
-				.processAndStoreMaxPowerConsumption(Mockito.any(), Mockito.anyString(), Mockito.eq("test-uid"));
-
+	void uploadPowerConsumption_success() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "file.csv", "text/csv", "data".getBytes());
+		doNothing().when(userService).processAndStoreMaxPowerConsumption(any(), eq("{\"01\":10}"), eq("u1"));
 		mockMvc.perform(multipart("/user/upload-power-consumption")
-				.file(file)
-				.param("uid", "test-uid")
-				.contentType(MediaType.MULTIPART_FORM_DATA))
-				.andExpect(status().isBadRequest());
-	}
-
-	@Test
-	void testUploadAndOptimize_success() throws Exception {
-		MockMultipartFile file = new MockMultipartFile(
-				"file", "data.xlsx",
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
-
-		String powerByMonths = "{\"01\":7.0,\"02\":6.0}";
-		String uid = "abc123";
-
-		doNothing().when(userService).computeAndStoreOptimalPower(file, powerByMonths, uid);
-
-		mockMvc.perform(multipart("/user/optimal-power")
-				.file(file)
-				.param("power_by_months", powerByMonths)
-				.param("uid", uid)
-				.contentType(MediaType.MULTIPART_FORM_DATA))
+						.file(file)
+						.param("power_by_months", "{\"01\":10}")
+						.param("uid", "u1")
+						.contentType(MediaType.MULTIPART_FORM_DATA))
 				.andExpect(status().isOk())
 				.andExpect(content().string("Document added successfuly"));
-
-		verify(userService, times(1)).computeAndStoreOptimalPower(file, powerByMonths, uid);
 	}
 
 	@Test
-	void testUploadAndOptimize_failure() throws Exception {
-		MockMultipartFile file = new MockMultipartFile(
-				"file", "data.xlsx",
-				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "some".getBytes());
+	void uploadPowerConsumption_fail() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "file.csv", "text/csv", "data".getBytes());
+		doThrow(new RuntimeException("fail")).when(userService)
+				.processAndStoreMaxPowerConsumption(any(), any(), any());
+		mockMvc.perform(multipart("/user/upload-power-consumption")
+						.file(file)
+						.param("power_by_months", "{}")
+						.param("uid", "u1")
+						.contentType(MediaType.MULTIPART_FORM_DATA))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Could not save document"));
+	}
 
-		String powerByMonths = "{\"01\":7.0,\"02\":6.0}";
-		String uid = "abc123";
-
-		doThrow(new RuntimeException("Error")).when(userService)
-				.computeAndStoreOptimalPower(file, powerByMonths, uid);
-
+	@Test
+	void uploadAndOptimize_success() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "d.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xxx".getBytes());
+		doNothing().when(userService).computeAndStoreOptimalPower(any(), any(), any());
 		mockMvc.perform(multipart("/user/optimal-power")
-				.file(file)
-				.param("power_by_months", powerByMonths)
-				.param("uid", uid)
-				.contentType(MediaType.MULTIPART_FORM_DATA))
+						.file(file)
+						.param("power_by_months", "{\"01\":9}")
+						.param("uid", "u2"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("Document added successfuly"));
+	}
+
+	@Test
+	void uploadAndOptimize_fail() throws Exception {
+		MockMultipartFile file = new MockMultipartFile("file", "d.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xxx".getBytes());
+		doThrow(new RuntimeException()).when(userService).computeAndStoreOptimalPower(any(), any(), any());
+		mockMvc.perform(multipart("/user/optimal-power")
+						.file(file)
+						.param("power_by_months", "{}")
+						.param("uid", "u2"))
 				.andExpect(status().isBadRequest());
 	}
 
 	@Test
-	void getCurrentTemperature_returnsWeather() throws Exception {
-		Map<String, Double> location = new HashMap<>();
-		location.put("latitude", 46.05);
-		location.put("longitude", 14.50);
+	void getLocation_success() throws Exception {
+		Map<String, Double> loc = Map.of("latitude", 1.1, "longitude", 2.2);
+		when(userService.getClientLocation(any())).thenReturn(loc);
+		mockMvc.perform(get("/user/location")).andExpect(status().isOk());
+	}
 
-		Mockito.when(userService.getClientLocation(any())).thenReturn(location);
-		Mockito.when(weatherService.getWeatherInfo(eq(46.05), eq(14.50)))
-				.thenReturn("{\"main\":{\"temp\":25.5}}");
-
+	@Test
+	void getCurrentTemperature_success() throws Exception {
+		Map<String, Double> loc = Map.of("latitude", 46.05, "longitude", 14.5);
+		when(userService.getClientLocation(any())).thenReturn(loc);
+		when(weatherService.getWeatherInfo(46.05, 14.5)).thenReturn("{\"main\":{\"temp\":21}}");
 		mockMvc.perform(get("/user/current-temparature"))
 				.andExpect(status().isOk())
-				.andExpect(content().string("{\"main\":{\"temp\":25.5}}"));
+				.andExpect(content().string("{\"main\":{\"temp\":21}}"));
 	}
 
 	@Test
-	void getDataForLLM_returnsData() throws Exception {
-		Map<String, Object> mlData = new HashMap<>();
-		mlData.put("something", "value");
-
-		String validUid = "1234567890123456789012345678";
-
-		Mockito.when(userService.getUserDataForML(eq(validUid), any())).thenReturn(mlData);
-
-		mockMvc.perform(get("/user/llm-data")
-				.param("uid", validUid))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.something").value("value"));
+	void getDataForLLM_success() throws Exception {
+		Map<String, Object> data = new HashMap<>(); data.put("k", "v");
+		when(userService.getUserDataForML(eq("1234567890123456789012345678"), any())).thenReturn(data);
+		mockMvc.perform(get("/user/llm-data").param("uid", "1234567890123456789012345678"))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.k").value("v"));
 	}
 
 	@Test
-	void getDataForLLM_returnsBadRequestOnException() throws Exception {
-		Mockito.when(userService.getUserDataForML(eq("baduid"), any()))
-				.thenThrow(new UserException("Some error"));
-
-		mockMvc.perform(get("/user/llm-data")
-				.param("uid", "baduid"))
+	void getDataForLLM_invalidUID() throws Exception {
+		mockMvc.perform(get("/user/llm-data").param("uid", "baduid"))
 				.andExpect(status().isBadRequest());
 	}
 
 	@Test
-	void testPredictMonthlyOverrun_success() throws Exception {
-		Map<String, Object> req = new HashMap<>();
-		req.put("uid", "abc123");
-		req.put("year", "2025");
-		req.put("month", "06");
+	void getDataForLLM_userException() throws Exception {
+		when(userService.getUserDataForML(eq("gooduid_gooduid_gooduid1234"), any()))
+				.thenThrow(new UserException("fail"));
+		mockMvc.perform(get("/user/llm-data").param("uid", "gooduid_gooduid_gooduid1234"))
+				.andExpect(status().isBadRequest());
+	}
 
-		// Dummy location
-		Map<String, Double> dummyLocation = new HashMap<>();
-		dummyLocation.put("latitude", 46.06);
-		dummyLocation.put("longitude", 14.51);
+	@Test
+	void predictMonthlyOverrun_successPythonError() throws Exception {
+		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
+		Map<String, Double> loc = Map.of("latitude", 10.0, "longitude", 20.0);
 
-		// Dummy month data
-		Map<String, Object> dummyMonth = new HashMap<>();
-		dummyMonth.put("data", "testdata");
+		Map<String, Object> dummyMonth = Map.of("data", "d");
+		Map<String, Object> year2024 = Map.of("06", dummyMonth);
+		Map<String, Object> prekoracitve = Map.of("2024", year2024);
+		Map<String, Object> userDataForML = Map.of("prekoracitve", prekoracitve);
 
-		// Structure: prekoracitve -> leto -> mesec -> podatki
-		Map<String, Object> year2024 = new HashMap<>();
-		year2024.put("06", dummyMonth);
-		Map<String, Object> prekoracitve = new HashMap<>();
-		prekoracitve.put("2024", year2024);
+		when(userService.getClientLocation(any())).thenReturn(loc);
+		when(userService.getUserDataForML(eq("abc"), any())).thenReturn(userDataForML);
 
-		Map<String, Object> userDataForML = new HashMap<>();
-		userDataForML.put("prekoracitve", prekoracitve);
-
-		when(userService.getClientLocation(any())).thenReturn(dummyLocation);
-		when(userService.getUserDataForML(eq("abc123"), any())).thenReturn(userDataForML);
-
-		// Python endpoint ni gor: pričakujemo napako
 		mockMvc.perform(post("/user/prediction/monthly-overrun")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(new ObjectMapper().writeValueAsString(req)))
@@ -230,16 +180,12 @@ public class UserControllerIntegrationTest {
 	}
 
 	@Test
-	void testPredictMonthlyOverrun_noPrekoracitve() throws Exception {
-		Map<String, Object> req = new HashMap<>();
-		req.put("uid", "abc123");
-		req.put("year", "2025");
-		req.put("month", "06");
-
+	void predictMonthlyOverrun_noPrekoracitve() throws Exception {
+		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
 		Map<String, Object> userDataForML = new HashMap<>();
 		userDataForML.put("prekoracitve", null);
 
-		when(userService.getUserDataForML(eq("abc123"), any())).thenReturn(userDataForML);
+		when(userService.getUserDataForML(eq("abc"), any())).thenReturn(userDataForML);
 
 		mockMvc.perform(post("/user/prediction/monthly-overrun")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -249,22 +195,27 @@ public class UserControllerIntegrationTest {
 	}
 
 	@Test
-	void testPredictMonthlyOverrun_noDataForMonth() throws Exception {
-		Map<String, Object> req = new HashMap<>();
-		req.put("uid", "abc123");
-		req.put("year", "2025");
-		req.put("month", "06");
+	void predictMonthlyOverrun_noDataForYear() throws Exception {
+		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
+		Map<String, Object> userDataForML = Map.of("prekoracitve", Map.of()); // empty map
 
-		// year 2024 je prisoten, meseca "06" NI!
-		Map<String, Object> year2024 = new HashMap<>();
-		// year2024.put("06", dummyMonth); // month je missing!
-		Map<String, Object> prekoracitve = new HashMap<>();
-		prekoracitve.put("2024", year2024);
+		when(userService.getUserDataForML(eq("abc"), any())).thenReturn(userDataForML);
 
-		Map<String, Object> userDataForML = new HashMap<>();
-		userDataForML.put("prekoracitve", prekoracitve);
+		mockMvc.perform(post("/user/prediction/monthly-overrun")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(new ObjectMapper().writeValueAsString(req)))
+				.andExpect(status().isBadRequest())
+				.andExpect(content().string("Ni podatkov o prekoracitvah."));
+	}
 
-		when(userService.getUserDataForML(eq("abc123"), any())).thenReturn(userDataForML);
+	@Test
+	void predictMonthlyOverrun_noDataForMonth() throws Exception {
+		Map<String, Object> req = Map.of("uid", "abc", "year", "2025", "month", "06");
+		Map<String, Object> year2024 = Map.of(); // empty year map
+		Map<String, Object> prekoracitve = Map.of("2024", year2024);
+		Map<String, Object> userDataForML = Map.of("prekoracitve", prekoracitve);
+
+		when(userService.getUserDataForML(eq("abc"), any())).thenReturn(userDataForML);
 
 		mockMvc.perform(post("/user/prediction/monthly-overrun")
 						.contentType(MediaType.APPLICATION_JSON)

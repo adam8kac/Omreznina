@@ -22,6 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/user")
 public class UserController {
 
+	private static final String LATITUDE = "latitude";
+	private static final String LONGITUDE = "longitude";
+
 	@Autowired
 	private UserService userService;
 
@@ -42,8 +45,8 @@ public class UserController {
 	@PostMapping("/upload-power-consumption")
 	@Operation(summary = "Naloži datoteko prekoracitev", description = "Uporabnik lahko preko tega Endpointa naloži datoteko tipa XLSX ali pa CSV, sprejme parameter file: MultipartFile(datoteka ki jo naloži uporabnik), UID: string, ki je enak uporabnikovem ID-ju v FirebaseAuth, datoteko nato pošlje python helperju, ki jo sprocesira in vrne odatke v obliki pripravljeni za shranjevanje v bazo")
 	public ResponseEntity<String> uploadPowerConsumption(@RequestPart("file") MultipartFile file,
-			@RequestParam("power_by_months") String powerByMonths,
-			@RequestParam("uid") String uid) {
+														 @RequestParam("power_by_months") String powerByMonths,
+														 @RequestParam("uid") String uid) {
 		try {
 			userService.processAndStoreMaxPowerConsumption(file, powerByMonths, uid);
 			return ResponseEntity.ok().body("Document added successfuly");
@@ -54,7 +57,7 @@ public class UserController {
 
 	@PostMapping("/optimal-power")
 	public ResponseEntity<String> uploadAndOptimize(@RequestPart("file") MultipartFile file,
-			@RequestParam("power_by_months") String powerByMonths, @RequestParam("uid") String uid) {
+													@RequestParam("power_by_months") String powerByMonths, @RequestParam("uid") String uid) {
 		try {
 			userService.computeAndStoreOptimalPower(file, powerByMonths, uid);
 			return ResponseEntity.ok().body("Document added successfuly");
@@ -72,12 +75,12 @@ public class UserController {
 	public ResponseEntity<Object> getCurrentTemperature(HttpServletRequest request) {
 		Map<String, Double> location = userService.getClientLocation(request);
 
-		return ResponseEntity.ok(weatherService.getWeatherInfo(location.get("latitude"), location.get("longitude")));
+		return ResponseEntity.ok(weatherService.getWeatherInfo(location.get(LATITUDE), location.get(LONGITUDE)));
 	}
 
 	@GetMapping("/llm-data")
 	public ResponseEntity<Map<String, Object>> getDataForLLM(HttpServletRequest request,
-			@RequestParam("uid") String uid) {
+															 @RequestParam("uid") String uid) {
 		try {
 
 			if (uid == null || !uid.matches("^[a-zA-Z0-9_-]{28}$")) {
@@ -99,8 +102,8 @@ public class UserController {
 
 		Map<String, Double> location = userService.getClientLocation(request);
 
-		Double lat = (location != null && location.get("latitude") != null) ? location.get("latitude") : 46.0569;
-		Double lon = (location != null && location.get("longitude") != null) ? location.get("longitude") : 14.5058;
+		Double lat = (location != null && location.get(LATITUDE) != null) ? location.get(LATITUDE) : 46.0569;
+		Double lon = (location != null && location.get(LONGITUDE) != null) ? location.get(LONGITUDE) : 14.5058;
 
 		Map<String, Object> dataForML;
 		try {
