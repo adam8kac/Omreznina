@@ -135,7 +135,6 @@ public class UserController {
 			return ResponseEntity.badRequest().body("Ni podatkov za izbran mesec (" + refYearStr + "-" + predictionMonth + ")!");
 		}
 
-		// Če pride do napake pri python klicu, ujemi napako
 		try {
 			Map<String, Object> pythonReq = new HashMap<>();
 			pythonReq.put("lat", lat);
