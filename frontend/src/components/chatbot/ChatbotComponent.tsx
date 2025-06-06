@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { openAiResponse } from 'src/index';
+import chatbotImg from 'src/assets/images/chabot/Chatbot Chat Message.jpg';
 
 const ChatbotPopup: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -7,7 +8,6 @@ const ChatbotPopup: React.FC = () => {
   const [input, setInput] = useState('');
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // close on ESC or click outside
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (open && popupRef.current && !popupRef.current.contains(e.target as Node)) {
@@ -58,7 +58,7 @@ const ChatbotPopup: React.FC = () => {
         className="fixed bottom-5 right-5 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition"
         onClick={() => setOpen((v) => !v)}
       >
-        <img className="w-8 h-8 rounded-full" src="src/assets/images/chabot/Chatbot Chat Message.jpg" />
+        <img className="w-8 h-8 rounded-full" src={chatbotImg} alt="ChatBot" />
       </button>
 
       {open && (
