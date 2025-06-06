@@ -115,7 +115,8 @@ users (uid)
 
 Diagram zajema naslednje funkcionalnosti:
 
-- registracija uporabnika,
+- možnost vklopa dvofaktorskega uverjanja,
+- izbris računa,
 - upravljanje uporabniškega računa,
 - vnos porabe/15 minutne porabe ročno iz datotek,
 - ročni vnos računa,
