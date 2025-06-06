@@ -230,3 +230,13 @@ export const setupMfaSettings = async (uid: string, secret: string, enabled: boo
     return false;
   }
 };
+
+export const openAiResponse = async (message: string) => {
+  try {
+    const response = await api.post(`chat/?prompt=${message}`);
+    return response.data;
+  } catch (error) {
+    console.log('napaka pri chatu');
+    return false;
+  }
+};
