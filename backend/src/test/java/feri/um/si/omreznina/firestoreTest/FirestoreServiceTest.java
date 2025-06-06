@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import feri.um.si.omreznina.exceptions.UserException;
 import feri.um.si.omreznina.model.ManualInvoice;
 import feri.um.si.omreznina.model.MfaSettings;
 
@@ -26,8 +27,10 @@ import feri.um.si.omreznina.service.UserService;
 
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @SuppressWarnings("unchecked")
 @ExtendWith(MockitoExtension.class)
@@ -437,6 +440,81 @@ public class FirestoreServiceTest {
 		verify(mockDb).collection("user123");
 		verify(mockCollection).document("to-delete");
 		verify(mockDocRef).delete();
+	}
+
+	@Test
+	void saveToplotnaCrpalka_validInput_shouldSaveSuccessfully() throws Exception {
+		String uid = "user1";
+		double power = 3.5;
+		double temp = 21.0;
+
+		DocumentReference docRef = mock(DocumentReference.class);
+		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
+
+		Map<String, Double> expectedMap = new LinkedHashMap<>();
+		expectedMap.put("power", power);
+		expectedMap.put("turn on temparature", temp);
+
+		when(db.collection(uid)).thenReturn(mock(CollectionReference.class));
+		when(db.collection(uid).document("toplotna-crpalka")).thenReturn(docRef);
+		when(docRef.set(eq(expectedMap))).thenReturn(mockFuture);
+		when(mockFuture.get()).thenReturn(mock(WriteResult.class));
+
+		assertDoesNotThrow(() -> firestoreService.saveToplotnaCrpalka(uid, power, temp));
+	}
+
+	@Test
+	void saveToplotnaCrpalka_invalidInput_shouldThrowUserException() {
+		assertThrows(UserException.class, () -> firestoreService.saveToplotnaCrpalka(null, 3.5, 20));
+		assertThrows(UserException.class, () -> firestoreService.saveToplotnaCrpalka("", 3.5, 20));
+		assertThrows(UserException.class, () -> firestoreService.saveToplotnaCrpalka("user1", 0, 20));
+	}
+
+	@Test
+	void saveToplotnaCrpalka_executionException_shouldNotThrow() throws Exception {
+		String uid = "user1";
+		double power = 3.5;
+		double temp = 21.0;
+
+		DocumentReference docRef = mock(DocumentReference.class);
+		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
+
+		Map<String, Double> expectedMap = new LinkedHashMap<>();
+		expectedMap.put("power", power);
+		expectedMap.put("turn on temparature", temp);
+
+		when(db.collection(uid)).thenReturn(mock(CollectionReference.class));
+		when(db.collection(uid).document("toplotna-crpalka")).thenReturn(docRef);
+		when(docRef.set(eq(expectedMap))).thenReturn(mockFuture);
+		when(mockFuture.get()).thenThrow(new ExecutionException(new RuntimeException("Firestore error")));
+
+		assertDoesNotThrow(() -> firestoreService.saveToplotnaCrpalka(uid, power, temp));
+	}
+
+	@Test
+	void saveToplotnaCrpalka_interruptedException_shouldInterruptThread() throws Exception {
+		String uid = "user1";
+		double power = 3.5;
+		double temp = 21.0;
+
+		DocumentReference docRef = mock(DocumentReference.class);
+		ApiFuture<WriteResult> mockFuture = mock(ApiFuture.class);
+
+		Map<String, Double> expectedMap = new LinkedHashMap<>();
+		expectedMap.put("power", power);
+		expectedMap.put("turn on temparature", temp);
+
+		when(db.collection(uid)).thenReturn(mock(CollectionReference.class));
+		when(db.collection(uid).document("toplotna-crpalka")).thenReturn(docRef);
+		when(docRef.set(eq(expectedMap))).thenReturn(mockFuture);
+		when(mockFuture.get()).thenThrow(new InterruptedException());
+
+		Thread currentThread = Thread.currentThread();
+		assertFalse(currentThread.isInterrupted());
+
+		firestoreService.saveToplotnaCrpalka(uid, power, temp);
+
+		assertTrue(currentThread.isInterrupted());
 	}
 
 }

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import feri.um.si.omreznina.service.PredictionService;
 
-@SuppressWarnings("unchecked")
 @RestController
 @Tag(name = "User", description = "User actions")
 @RequestMapping("/user")

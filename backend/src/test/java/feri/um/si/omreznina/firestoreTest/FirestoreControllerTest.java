@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -194,4 +195,43 @@ public class FirestoreControllerTest {
 		verify(firestoreService).saveTariff("mojUid");
 	}
 
+	@Test
+	void saveToplotna_shouldReturnOk() throws Exception {
+		mockMvc.perform(post("/firestore/set-toplotna")
+				.param("uid", "user123")
+				.param("power", "3.5")
+				.param("temparature", "22.5"))
+				.andExpect(status().isOk());
+
+		verify(firestoreService).saveToplotnaCrpalka("user123", 3.5, 22.5);
+	}
+
+	@Test
+	void saveToplotna_shouldReturnBadRequest_onException() throws Exception {
+		doThrow(new RuntimeException("error")).when(firestoreService).saveToplotnaCrpalka(anyString(), anyDouble(), anyDouble());
+
+		mockMvc.perform(post("/firestore/set-toplotna")
+				.param("uid", "user123")
+				.param("power", "3.5")
+				.param("temparature", "22.5"))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void removeToplotna_shouldReturnOk() throws Exception {
+		mockMvc.perform(post("/firestore/remove-toplotna")
+				.param("uid", "user123"))
+				.andExpect(status().isOk());
+
+		verify(firestoreService).removeDocument("user123", "toplotna-crpalka");
+	}
+
+	@Test
+	void removeToplotna_shouldReturnBadRequest_onException() throws Exception {
+		doThrow(new RuntimeException("error")).when(firestoreService).removeDocument(anyString(), anyString());
+
+		mockMvc.perform(post("/firestore/remove-toplotna")
+				.param("uid", "user123"))
+				.andExpect(status().isBadRequest());
+	}
 }
