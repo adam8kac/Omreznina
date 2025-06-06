@@ -73,8 +73,11 @@ public class UserService {
 		try {
 			String ipAddress = getIpAddress(request);
 
-			if (!ipAddress.matches("^([0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
-				throw new IllegalArgumentException("Invalid IP address format: " + ipAddress);
+			if (ipAddress == null || ipAddress.equals("0:0:0:0:0:0:0:1") || ipAddress.equals("127.0.0.1") || !ipAddress.matches("^([0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
+				Map<String, Double> location = new HashMap<>();
+				location.put("latitude", 46.0569);
+				location.put("longitude", 14.5058);
+				return location;
 			}
 
 			logger.info("ip v getClient " + ipAddress);
@@ -96,7 +99,11 @@ public class UserService {
 		} catch (Exception e) {
 			logger.warning("IP location fetch failed: " + e.getMessage());
 		}
-		return null;
+		// Fallback
+		Map<String, Double> location = new HashMap<>();
+		location.put("latitude", 46.0569);
+		location.put("longitude", 14.5058);
+		return location;
 	}
 
 	public Map<String, Object> getUserDataForML(@RequestParam("uid") String uid, HttpServletRequest request)

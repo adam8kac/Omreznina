@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
 const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-// const api = axios.create({ baseURL: 'http://localhost:8080/' });
+//const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -39,6 +39,44 @@ export interface SimulationRequest {
   agreedPowers: Record<number, number>;
   season: 'VISJA' | 'NIZJA';
   dayType: 'DELOVNI_DAN' | 'DELA_PROST_DAN';
+}
+
+export interface PredictionRequest {
+  uid: string;
+  year: string;
+  month: string;
+}
+
+export interface OverrunStats {
+  overruns_count: number;
+  avg_penalty: number;
+  max_penalty: number;
+  avg_peak: number;
+  max_peak: number;
+  frac_over_85: number;
+  avg_temp: number | null;
+  forecasted_avg_temp: number | null;
+  most_common_overrun_day: string | null;
+  most_common_overrun_hour: number | null;
+  most_common_overrun_day_in_month: number | null;
+  probability_overrun: number;
+}
+
+export interface BlockStat {
+  block: number;
+  avg_peak: number;
+  max_peak: number;
+  avg_penalty: number;
+  count: number;
+}
+
+export interface PredictionResponse {
+  stats: OverrunStats;
+  block_stats: BlockStat[];
+  overruns_by_day: Record<string, number>;
+  overruns_by_hour: Record<string, number>;
+  overruns_by_day_in_month: Record<string, number>;
+  error?: string;
 }
 
 export interface MfaSettings {
@@ -239,4 +277,16 @@ export const openAiResponse = async (message: string) => {
     console.log('napaka pri chatu');
     return false;
   }
+};
+
+export const predictMonthlyOverrun = async (
+  req: PredictionRequest
+): Promise<PredictionResponse> => {
+  const { uid, year, month } = req;
+  const res = await api.post('/user/prediction/monthly-overrun', {
+    uid,
+    year,
+    month,
+  });
+  return res.data;
 };
