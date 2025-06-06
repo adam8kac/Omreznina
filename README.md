@@ -210,7 +210,13 @@ cd Omreznina/build_images
 ```
 
 ```bash
-Pride kmalu
+touch firebase.json
+```
+Sem kopirate service account key ki ga najdeš na firestore.
+
+In na koncu:
+```bash
+./build_docker_image/build.sh
 ```
 
 ## 🧪 Testiranje
