@@ -99,7 +99,6 @@ public class UserService {
 		} catch (Exception e) {
 			logger.warning("IP location fetch failed: " + e.getMessage());
 		}
-		// Fallback
 		Map<String, Double> location = new HashMap<>();
 		location.put("latitude", 46.0569);
 		location.put("longitude", 14.5058);

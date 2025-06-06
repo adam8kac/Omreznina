@@ -4,6 +4,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 
+import feri.um.si.omreznina.exceptions.UserException;
 import feri.um.si.omreznina.model.ManualInvoice;
 import feri.um.si.omreznina.model.MfaSettings;
 import feri.um.si.omreznina.model.Tariff;
@@ -299,6 +300,23 @@ public class FirestoreService {
 			}
 		}
 		return null;
+	}
+
+	public void saveToplotnaCrpalka(String uid, double power, double temparature) throws UserException {
+		if (uid == null || uid.isEmpty() || power <= 0) {
+			throw new UserException("uid is null or power is less or equal to 0");
+		}
+		Map<String, Double> toplotnaStats = new LinkedHashMap<>();
+		toplotnaStats.put("power", power);
+		toplotnaStats.put("turn on temparature", temparature);
+
+		try {
+			db.collection(uid).document("toplotna-crpalka").set(toplotnaStats).get();
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException)
+				Thread.currentThread().interrupt();
+			logger.warning("Failed to save toplotna crpalka: " + e.getMessage());
+		}
 	}
 
 	public void removeDocument(String uid, String docId) {

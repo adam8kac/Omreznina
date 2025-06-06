@@ -111,4 +111,27 @@ public class FirestoreController {
 			return ResponseEntity.badRequest().build();
 		}
 	}
+
+	@PostMapping("/set-toplotna")
+	public ResponseEntity<String> saveToplotna(@RequestParam String uid, @RequestParam double power,
+			@RequestParam double temparature) {
+		try {
+			service.saveToplotnaCrpalka(uid, power, temparature);
+			return ResponseEntity.ok("Toplotna crpalka added");
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Napaka pri shranjevanju toplotne", e);
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@PostMapping("remove-toplotna")
+	public ResponseEntity<String> removeToplotna(@RequestParam String uid) {
+		try {
+			service.removeDocument(uid, "toplotna-crpalka");
+			return ResponseEntity.ok("Toplotna crpalka removed");
+		} catch (Exception e) {
+			logger.log(Level.INFO, "Napaka pri odstrnajevanju toplotne.", e);
+			return ResponseEntity.badRequest().build();
+		}
+	}
 }
