@@ -127,7 +127,7 @@ Diagram zajema naslednje funkcionalnosti:
 - izračun optimuma dogovorjene moči in primerjavo optimum/dejansko
 - Interakcija s chatbotom
 
-![UML UseCase diagram](images/usecase.png)
+![UML UseCase diagram](images/usecase.jpg)
 
 
 ## 🚀 Deployment (CI/CD)
