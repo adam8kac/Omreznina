@@ -7,14 +7,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import feri.um.si.omreznina.service.PredictionService;
 
 @SuppressWarnings("unchecked")
 @RestController
@@ -30,6 +29,9 @@ public class UserController {
 
 	@Autowired
 	private WeatherService weatherService;
+
+	@Autowired
+	private PredictionService predictionService;
 
 	@PostMapping("/upload-file")
 	@Operation(summary = "Naloži datoteko dnevnih stanj", description = "Uporabnik lahko preko tega Endpointa naloži datoteko tipa XLSX ali pa CSV, sprejme parameter file: MultipartFile(datoteka ki jo naloži uporabnik), UID: string, ki je enak uporabnikovem ID-ju v FirebaseAuth, datoteko nato pošlje python helperju, ki jo sprocesira in vrne odatke v obliki pripravljeni za shranjevanje v bazo")
@@ -96,58 +98,18 @@ public class UserController {
 
 	@PostMapping("/prediction/monthly-overrun")
 	public ResponseEntity<?> predictMonthlyOverrun(@RequestBody Map<String, Object> body, HttpServletRequest request) {
-		String uid = (String) body.get("uid");
-		String predictionYear = body.get("year").toString();
-		String predictionMonth = body.get("month").toString();
-
-		Map<String, Double> location = userService.getClientLocation(request);
-
-		Double lat = (location != null && location.get(LATITUDE) != null) ? location.get(LATITUDE) : 46.0569;
-		Double lon = (location != null && location.get(LONGITUDE) != null) ? location.get(LONGITUDE) : 14.5058;
-
-		Map<String, Object> dataForML;
 		try {
-			dataForML = userService.getUserDataForML(uid, request);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body("Napaka pri pripravi podatkov za napoved.");
-		}
+			String uid = (String) body.get("uid");
+			String year = body.get("year").toString();
+			String month = body.get("month").toString();
 
-		Map<String, Object> allYears = (Map<String, Object>) dataForML.get("prekoracitve");
-		if (allYears == null || allYears.isEmpty()) {
-			return ResponseEntity.badRequest().body("Ni podatkov o prekoracitvah.");
-		}
-
-		int refYear = Integer.parseInt(predictionYear) - 1;
-		String refYearStr = Integer.toString(refYear);
-
-		Map<String, Object> yearMap = null;
-		if (allYears.containsKey(refYearStr)) {
-			yearMap = (Map<String, Object>) allYears.get(refYearStr);
-		}
-		if (yearMap == null) {
-			return ResponseEntity.badRequest().body("Ni podatkov za izbran mesec (" + refYearStr + "-" + predictionMonth + ")!");
-		}
-		Map<String, Object> monthMap = null;
-		if (yearMap.containsKey(predictionMonth)) {
-			monthMap = (Map<String, Object>) yearMap.get(predictionMonth);
-		}
-		if (monthMap == null) {
-			return ResponseEntity.badRequest().body("Ni podatkov za izbran mesec (" + refYearStr + "-" + predictionMonth + ")!");
-		}
-
-		try {
-			Map<String, Object> pythonReq = new HashMap<>();
-			pythonReq.put("lat", lat);
-			pythonReq.put("lon", lon);
-			pythonReq.put("year", refYearStr);
-			pythonReq.put("month", predictionMonth);
-			pythonReq.put("data", monthMap);
-
-			RestTemplate restTemplate = new RestTemplate();
-			String pythonUrl = "http://localhost:8000/detailed_stats";
-			Object result = restTemplate.postForObject(pythonUrl, pythonReq, Object.class);
-
+			Object result = predictionService.getMonthlyOverrunPrediction(uid, year, month, request);
 			return ResponseEntity.ok(result);
+
+		} catch (UserException e) {
+			return ResponseEntity.badRequest().body("Napaka pri uporabniku: " + e.getMessage());
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body("Napaka pri pripravi podatkov za napoved.");
 		}
