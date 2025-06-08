@@ -48,8 +48,6 @@ const ProfilePage = () => {
   const [toplotnaPower, setToplotnaPower] = useState('');
   const [showDeleteToplotnaModal, setShowDeleteToplotnaModal] = useState(false);
 
-  const [successMsg, setSuccessMsg] = useState('');
-
   useEffect(() => {
     if (status.message) {
       const timeout = setTimeout(() => setStatus({ message: '', type: '' }), 4000);
