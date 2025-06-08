@@ -86,10 +86,14 @@ const PredictionStats: React.FC = () => {
     : [];
 
   return (
-    <div className="rounded-xl shadow-md bg-white dark:bg-darkgray p-6 w-full max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4 text-blue-800 dark:text-blue-300 text-center">
-        Napoved prekoračitev moči (naslednji mesec)
-      </h2>
+    <div className="w-full max-w-5xl mx-auto mt-10 px-4">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-4"> Napoved prekoračitev moči
+      </h1>
+      <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+           Poglej ali bo na podlagi pretekle porabe in vremena v naslednjem mesecu prišlo do prekoračitve moči.
+        </p>
+        </div>
       <div className="text-center">
         <Button
           gradientDuoTone="purpleToBlue"
@@ -137,7 +141,6 @@ const PredictionStats: React.FC = () => {
             <Stat label="Število prekoračitev" value={result.stats.overruns_count} />
             <Stat label="Povp. kazen (EUR)" value={result.stats.avg_penalty} />
             <Stat label="Najvišja kazen (EUR)" value={result.stats.max_penalty} />
-            <Stat label="Povp. vrh (kW)" value={result.stats.avg_peak} />
             <Stat label="Max vrh (kW)" value={result.stats.max_peak} />
             <Stat label="Nad 85% dog. moči" value={`${(result.stats.frac_over_85 * 100).toFixed(1)}%`} />
             <Stat label="Verjetnost prekoračitve" value={
@@ -160,25 +163,23 @@ const PredictionStats: React.FC = () => {
             <b>Najpogostejši dan v mesecu:</b> {result.stats.most_common_overrun_day_in_month ?? '-'}
           </div>
           <h5 className="mt-5 mb-2 font-semibold text-indigo-600">Statistika po blokih:</h5>
-          <div className="overflow-x-auto mb-4">
-            <table className="min-w-full text-sm border rounded-lg shadow-sm">
-              <thead>
-                <tr className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100">
-                  <th className="px-4 py-2 text-center">Blok</th>
-                  <th className="px-4 py-2 text-center">Povp. vrh</th>
-                  <th className="px-4 py-2 text-center">Max vrh</th>
-                  <th className="px-4 py-2 text-center">Povp. kazen</th>
-                  <th className="px-4 py-2 text-center">Št. meritev</th>
+          <div className="overflow-x-auto rounded-xl shadow-md bg-white dark:bg-darkgray border border-gray-200 mb-4">
+            <table className="w-full text-sm">
+              <thead className="bg-blue-200 text-blue-800 uppercase text-xs font-semibold">
+                <tr>
+                  <th className="px-6 py-5 text-center">Blok</th>
+                  <th className="px-6 py-5 text-center">Max vrh</th>
+                  <th className="px-6 py-5 text-center">Povp. kazen</th>
+                  <th className="px-6 py-5 text-center">Št. meritev</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-100">
                 {result.block_stats.map((block) => (
-                  <tr key={block.block} className="border-b last:border-0">
-                    <td className="px-4 py-2 text-center font-semibold">{block.block}</td>
-                    <td className="px-4 py-2 text-center">{block.avg_peak.toFixed(2)}</td>
-                    <td className="px-4 py-2 text-center">{block.max_peak.toFixed(2)}</td>
-                    <td className="px-4 py-2 text-center">{block.avg_penalty.toFixed(2)}</td>
-                    <td className="px-4 py-2 text-center">{block.count}</td>
+                  <tr key={block.block} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-5 text-center font-semibold">{block.block}</td>
+                    <td className="px-6 py-5 text-center">{block.max_peak.toFixed(2)}</td>
+                    <td className="px-6 py-5 text-center">{block.avg_penalty.toFixed(2)}</td>
+                    <td className="px-6 py-5 text-center">{block.count}</td>
                   </tr>
                 ))}
               </tbody>

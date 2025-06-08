@@ -17,9 +17,9 @@ export default function UploadData() {
       </div>
 
       <div className="flex justify-center mb-8">
-        <div className="flex bg-gray-100 rounded-full p-1 shadow-sm w-fit">
+        <div className="flex bg-gray-100 rounded-full p-1 shadow-sm w-fit flex-col sm:flex-row items-center">
           <button
-            className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
+            className={`w-full sm:w-auto text-center px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
               selected === 'invoice'
                 ? 'bg-primary text-white shadow'
                 : 'text-gray-700 hover:bg-gray-200'
@@ -30,7 +30,7 @@ export default function UploadData() {
             Naloži dnevna stanja
           </button>
           <button
-            className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
+            className={`w-full sm:w-auto text-center px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
               selected === 'receipt'
                 ? 'bg-primary text-white shadow'
                 : 'text-gray-700 hover:bg-gray-200'
@@ -41,7 +41,7 @@ export default function UploadData() {
             Naloži račun
           </button>
           <button
-            className={`px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
+            className={`w-full sm:w-auto text-center px-6 py-2 rounded-full font-semibold transition-all duration-150 ${
               selected === 'minutni'
                 ? 'bg-primary text-white shadow'
                 : 'text-gray-700 hover:bg-gray-200'
@@ -53,9 +53,11 @@ export default function UploadData() {
           </button>
         </div>
       </div>
-      {selected === 'invoice' && <UploadInvoice />}
-      {selected === 'receipt' && <UploadReceipt />}
-      {selected === 'minutni' && <Upload15min />}
+      <div className="flex flex-col items-center w-full">
+        {selected === 'invoice' && <div className="w-full sm:w-auto flex justify-center"><UploadInvoice /></div>}
+        {selected === 'receipt' && <div className="w-full sm:w-auto flex justify-center"><UploadReceipt /></div>}
+        {selected === 'minutni' && <div className="w-full sm:w-auto flex justify-center"><Upload15min /></div>}
+      </div>
     </div>
   );
 };
