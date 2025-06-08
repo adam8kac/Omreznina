@@ -83,7 +83,7 @@ const InvoiceTable: React.FC = () => {
   };
 
   return (
-    <div className="rounded-xl shadow-md bg-white dark:bg-darkgray p-6 relative w-full break-words">
+    <div className="bg-white dark:bg-darkgray p-6 relative w-full break-words">
       <h5 className="text-3xl font-bold mb-4 text-center">Račun na kratko</h5>
       <p className="text-gray-600 text-lg max-w-2xl mx-auto text-center">
         Hiter in jasen pregled tvojega računa. Izberi leto in mesec ter si oglej, kako je sestavljen tvoj strošek za elektriko.
@@ -95,7 +95,7 @@ const InvoiceTable: React.FC = () => {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="p-2 rounded border"
+            className="p-2 rounded-xl border"
           >
             <option value="">--</option>
             {years.map((year) => (
@@ -110,7 +110,7 @@ const InvoiceTable: React.FC = () => {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="p-2 rounded border"
+              className="p-2 rounded-xl border"
             >
               <option value="">--</option>
               {months.map((month) => (
@@ -140,7 +140,7 @@ const InvoiceTable: React.FC = () => {
               <tr>
                 <th className="px-6 py-5 text-left">Postavka</th>
                 <th className="px-6 py-5 text-left">Znesek</th>
-                <th className="px-6 py-5 text-right">Podrobnosti</th>
+                <th className="px-6 py-5 text-right hidden sm:table-cell">Podrobnosti</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -154,14 +154,28 @@ const InvoiceTable: React.FC = () => {
                 { label: "Opomba", value: invoice.note || "–" },
               ].map((row) => (
                 <React.Fragment key={row.label}>
-                  <tr className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    className="hover:bg-gray-50 transition-colors cursor-pointer sm:cursor-default"
+                    onClick={() => {
+                      if (window.innerWidth < 640) {
+                        setOpenRows((prev) => {
+                          const newSet = new Set(prev);
+                          if (newSet.has(row.label)) {
+                            newSet.delete(row.label);
+                          } else {
+                            newSet.add(row.label);
+                          }
+                          return newSet;
+                        });
+                      }
+                    }}
+                  >
                     <td className="px-6 py-5 font-medium text-gray-800">{row.label}</td>
-                    <td className="px-6 py-5 font-mono text-gray-700">
-                      {fmt(row.value, row.label)}
-                    </td>
-                    <td className="px-6 py-5 text-right">
+                    <td className="px-6 py-5 font-mono text-gray-700">{fmt(row.value, row.label)}</td>
+                    <td className="px-6 py-5 text-right hidden sm:table-cell">
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setOpenRows((prev) => {
                             const newSet = new Set(prev);
                             if (newSet.has(row.label)) {
@@ -179,9 +193,13 @@ const InvoiceTable: React.FC = () => {
                       </button>
                     </td>
                   </tr>
+                  {/* Podrobnost pod vrstico na phone view */}
                   {openRows.has(row.label) && (
-                    <tr className="bg-blue-50">
-                      <td colSpan={3} className="px-6 py-5 text-sm text-blue-800">
+                    <tr>
+                      <td colSpan={3} className="px-6 pb-4 pt-0 text-xs text-blue-800 sm:hidden">
+                        <span className="font-semibold">{row.label}</span>: {explanationTexts[row.label]}
+                      </td>
+                      <td colSpan={3} className="px-6 py-5 text-sm text-blue-800 hidden sm:table-cell bg-blue-50">
                         <span className="font-semibold">{row.label}</span>: {explanationTexts[row.label]}
                       </td>
                     </tr>

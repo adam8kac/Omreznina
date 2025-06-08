@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { openAiResponse } from 'src/index';
 import chatbotImg from 'src/assets/images/chabot/Chatbot Chat Message.jpg';
 
+
 const ChatbotPopup: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<{ text: string; from: 'user' | 'bot' }[]>([]);
