@@ -9,14 +9,16 @@ import {
 import { auth } from "src/firebase-config";
 
 const explanationTexts: Record<string, string> = {
-  "Skupni znesek brez DDV": "Vsota vseh postavk pred DDV: strošek energije, omrežnina, prispevki in penali.",
-  "Strošek energije": "Koliko ste plačali za porabljeno električno energijo (VT/MT/ET tarife).",
-  "Omrežnina": "Prispevek za uporabo elektro omrežja, neodvisen od porabe energije.",
-  "Prispevki in ostalo": "Vključuje OVE, URE, trošarine in druge dodatke.",
-  "Penali": "Kazni za prekoračitev dogovorjene moči (npr. nad 8 kW).",
-  "DDV": "22 % davek na skupni znesek brez DDV.",
-  "Opomba": "Posebne opombe, če so bile navedene pri računu.",
+  "Skupni znesek brez DDV": "Vsota vseh postavk na računu pred obračunom DDV, vključno s stroškom energije, omrežnino, prispevki in morebitnimi penali. Predstavlja osnovo za izračun davka in skupnega zneska za plačilo.", 
+  "Strošek energije": "Znesek, ki odraža strošek porabljene električne energije v obračunskem obdobju, razdeljen po tarifah (visoka, nizka in posebna tarifa). Cena temelji na dejanski porabi v kilovatnih urah (kWh).",
+  "Omrežnina": "Fiksni prispevek za uporabo in vzdrževanje elektroenergetskega omrežja, ki je neodvisen od količine porabljene energije. Omrežnina zagotavlja stabilno delovanje in dostopnost omrežja.",
+  "Prispevki in ostalo": "Vključuje različne dodatne stroške, kot so prispevki za obnovljive vire energije (OVE), razvojne prispevke za učinkovito rabo energije (URE), trošarine in druge zakonsko določene dodatke.",
+  "Penali": "Kazni zaradi prekoračitve dogovorjene največje moči priključka, namenjene spodbujanju racionalne porabe in preprečevanju preobremenitve omrežja. Višina kazni je določena v pogodbi.",
+  "DDV": "Davek na dodano vrednost v višini 22 %, ki se obračuna na skupni znesek brez DDV. DDV je zakonsko določen davek, ki se dodaja na osnovno ceno storitev in blaga.",
+  "Opomba": "Posebne informacije ali dodatna pojasnila, ki so navedena na računu, kot so opozorila, pogoji ali druge pomembne opombe za uporabnika.",
 };
+
+
 
 const InvoiceTable: React.FC = () => {
   const [invoice, setInvoice] = useState<ManualInvoice | null>(null);
@@ -193,7 +195,6 @@ const InvoiceTable: React.FC = () => {
                       </button>
                     </td>
                   </tr>
-                  {/* Podrobnost pod vrstico na phone view */}
                   {openRows.has(row.label) && (
                     <tr>
                       <td colSpan={3} className="px-6 pb-4 pt-0 text-xs text-blue-800 sm:hidden">
