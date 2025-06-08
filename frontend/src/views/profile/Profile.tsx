@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import { auth } from 'src/firebase-config';
-import {
-  updateProfile,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-  updatePassword,
-  deleteUser,
-} from 'firebase/auth';
+import {updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, deleteUser} from 'firebase/auth';
 import zxcvbn from 'zxcvbn';
 import {
   deleteToplotna,
@@ -53,6 +47,8 @@ const ProfilePage = () => {
   const [toplotnaTemp, setToplotnaTemp] = useState('');
   const [toplotnaPower, setToplotnaPower] = useState('');
   const [showDeleteToplotnaModal, setShowDeleteToplotnaModal] = useState(false);
+
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     if (status.message) {
@@ -259,10 +255,16 @@ const ProfilePage = () => {
   const handleSaveToplotna = async () => {
     if (!user.uid) return;
     try {
-      await saveToplotna(user.uid, parseFloat(toplotnaPower), parseFloat(toplotnaTemp));
+      await saveToplotna(
+        user.uid,
+        parseFloat(toplotnaPower),
+        parseFloat(toplotnaTemp)
+      );
       setStatus({ message: 'Podatki toplotne črpalke so uspešno shranjeni.', type: 'success' });
+      setTimeout(() => setStatus({ message: '', type: '' }), 3000);
     } catch (err) {
       setStatus({ message: 'Napaka pri shranjevanju moči.', type: 'error' });
+      setTimeout(() => setStatus({ message: '', type: '' }), 5000);
     }
   };
 
@@ -287,8 +289,8 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex justify-center items-start py-16 bg-white rounded-2xl shadow-xl">
-      <div className="w-full max-w-3xl">
+    <div className="w-full min-h-screen flex justify-center items-start py-10 px-4 sm:px-6 md:px-10 bg-white border border-gray-200 rounded-3xl shadow-none sm:shadow-xl sm:rounded-[24px]">
+      <div className="w-full max-w-3xl bg-white p-6 sm:p-10 rounded-2xl">
         <h1 className="text-3xl font-bold text-center mb-7">Moj profil</h1>
         <div className="flex gap-3 justify-center mb-10 flex-wrap">
           <button
@@ -437,12 +439,17 @@ const ProfilePage = () => {
             <h3 className="text-lg font-semibold mb-3 text-center">Dogovorjene moči (v kW)</h3>
             <div className="flex flex-col gap-4">
               {[1, 2, 3, 4, 5].map((block) => (
-                <div key={block} className="flex flex-row items-center gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm">
-                  <label className="text-sm font-medium w-28 shrink-0">Blok {block}</label>
+                <div 
+                  key={block} 
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
+                >
+                  <label className="text-sm font-medium w-full sm:w-28 shrink-0 mb-1 sm:mb-0">
+                    Blok {block}
+                  </label>
                   <input
                     type="text"
                     inputMode="decimal"
-                    className="flex-1 px-4 py-2 border border-primary/40 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-base bg-white"
+                    className="w-full sm:flex-1 px-4 py-2 border border-primary/40 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-base bg-white"
                     placeholder={`${agreedPowers[block] / 1000} kW`}
                     value={agreedPowersInput[block] || ''}
                     onChange={(e) => {
@@ -458,7 +465,6 @@ const ProfilePage = () => {
                 </div>
               ))}
             </div>
-
             {validationError && <div className="mb-3 text-red-600 text-center text-sm">{validationError}</div>}
             <div className="flex items-center gap-4 mt-6 mb-2">
               <label className="text-sm font-medium">Tip tarife ki jo imate</label>
@@ -503,21 +509,21 @@ const ProfilePage = () => {
             </button>
           </div>
         )}
-
-        {/* TULE DELAM JS */}
         {section === 'toplotna' && (
           <div className="mt-8 max-w-xl mx-auto">
             <h3 className="text-lg font-semibold mb-3 text-center">Dodajte toplotno črpalko</h3>
             <div className="flex flex-col gap-4">
               <div
                 key={'toplotna-input'}
-                className="flex flex-row items-center gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
               >
-                <label className="text-sm font-medium w-28 shrink-0">Moč toplotne črpalke (kW)</label>
+                <label className="text-sm font-medium w-full sm:w-28 shrink-0 mb-1 sm:mb-0">
+                  Moč toplotne črpalke (kW)
+                </label>
                 <input
                   type="text"
                   inputMode="decimal"
-                  className="flex-1 px-4 py-2 border border-primary/40 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-base bg-white"
+                  className="w-full sm:flex-1 px-4 py-2 border border-primary/40 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition text-base bg-white"
                   placeholder="npr. 5.5 kW"
                   value={toplotnaPower}
                   onChange={(e) => {
@@ -531,7 +537,7 @@ const ProfilePage = () => {
             <div className="flex flex-col gap-4">
               <div
                 key={'toplotna-input'}
-                className="flex flex-row items-center gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
               >
                 <label className="text-sm font-medium w-28 shrink-0">Temperatura pri kateri se vklopi (°C)</label>
                 <input
@@ -547,14 +553,25 @@ const ProfilePage = () => {
                 />
               </div>
             </div>
+          <div>
             <button
-              className="mt-4 w-full bg-primary text-white rounded-lg py-3 font-medium shadow-sm hover:bg-primary/90 transition"
+              className="mt-4 w-full bg-primary hover:bg-violet-500 text-white rounded-lg py-3 font-medium shadow-sm hover:bg-primary/90 transition"
               onClick={handleSaveToplotna}
             >
               Shrani podatke toplotne črpalke
             </button>
+             {status && (
+                <p
+                  className={`mt-2 text-sm font-medium ${
+                    status.type === 'success' ? 'text-green-600' : 'text-red-600'
+                  }`}
+                >
+                  {status.message}
+                </p>
+              )}
+            </div>
             <button
-              className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white rounded-lg py-3 font-medium shadow-sm transition"
+              className="mt-4 w-full bg-violet-900 hover:bg-violet-700 text-white rounded-lg py-3 font-medium shadow-sm transition"
               onClick={handleDeleteToplotna}
               disabled={deleteLoading}
             >
