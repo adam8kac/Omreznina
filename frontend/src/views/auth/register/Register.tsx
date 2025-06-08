@@ -34,7 +34,7 @@ const Register = () => {
     <div style={gradientStyle} className="relative overflow-hidden h-screen flex items-center justify-center px-4">
       <div className="flex w-full max-w-6xl items-center relative">
         <div className="hidden md:flex flex-col justify-center gap-6 w-1/2 px-8">
-          <h2 className="text-2xl font-semibold text-dark mb-2">Kaj ponujamo?</h2>
+          <h2 className="text-2xl font-semibold text-dark mb-2">Imejte nadzor</h2>
           <p className="text-md text-gray-700">
             Omrežnina+ je sodobna platforma za upravljanje porabe električne energije. Namenjena je uporabnikom, ki želijo enostaven nadzor in transparentnost.
           </p>
@@ -43,16 +43,16 @@ const Register = () => {
             <div>
               <h3 className="font-medium text-dark">Sproti obveščeni</h3>
               <p className="text-sm text-gray-700">
-                Prejmite opozorila o spremembah v tarifah, porabi ali sistemskih vzdrževanjih neposredno v vašo aplikacijo.
+                 Vedno imejte jasen vpogled v obračun elektrike in omrežnine.
               </p>
             </div>
           </div>
           <div className="flex items-start gap-4">
             <FaPlug size={24} className="mt-1 text-primary" />
             <div>
-              <h3 className="font-medium text-dark">Pripravljeni na prihodnost</h3>
+              <h3 className="font-medium text-dark">Korak pred prihodnostjo</h3>
               <p className="text-sm text-gray-700">
-                S platformo Omrežnina+ ste vedno korak pred izpadom elektrike in predvidenimi spremembami v omrežnini.
+                Z Omrežnino+ boste pravočasno pripravljeni na spremembe in se izognili nepotrebnim stroškom.
               </p>
             </div>
           </div>

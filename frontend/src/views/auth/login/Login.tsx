@@ -50,18 +50,18 @@ const Login = () => {
           <div className="flex items-start gap-4 mt-4">
             <FaBell size={24} className="mt-1 text-primary" />
             <div>
-              <h3 className="font-medium text-dark">Sproti obveščeni</h3>
+              <h3 className="font-medium text-dark">Imejte nadzor</h3>
               <p className="text-sm text-gray-700">
-                Prejmite opozorila o spremembah v tarifah, porabi ali sistemskih vzdrževanjih neposredno v vašo aplikacijo.
+                 Vedno imejte jasen vpogled v obračun elektrike in omrežnine.
               </p>
             </div>
           </div>
           <div className="flex items-start gap-4">
             <FaPlug size={24} className="mt-1 text-primary" />
             <div>
-              <h3 className="font-medium text-dark">Pripravljeni na prihodnost</h3>
+              <h3 className="font-medium text-dark">Korak pred prihodnostjo</h3>
               <p className="text-sm text-gray-700">
-                S platformo Omrežnina+ ste vedno korak pred izpadom elektrike in predvidenimi spremembami v omrežnini.
+                Z Omrežnino+ boste pravočasno pripravljeni na spremembe in se izognili nepotrebnim stroškom.
               </p>
             </div>
           </div>
