@@ -174,8 +174,6 @@ export const PowerStats = () => {
   const [chartData, setChartData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [showSummary] = useState(false);
-
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;

@@ -2,7 +2,7 @@ import { Card } from "flowbite-react";
 import { motion } from "framer-motion";
 import { LucideHome, FileUp, FileText, Calculator, BarChart, PieChart, LucideZap, Heart } from "lucide-react";
 import { Link } from "react-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import ChatbotPopup from '../../components/chatbot/ChatbotComponent';
 
 const DashboardGuide = () => {
