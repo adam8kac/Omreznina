@@ -3,10 +3,18 @@ import { useEffect, useState } from 'react';
 import { getDocumentDataConsumption, getSubcollectionDocsConsumption, getSubcollectionsConsumption } from 'src/index';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts';
 import { Accordion, Spinner } from 'flowbite-react';
+import { FaInfoCircle } from 'react-icons/fa';
 import '../../css/theme/accordion.css';
 
 const formatEUR = (value: any) => `${parseFloat(value || 0).toFixed(2)} €`;
 const formatKW = (value: any) => `${parseFloat(value || 0).toFixed(1)} kW`;
+
+const blockColors: Record<number, string> = {
+  1: '#fa144d',
+  2: '#faa63e',
+  3: '#FFD900',
+  4: '#2FBE8F'
+};
 
 const BlockPricePieChart = ({
   blockNumber,
@@ -18,13 +26,6 @@ const BlockPricePieChart = ({
   excessCost: number;
 }) => {
   const optimalCost = totalCost - excessCost;
-  const blockColors: Record<number, string> = {
-    1: '#60A5FA',
-    2: '#7DD3FC',
-    3: '#6EE7B7',
-    4: '#FCD34D',
-    5: '#FCA5A5',
-  };
 
   return (
     <div className="flex flex-col items-center p-4 bg-white w-full max-w-xs">
@@ -37,7 +38,7 @@ const BlockPricePieChart = ({
             arcLabelMinAngle: 15,
             outerRadius: 70,
             data: [
-              { id: 0, value: optimalCost, label: 'Optimalna poraba', color: `${blockColors[blockNumber]}B3` },
+              { id: 0, value: optimalCost, label: 'Optimalna poraba', color: blockColors[blockNumber] },
               { id: 1, value: excessCost, label: 'Prekoračitve', color: 'rgba(255, 0, 0, 0.7)' },
             ],
           },
@@ -349,6 +350,19 @@ export const PowerStats = () => {
             />
           );
         })}
+      </div>
+      <div className="mt-6">
+        <p className="font-medium text-gray-800 flex items-center gap-2">
+          <FaInfoCircle /> Časovni bloki (1 = najvišja tarifa, 4 = najnižja tarifa):
+        </p>
+        <div className="flex flex-wrap gap-4 mt-2 items-start">
+          {[1, 2, 3, 4].map((b) => (
+            <div key={b} className="flex items-center gap-2">
+              <div className={`w-6 h-6 rounded`} style={{ background: blockColors[b] }} title={`Blok ${b}`} />
+              <p className="text-sm text-gray-700">Časovni blok {b}</p>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="mt-8 bg-white p-4 rounded-xl">
         <Accordion collapseAll>
