@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
-const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-//const api = axios.create({ baseURL: 'http://localhost:8080/' });
+// const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
+const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -298,9 +298,9 @@ export const saveToplotna = async (uid: string, power: number, temparature: numb
   }
 };
 
-export const deleteToplotna = async (uid: string) => {
+export const deleteDocument = async (uid: string, docId: string) => {
   try {
-    const response = await api.delete(`firestore/remove-toplotna?uid=${uid}`);
+    const response = await api.delete(`firestore/remove-document?uid=${uid}&docId=${docId}`);
     return response.data;
   } catch (error) {
     console.log(error);
@@ -330,4 +330,22 @@ export const getClientTemparature = async () => {
     console.log('napaka pri pridobivanju trenutne temparature');
     return false;
   }
+};
+
+export const deleteSubDocument = async (uid: string, docId: string, subColId: string, subDocId: string) => {
+  try {
+    const response = await api.delete(
+      `firestore/remove-subDocument?uid=${uid}&docId=${docId}&subColId=${subColId}&subDocId=${subDocId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getCustomDocData = async (uid: string, docId: string, subColId: string, subDocId: string) => {
+  const response = await api.get(
+    `firestore/data?uid=${uid}&docId=${docId}&subColId=${subColId}&subColDocId=${subDocId}`
+  );
+  return response.data;
 };

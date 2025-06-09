@@ -124,13 +124,25 @@ public class FirestoreController {
 		}
 	}
 
-	@DeleteMapping("remove-toplotna")
-	public ResponseEntity<String> removeToplotna(@RequestParam String uid) {
+	@DeleteMapping("remove-document")
+	public ResponseEntity<String> removeDocument(@RequestParam String uid, @RequestParam String docId) {
 		try {
-			service.removeDocument(uid, "toplotna-crpalka");
-			return ResponseEntity.ok("Toplotna crpalka removed");
+			service.removeDocument(uid, docId);
+			return ResponseEntity.ok("Document removed");
 		} catch (Exception e) {
-			logger.log(Level.INFO, "Napaka pri odstrnajevanju toplotne.", e);
+			logger.log(Level.INFO, "Napaka pri odstrnajevanju dokumenta.", e);
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@DeleteMapping("remove-subDocument")
+	public ResponseEntity<String> romveSubCollection(@RequestParam String uid, @RequestParam String docId,
+			@RequestParam String subColId, @RequestParam String subDocId) {
+		try {
+			service.removeSubCollection(uid, docId, subColId, subDocId);
+			return ResponseEntity.ok("SubDocument removed");
+		} catch (Exception e) {
+			logger.log(Level.INFO, "Napaka pri odstrnajevanju pod dokumenta.", e);
 			return ResponseEntity.badRequest().build();
 		}
 	}

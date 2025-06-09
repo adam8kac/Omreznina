@@ -3,7 +3,7 @@
 import { lazy } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router';
 import Loadable from 'src/layouts/full/shared/loadable/Loadable';
-import ProtectedRoute from './ProtectedRoute'; 
+import ProtectedRoute from './ProtectedRoute';
 
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
@@ -24,6 +24,7 @@ const MonthlyConsumption = Loadable(lazy(() => import('../views/simulation/Month
 const PowerStats = Loadable(lazy(() => import('../views/simulation/PowerStatsView')));
 const DashboardGuide = Loadable(lazy(() => import('../views/dashboards/DashboardGuide')));
 const Prediction = Loadable(lazy(() => import('../views/tables/PredictionView')));
+const DeleteFile = Loadable(lazy(() => import('../components/fileManegment/DeleteFile')));
 
 // authentication
 const Login = Loadable(lazy(() => import('../views/auth/login/Login')));
@@ -32,14 +33,9 @@ const Profile = Loadable(lazy(() => import('../views/profile/Profile')));
 const Error = Loadable(lazy(() => import('../views/auth/error/Error')));
 const ResetPassword = Loadable(lazy(() => import('../views/auth/reset/ResetPassword')));
 const VerifyInfo = Loadable(lazy(() => import('../views/auth/verify/VerifyInfo')));
-const AuthenticationHandler = Loadable(
-  lazy(() => import('../views/auth/AuthenticationHandler'))
-);
-
-
+const AuthenticationHandler = Loadable(lazy(() => import('../views/auth/AuthenticationHandler')));
 
 const Router = [
-
   {
     path: '/',
     element: (
@@ -62,7 +58,7 @@ const Router = [
       { path: '*', element: <Navigate to="/auth/404" /> },
       { path: '/about-us', exact: true, element: <AboutUs /> },
       { path: '/prediction', exact: true, element: <Prediction /> },
-
+      { path: '/delete-files', exact: true, element: <DeleteFile /> },
     ],
   },
   {
@@ -73,8 +69,7 @@ const Router = [
       { path: '/auth/register', element: <Register /> },
       { path: '/auth/reset-password', element: <ResetPassword /> },
       { path: '/auth/404', element: <Error /> },
-      { path: '/auth/action', element: <AuthenticationHandler />,},
-
+      { path: '/auth/action', element: <AuthenticationHandler /> },
     ],
   },
   {
@@ -86,7 +81,6 @@ const Router = [
     element: <Navigate to="/auth/404" />,
   },
 ];
-
 
 const router = createBrowserRouter(Router, {
   basename: import.meta.env.VITE_BASE_PATH || '/',

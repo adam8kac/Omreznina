@@ -328,4 +328,14 @@ public class FirestoreService {
 		}
 	}
 
+	public void removeSubCollection(String uid, String docId, String subCol, String subDocId) {
+		try {
+			db.collection(uid).document(docId)
+					.collection(subCol).document(subDocId)
+					.delete();
+		} catch (Exception e) {
+			logger.warning("Could not delete: document");
+		}
+	}
+
 }
