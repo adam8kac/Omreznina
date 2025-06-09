@@ -5,6 +5,7 @@ import { PieChart, pieArcLabelClasses } from '@mui/x-charts';
 import { Accordion, Spinner } from 'flowbite-react';
 import { FaInfoCircle } from 'react-icons/fa';
 import '../../css/theme/accordion.css';
+import PowerBlockAnalysisTable from './PowerBlockAnalysisTable';
 
 const formatEUR = (value: any) => `${parseFloat(value || 0).toFixed(2)} €`;
 const formatKW = (value: any) => `${parseFloat(value || 0).toFixed(1)} kW`;
@@ -83,7 +84,6 @@ const PowerComparisonTable = ({
   const paid = parseFloat(prekoracitveData?.['total monthly price'] ?? 0);
   const optimal = parseFloat(optimumData?.['total monthly price'] ?? 0);
   const overpaid = paid - optimal;
-  console.log(optimumData);
   return (
     <div className="rounded-2xl bg-white border border-gray-200 text-sm overflow-hidden divide-y divide-gray-100">
       <div className="sm:grid sm:grid-cols-2 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
@@ -327,6 +327,8 @@ export const PowerStats = () => {
       </div>
 
       <PowerComparisonTable chartData={chartData} prekoracitveData={prekoracitveData} optimumData={optimumData} />
+
+      <PowerBlockAnalysisTable prekoracitveData={prekoracitveData} optimumData={optimumData} />
 
       <PricePieChart
         optimum={parseFloat(optimumData['total monthly price'] || 0)}
