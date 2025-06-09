@@ -7,9 +7,16 @@ type DocDataPopUpProps = {
   docId?: string;
   subColId?: string;
   subDocId?: string;
+  buttonStyle?: string;
 };
 
-export const DocDataPopUp = ({ uid, docId, subColId, subDocId }: DocDataPopUpProps) => {
+export const DocDataPopUp = ({
+  uid,
+  docId,
+  subColId,
+  subDocId,
+  buttonStyle = "bg-primary text-white rounded-lg px-4 py-2 text-xs font-semibold shadow hover:bg-primary/80"
+}: DocDataPopUpProps) => {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
@@ -34,22 +41,33 @@ export const DocDataPopUp = ({ uid, docId, subColId, subDocId }: DocDataPopUpPro
                   </div>
                 );
               }
-
               return (
                 <div key={block} className="border-b pb-1">
                   <div>
                     <strong>Blok {block}</strong>
                   </div>
                   {blockData.data?.map((entry: any, idx: number) => (
-                    <div key={idx} className="ml-2">
-                      <div>Moč: {entry.agreedPower} kW</div>
-                      <div>Prekoračitev: {entry.overrun_delta} kW</div>
-                      <div>Cena kazni: {entry.penalty_price} €</div>
-                      <div>Max moč: {entry.maxPowerRecieved} kW</div>
-                      <div>Čas: {entry.timestamp}</div>
+                    <div key={idx} className="ml-2 mb-2 p-2 bg-gray-50 rounded-lg">
+                      <div>
+                        <span className="font-medium text-gray-700">Moč:</span> <span className="text-gray-900">{entry.agreedPower} kW</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Prekoračitev:</span> <span className="text-gray-900">{entry.overrun_delta} kW</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Max moč:</span> <span className="text-gray-900">{entry.maxPowerRecieved} kW</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Cena kazni:</span> <span className="text-gray-900">{entry.penalty_price} €</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Čas:</span> <span className="text-gray-900">{entry.timestamp}</span>
+                      </div>
                     </div>
                   ))}
-                  <div>Skupna cena: {blockData['total price']} €</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Skupna cena: <span className="font-semibold">{blockData['total price']} €</span>
+                  </div>
                 </div>
               );
             })}
@@ -60,25 +78,25 @@ export const DocDataPopUp = ({ uid, docId, subColId, subDocId }: DocDataPopUpPro
         return (
           <div className="space-y-1 text-sm">
             <div>
-              <strong>Merilno mesto:</strong> {data['merilno mesto']}
+              <span className="font-medium text-gray-700">Merilno mesto:</span> <span className="text-gray-900">{data['merilno mesto']}</span>
             </div>
             <div>
-              <strong>Poraba (ET):</strong> {data['poraba et']} kWh
+              <span className="font-medium text-gray-700">Poraba (ET):</span> <span className="text-gray-900">{data['poraba et']} kWh</span>
             </div>
             <div>
-              <strong>Delta prejeta delovna energija:</strong> {data['delta prejeta delovna energija et']} kWh
+              <span className="font-medium text-gray-700">Delta prejeta delovna energija:</span> <span className="text-gray-900">{data['delta prejeta delovna energija et']} kWh</span>
             </div>
             <div>
-              <strong>Delta oddana delovna energija:</strong> {data['delta oddana delovna energija et']} kWh
+              <span className="font-medium text-gray-700">Delta oddana delovna energija:</span> <span className="text-gray-900">{data['delta oddana delovna energija et']} kWh</span>
             </div>
             <div>
-              <strong>Tarifa (ET):</strong> {data['tarifa za et']} €/kWh
+              <span className="font-medium text-gray-700">Tarifa (ET):</span> <span className="text-gray-900">{data['tarifa za et']} €/kWh</span>
             </div>
             <div>
-              <strong>Cena energije (ET):</strong> {data['cena energije et']} €/enota
+              <span className="font-medium text-gray-700">Cena energije (ET):</span> <span className="text-gray-900">{data['cena energije et']} €/enota</span>
             </div>
             <div>
-              <strong>Vrsta stanja:</strong> {data['vrsta stanja']}
+              <span className="font-medium text-gray-700">Vrsta stanja:</span> <span className="text-gray-900">{data['vrsta stanja']}</span>
             </div>
           </div>
         );
@@ -87,22 +105,22 @@ export const DocDataPopUp = ({ uid, docId, subColId, subDocId }: DocDataPopUpPro
         return (
           <div className="space-y-1 text-sm">
             <div>
-              <strong>Mesec:</strong> {data.month}
+              <span className="font-medium text-gray-700">Mesec:</span> <span className="text-gray-900">{data.month}</span>
             </div>
             <div>
-              <strong>Skupni znesek:</strong> {data.totalAmount} €
+              <span className="font-medium text-gray-700">Skupni znesek:</span> <span className="text-gray-900">{data.totalAmount} €</span>
             </div>
             <div>
-              <strong>Omrežnina:</strong> {data.networkCost} €
+              <span className="font-medium text-gray-700">Omrežnina:</span> <span className="text-gray-900">{data.networkCost} €</span>
             </div>
             <div>
-              <strong>Penali:</strong> {data.penalties} €
+              <span className="font-medium text-gray-700">Penali:</span> <span className="text-gray-900">{data.penalties} €</span>
             </div>
             <div>
-              <strong>DDV:</strong> {data.vat} €
+              <span className="font-medium text-gray-700">DDV:</span> <span className="text-gray-900">{data.vat} €</span>
             </div>
             <div>
-              <strong>Energija:</strong> {data.energyCost} €
+              <span className="font-medium text-gray-700">Energija:</span> <span className="text-gray-900">{data.energyCost} €</span>
             </div>
           </div>
         );
@@ -113,25 +131,27 @@ export const DocDataPopUp = ({ uid, docId, subColId, subDocId }: DocDataPopUpPro
   };
 
   return (
-    <div>
-      <Popup
-        trigger={
-          <button
-            style={{
-              backgroundColor: 'var(--color-primary)',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              border: 'none',
-            }}
-          >
-            Preglej vsebino
-          </button>
-        }
-        position="left center"
-      >
-        <div className="bg-white p-4 rounded shadow-md max-w-[400px] text-black">{renderContent()}</div>
-      </Popup>
-    </div>
+    <Popup
+      trigger={
+        <button className={buttonStyle}>
+          Preglej vsebino
+        </button>
+      }
+      modal
+      closeOnDocumentClick
+      contentStyle={{
+        background: '#fff',
+        borderRadius: '16px',
+        maxWidth: 420,
+        padding: '1.5rem',
+        boxShadow: '0 2px 16px #0001',
+        color: '#232323',
+      }}
+    >
+      <div>
+        <div className="font-semibold text-base mb-3 text-primary">Podrobnosti dokumenta</div>
+        {renderContent()}
+      </div>
+    </Popup>
   );
 };
