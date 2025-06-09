@@ -18,8 +18,9 @@ const DeleteFile = () => {
   const [selectedDocId, setSelectedDocId] = useState<string>('prekoracitve');
   const [uid, setUid] = useState<string>();
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | '' }>({ message: '', type: '' });
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<string | boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   useEffect(() => {
     const auth = getAuth();
@@ -104,9 +105,15 @@ const DeleteFile = () => {
   const isValidMonth = (monthId: string) => months?.includes(monthId);
 
   return (
-    <div className="w-full flex justify-center py-10 px-4 sm:px-6 md:px-10">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-6 sm:p-10 border border-gray-100">
-        <h2 className="text-2xl font-bold mb-7 text-center">Upravljanje podatkov</h2>
+    <div className="w-full max-w-6xl mx-auto mt-10 px-4">
+      <div className="bg-white rounded-xl shadow-md p-12">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-4">Upravljanje podatkov</h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Upravljaj svoje naložene podatke o računih, dnevnih stanjih in 15-minutnih intervalih za boljši pregled in prikaz porabe.
+            Izberi ustrezno možnost glede na to, kaj želiš pregledati ali izbrisati.
+          </p>
+        </div>
         <div className="flex flex-wrap gap-4 justify-center sm:justify-start items-end mb-8">
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Izberi tip podatkov</label>
@@ -153,44 +160,102 @@ const DeleteFile = () => {
           </div>
         )}
 
-        {/* List of months/docs */}
-        <div className="bg-gray-50 rounded-xl border border-gray-200 px-2 py-1 max-h-[300px] overflow-auto">
+        <div className="overflow-x-auto rounded-xl mt-2 max-h-72">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="px-4 py-2 text-left">Dokument</th>
-                <th className="px-4 py-2 text-center">Akcije</th>
+            <thead className="bg-blue-200 text-blue-800 uppercase text-xs font-semibold hidden md:table-header-group">
+              <tr>
+                <th className="px-3 py-3 text-center">Dokument</th>
+                <th className="px-3 py-3 text-center">Ogled vsebine</th>
+                <th className="px-3 py-3 text-center">Izbriši</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {months?.map((id) => (
-                <tr key={id} className="border-b last:border-0">
-                  <td className="px-4 py-2">{id}</td>
-                  <td className="px-4 py-2 flex gap-2 justify-end">
-                    {uid && selectedDocId && selectedYear && isValidMonth(id) && (
-                      <DocDataPopUp
-                        uid={uid}
-                        docId={selectedDocId}
-                        subColId={selectedYear}
-                        subDocId={id}
-                        buttonStyle="bg-primary text-white rounded-lg px-4 py-2 text-xs font-semibold shadow hover:bg-primary/80"
-                      />
-                    )}
-                    <button
-                      onClick={() => deleteSubDoc(id)}
-                      className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2 text-xs font-semibold shadow"
-                      disabled={deleteLoading}
-                    >
-                      Izbriši
-                    </button>
-                  </td>
-                </tr>
+                <>
+                  <tr key={id} className="hover:bg-gray-50 transition-colors hidden md:table-row">
+                    <td className="px-3 py-3 font-medium text-gray-800 text-center">{id}</td>
+                    <td className="px-3 py-3 text-center">
+                      {uid && selectedDocId && selectedYear && isValidMonth(id) && (
+                        <DocDataPopUp
+                          uid={uid}
+                          docId={selectedDocId}
+                          subColId={selectedYear}
+                          subDocId={id}
+                          buttonStyle="bg-primary text-white rounded-lg px-3 py-2 text-xs font-semibold shadow hover:bg-primary/80"
+                        />
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <button
+                        onClick={() => setShowDeleteModal(id)}
+                        className="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 py-1 rounded-full focus:outline-none transition-colors duration-150"
+                        title="Izbriši podatek"
+                        disabled={deleteLoading}
+                      >
+                        ×
+                      </button>
+                    </td>
+                  </tr>
+                  <tr key={id + '-mobile'} className="md:hidden hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setExpandedRow(expandedRow === id ? null : id)}>
+                    <td className="px-3 py-3 font-medium text-gray-800 text-center" colSpan={3}>{id}</td>
+                  </tr>
+                  {expandedRow === id && (
+                    <tr className="md:hidden">
+                      <td colSpan={3} className="px-3 pb-3 pt-0 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          {uid && selectedDocId && selectedYear && isValidMonth(id) && (
+                            <DocDataPopUp
+                              uid={uid}
+                              docId={selectedDocId}
+                              subColId={selectedYear}
+                              subDocId={id}
+                              buttonStyle="bg-primary text-white rounded-lg px-3 py-2 text-xs font-semibold shadow hover:bg-primary/80"
+                            />
+                          )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setShowDeleteModal(id); }}
+                            className="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 py-1 rounded-full focus:outline-none transition-colors duration-150"
+                            title="Izbriši podatek"
+                            disabled={deleteLoading}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
         </div>
-        {/* Modal for deleting ALL */}
-        {showDeleteModal && (
+        {typeof showDeleteModal === 'string' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full text-center">
+              <div className="text-lg font-semibold mb-4 text-red-700">
+                Ste prepričani, da želite izbrisati podatek <span className="font-bold">{showDeleteModal}</span>?
+              </div>
+              <div className="mb-6 text-gray-600 text-sm">Ta operacija je nepovratna!</div>
+              <div className="flex gap-4 justify-center">
+                <button
+                  className="px-5 py-2 rounded bg-gray-200 text-gray-700 font-medium"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleteLoading}
+                >
+                  Prekliči
+                </button>
+                <button
+                  className="px-5 py-2 rounded bg-red-600 text-white font-medium"
+                  onClick={() => { deleteSubDoc(showDeleteModal); setShowDeleteModal(false); }}
+                  disabled={deleteLoading}
+                >
+                  Izbriši
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showDeleteModal === true && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
             <div className="bg-white rounded-lg shadow-lg p-8 max-w-sm w-full text-center">
               <div className="text-lg font-semibold mb-4 text-red-700">

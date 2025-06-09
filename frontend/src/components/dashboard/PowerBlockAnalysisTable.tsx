@@ -16,7 +16,6 @@ const formatEUR = (value: any) => {
   return isNaN(num) ? '0.00 €' : `${num.toFixed(2)} €`;
 };
 
-// Skupna prekoračitev (vsota prekoračenih vrednosti)
 const calculateExcessForPower = (
   dataArr: any[] | undefined,
   agreedPower: number | string | undefined
@@ -92,14 +91,13 @@ const PowerBlockAnalysisTable = ({
 
   return (
     <div className="mt-12">
-      <h2 className="text-xl font-bold mb-3 text-center">Primerjava po blokih</h2>
-      {/* Desktop */}
+      <h4 className="text-xl font-bold mb-3 text-center">Primerjava po blokih</h4>
       <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow hidden md:block">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="bg-blue-200 text-blue-800 uppercase text-xs font-semibold">
-              <th className="p-2 font-semibold text-center"></th>
-              <th className="p-2 font-semibold text-center">Blok</th>
+            <tr className="bg-blue-500/10 text-blue-800 uppercase text-xs font-semibold">
+              <th className="p-4 font-semibold text-center w-8 min-w-[32px]"></th>
+              <th className="p-4 font-semibold text-center w-32 min-w-[90px] text-center">Blok</th>
               <th className="p-2 font-semibold text-center">Trenutna dog. moč</th>
               <th className="p-2 font-semibold text-center">Max. moč</th>
               <th className="p-2 font-semibold text-center">Prekoračitev</th>
@@ -112,9 +110,10 @@ const PowerBlockAnalysisTable = ({
             </tr>
           </thead>
           <tbody>
-            {blocks.map((block: any) => (
+            {blocks.map((block: any, idx: number) => (
               <tr key={block.blockNumber} className="text-center">
-                <td className="pl-4 pr-0 py-4 align-middle">
+                <td className={"pl-4 pr-0 py-4 align-middle" + (idx === 0 ? " pt-6" : "")}
+                  style={{ width: 20, minWidth: 20 }}>
                   <span
                     style={{
                       background: blockColors[block.blockNumber],
@@ -128,7 +127,10 @@ const PowerBlockAnalysisTable = ({
                     }}
                   />
                 </td>
-                <td className="px-2 py-4 font-bold text-gray-800 text-left">{`Blok ${block.blockNumber}`}</td>
+                <td className={"px-2 py-4 font-bold text-gray-800 text-center" + (idx === 0 ? " pt-6" : "")}
+                  style={{ width: 90, minWidth: 90 }}>
+                  {`Blok ${block.blockNumber}`}
+                </td>
                 <td className="px-2 py-4 font-medium text-gray-800">{formatKW(block.agreedPowerRaw)}</td>
                 <td className="px-2 py-4 font-medium text-gray-800">{formatKW(block.maxPowerRecieved)}</td>
                 <td className="px-2 py-4 font-medium text-gray-800">{formatKW(block.excess)}</td>
@@ -143,7 +145,6 @@ const PowerBlockAnalysisTable = ({
           </tbody>
         </table>
       </div>
-      {/* Mobile */}
       <div className="md:hidden flex flex-col gap-4">
         {blocks.map((block: any) => (
           <div
@@ -189,7 +190,7 @@ const PowerBlockAnalysisTable = ({
           </div>
         ))}
       </div>
-      <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200 text-blue-800 text-sm flex items-start gap-3">
+      <div className="mt-4 p-4 bg-blue-500/10 rounded-xl border border-blue-200 text-blue-800 text-sm flex items-start gap-3">
         <FaInfoCircle className="mt-1 text-blue-400" />
         <span>
           <b>Blok 5 se ne prikazuje</b>, ker je cena za ta časovni blok praktično vedno 0&nbsp;€. <br />

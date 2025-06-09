@@ -90,7 +90,7 @@ const SidebarContent: MenuItem[] = [
     children: [
       {
         name: 'Pregled datotek',
-        //icon:
+        icon: 'solar:document-linear',
         id: uniqueId(),
         url: '/delete-files',
       },
