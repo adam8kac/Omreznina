@@ -209,7 +209,8 @@ public class FirestoreControllerTest {
 
 	@Test
 	void saveToplotna_shouldReturnBadRequest_onException() throws Exception {
-		doThrow(new RuntimeException("error")).when(firestoreService).saveToplotnaCrpalka(anyString(), anyDouble(), anyDouble());
+		doThrow(new RuntimeException("error")).when(firestoreService).saveToplotnaCrpalka(anyString(), anyDouble(),
+				anyDouble());
 
 		mockMvc.perform(post("/firestore/set-toplotna")
 				.param("uid", "user123")
@@ -220,8 +221,9 @@ public class FirestoreControllerTest {
 
 	@Test
 	void removeToplotna_shouldReturnOk() throws Exception {
-		mockMvc.perform(delete("/firestore/remove-toplotna")
-				.param("uid", "user123"))
+		mockMvc.perform(delete("/firestore/remove-document")
+				.param("uid", "user123")
+				.param("docId", "toplotna-crpalka"))
 				.andExpect(status().isOk());
 
 		verify(firestoreService).removeDocument("user123", "toplotna-crpalka");
@@ -231,8 +233,49 @@ public class FirestoreControllerTest {
 	void removeToplotna_shouldReturnBadRequest_onException() throws Exception {
 		doThrow(new RuntimeException("error")).when(firestoreService).removeDocument(anyString(), anyString());
 
-		mockMvc.perform(delete("/firestore/remove-toplotna")
-				.param("uid", "user123"))
+		mockMvc.perform(delete("/firestore/remove-document")
+				.param("uid", "user123")
+				.param("docId", "toplotna-crpalka"))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void testRemoveSubDocumentSuccess() throws Exception {
+		String uid = "user123";
+		String docId = "doc1";
+		String subColId = "2024";
+		String subDocId = "01";
+
+		mockMvc.perform(delete("/firestore/remove-subDocument")
+				.param("uid", uid)
+				.param("docId", docId)
+				.param("subColId", subColId)
+				.param("subDocId", subDocId)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(content().string("SubDocument removed"));
+
+		verify(firestoreService, times(1)).removeSubCollection(uid, docId, subColId, subDocId);
+	}
+
+	@Test
+	public void testRemoveSubDocumentFailure() throws Exception {
+		String uid = "user123";
+		String docId = "doc1";
+		String subColId = "2024";
+		String subDocId = "01";
+
+		doThrow(new RuntimeException("DB error"))
+				.when(firestoreService).removeSubCollection(uid, docId, subColId, subDocId);
+
+		mockMvc.perform(delete("/firestore/remove-subDocument")
+				.param("uid", uid)
+				.param("docId", docId)
+				.param("subColId", subColId)
+				.param("subDocId", subDocId)
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+
+		verify(firestoreService, times(1)).removeSubCollection(uid, docId, subColId, subDocId);
 	}
 }

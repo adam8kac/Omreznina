@@ -1,4 +1,4 @@
-import { uniqueId } from "lodash";
+import { uniqueId } from 'lodash';
 
 export interface ChildItem {
   id?: number | string;
@@ -23,65 +23,76 @@ export interface MenuItem {
 
 const SidebarContent: MenuItem[] = [
   {
-    heading: "PREGLED",
+    heading: 'PREGLED',
     children: [
       {
-        name: "Nadzorna plošča",
-        icon: "solar:home-2-linear",
+        name: 'Nadzorna plošča',
+        icon: 'solar:home-2-linear',
         id: uniqueId(),
-        url: "/",
+        url: '/',
       },
     ],
   },
   {
-    heading: "PORABA IN OMREŽNINA",
+    heading: 'PORABA IN OMREŽNINA',
     children: [
       {
-        name: "Simulacija porabe",
-        icon: "solar:calculator-linear",
+        name: 'Simulacija porabe',
+        icon: 'solar:calculator-linear',
         id: uniqueId(),
-        url: "/simulate-power",
+        url: '/simulate-power',
       },
       {
-        name: "Omrežnina",
-        icon: "solar:chart-2-linear",
+        name: 'Omrežnina',
+        icon: 'solar:chart-2-linear',
         id: uniqueId(),
-        url: "/network-fee",
+        url: '/network-fee',
       },
       {
-        name: "Poraba po mesecih",
-        icon: "solar:graph-linear",
+        name: 'Poraba po mesecih',
+        icon: 'solar:graph-linear',
         id: uniqueId(),
-        url: "/monthly-consumption",
+        url: '/monthly-consumption',
       },
       {
-        name: "Statistika moči",
-        icon: "solar:bolt-circle-linear",
+        name: 'Statistika moči',
+        icon: 'solar:bolt-circle-linear',
         id: uniqueId(),
-        url: "/power-stats",
+        url: '/power-stats',
       },
       {
-        name: "Napoved",
-        icon: "material-symbols:insights",
+        name: 'Napoved',
+        icon: 'material-symbols:insights',
         id: uniqueId(),
-        url: "/prediction",
-      }
+        url: '/prediction',
+      },
     ],
   },
   {
-    heading: "PODATKI IN RAZLAGE",
+    heading: 'PODATKI IN RAZLAGE',
     children: [
       {
-        name: "Naloži podatke",
-        icon: "tabler:file-upload",
+        name: 'Naloži podatke',
+        icon: 'tabler:file-upload',
         id: uniqueId(),
-        url: "/upload-data",
+        url: '/upload-data',
       },
       {
-        name: "Razlaga računa",
-        icon: "solar:file-text-linear",
+        name: 'Razlaga računa',
+        icon: 'solar:file-text-linear',
         id: uniqueId(),
-        url: "/reciept-explanation",
+        url: '/reciept-explanation',
+      },
+    ],
+  },
+  {
+    heading: 'Moje datoteke',
+    children: [
+      {
+        name: 'Pregled datotek',
+        //icon:
+        id: uniqueId(),
+        url: '/delete-files',
       },
     ],
   },

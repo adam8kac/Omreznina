@@ -3,7 +3,7 @@ import { auth } from 'src/firebase-config';
 import {updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, deleteUser} from 'firebase/auth';
 import zxcvbn from 'zxcvbn';
 import {
-  deleteToplotna,
+  deleteDocument,
   getAgreedPowers,
   getCurrentTariff,
   getToplotnPower,
@@ -275,7 +275,7 @@ const ProfilePage = () => {
     setDeleteLoading(true);
     setStatus({ message: '', type: '' });
     try {
-      await deleteToplotna(user.uid);
+      await deleteDocument(user.uid, "toplotna-crpalka");
       setToplotnaPower('');
       setToplotnaTemp('');
       setStatus({ message: 'Toplotna črpalka izbrisana.', type: 'success' });
