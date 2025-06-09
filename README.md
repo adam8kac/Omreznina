@@ -3,7 +3,8 @@
 [🌐 Dostop do aplikacije](https://omreznina.netlify.app/)  
 [📘 Dokumentacija (GitBook)](https://omreznina.gitbook.io/omreznina+)  
 [💻 GitHub repozitorij](https://github.com/adam8kac/Omreznina)  
-[🎫 Upravljanje nalog (YouTrack)](https://omreznina.youtrack.cloud/issues)
+[🎫 Upravljanje nalog (YouTrack)](https://omreznina.youtrack.cloud/issues)  
+[🎥 Predstavitveni video spletne strani](https://youtu.be/4VQbA-ZNZQ0?si=rnjP1ZeGg3gaYNvq)
 
 
 ## 📖 O projektu
