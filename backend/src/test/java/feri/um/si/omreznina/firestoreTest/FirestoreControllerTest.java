@@ -5,6 +5,7 @@ import feri.um.si.omreznina.controller.FirestoreController;
 import feri.um.si.omreznina.model.ManualInvoice;
 import feri.um.si.omreznina.service.FirestoreService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -277,5 +278,25 @@ public class FirestoreControllerTest {
 				.andExpect(status().isBadRequest());
 
 		verify(firestoreService, times(1)).removeSubCollection(uid, docId, subColId, subDocId);
+	}
+
+	@Test
+	void semove_shouldReturnOk_whenNoException() throws Exception {
+		mockMvc.perform(delete("/firestore/remove")
+				.param("uid", "user1")
+				.param("docId", "doc123"))
+				.andExpect(status().isOk())
+				.andExpect(content().string("SubDocument removed"));
+		Mockito.verify(firestoreService).removeDocumentAndSubcollections("user1", "doc123");
+	}
+
+	@Test
+	void semove_shouldReturnBadRequest_whenExceptionThrown() throws Exception {
+		doThrow(new RuntimeException("fail")).when(firestoreService).removeDocumentAndSubcollections("user1", "doc123");
+
+		mockMvc.perform(delete("/firestore/remove")
+				.param("uid", "user1")
+				.param("docId", "doc123"))
+				.andExpect(status().isBadRequest());
 	}
 }

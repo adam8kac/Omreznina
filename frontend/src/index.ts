@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
 const api = axios.create({ baseURL: 'https://omreznina-app-latest.onrender.com/' });
-//const api = axios.create({ baseURL: 'http://localhost:8080/' });
+// const api = axios.create({ baseURL: 'http://localhost:8080/' });
 
 export interface DayRecord {
   poraba: number;
@@ -348,4 +348,13 @@ export const getCustomDocData = async (uid: string, docId: string, subColId: str
     `firestore/data?uid=${uid}&docId=${docId}&subColId=${subColId}&subColDocId=${subDocId}`
   );
   return response.data;
+};
+
+export const deleteData = async (uid: string, docId: string) => {
+  try {
+    const response = await api.delete(`firestore/remove?uid=${uid}&docId=${docId}`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
 };

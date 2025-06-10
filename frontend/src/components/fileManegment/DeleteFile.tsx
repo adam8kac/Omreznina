@@ -1,7 +1,7 @@
 import { getAuth } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import {
-  deleteDocument,
+  deleteData,
   deleteSubDocument,
   getSubcollectionDocsConsumption,
   getSubcollectionsConsumption,
@@ -15,7 +15,7 @@ const DeleteFile = () => {
   const [docs, setDocs] = useState<string[] | null>(null);
   const [selectedYear, setSelectedYear] = useState<string>();
   const [selectedMonth, setSelectedMonth] = useState<string>();
-  const [selectedDocId, setSelectedDocId] = useState<string>('prekoracitve');
+  const [selectedDocId, setSelectedDocId] = useState<string>('optiumum');
   const [uid, setUid] = useState<string>();
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | '' }>({ message: '', type: '' });
   const [showDeleteModal, setShowDeleteModal] = useState<string | boolean>(false);
@@ -77,13 +77,32 @@ const DeleteFile = () => {
 
   const confirmDeleteAll = async () => {
     setDeleteLoading(true);
+    if (!uid) return;
+
     try {
-      await deleteDocument(uid!, selectedDocId!);
+      await deleteData(uid, selectedDocId!);
+
+      const refreshedDocs = await getUserDocIds(uid);
+      const filtered = Object.values(refreshedDocs).filter(
+        (value) => !['et', 'mfa', 'toplotna-crpalka', 'dogovorjena-moc'].includes(value)
+      );
+      const unique = Array.from(new Set(filtered));
+      setDocs(unique);
+
+      const newSelected = unique.length ? unique[0] : undefined;
+
+      if (newSelected) {
+        setSelectedDocId(newSelected);
+      } else {
+        setSelectedDocId('');
+      }
+
+
       setStatus({ message: 'Vsi podatki uspešno izbrisani.', type: 'success' });
-      setMonths([]);
     } catch {
       setStatus({ message: 'Napaka pri brisanju.', type: 'error' });
     }
+
     setDeleteLoading(false);
     setShowDeleteModal(false);
   };
@@ -110,8 +129,8 @@ const DeleteFile = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Upravljanje podatkov</h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Upravljaj svoje naložene podatke o računih, dnevnih stanjih in 15-minutnih intervalih za boljši pregled in prikaz porabe.
-            Izberi ustrezno možnost glede na to, kaj želiš pregledati ali izbrisati.
+            Upravljaj svoje naložene podatke o računih, dnevnih stanjih in 15-minutnih intervalih za boljši pregled in
+            prikaz porabe. Izberi ustrezno možnost glede na to, kaj želiš pregledati ali izbrisati.
           </p>
         </div>
         <div className="flex flex-wrap gap-4 justify-center sm:justify-start items-end mb-8">
@@ -196,8 +215,14 @@ const DeleteFile = () => {
                       </button>
                     </td>
                   </tr>
-                  <tr key={id + '-mobile'} className="md:hidden hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setExpandedRow(expandedRow === id ? null : id)}>
-                    <td className="px-3 py-3 font-medium text-gray-800 text-center" colSpan={3}>{id}</td>
+                  <tr
+                    key={id + '-mobile'}
+                    className="md:hidden hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => setExpandedRow(expandedRow === id ? null : id)}
+                  >
+                    <td className="px-3 py-3 font-medium text-gray-800 text-center" colSpan={3}>
+                      {id}
+                    </td>
                   </tr>
                   {expandedRow === id && (
                     <tr className="md:hidden">
@@ -213,7 +238,10 @@ const DeleteFile = () => {
                             />
                           )}
                           <button
-                            onClick={(e) => { e.stopPropagation(); setShowDeleteModal(id); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteModal(id);
+                            }}
                             className="text-gray-400 hover:text-red-600 text-2xl font-bold px-2 py-1 rounded-full focus:outline-none transition-colors duration-150"
                             title="Izbriši podatek"
                             disabled={deleteLoading}
@@ -246,7 +274,10 @@ const DeleteFile = () => {
                 </button>
                 <button
                   className="px-5 py-2 rounded bg-red-600 text-white font-medium"
-                  onClick={() => { deleteSubDoc(showDeleteModal); setShowDeleteModal(false); }}
+                  onClick={() => {
+                    deleteSubDoc(showDeleteModal);
+                    setShowDeleteModal(false);
+                  }}
                   disabled={deleteLoading}
                 >
                   Izbriši

@@ -127,6 +127,7 @@ public class FirestoreController {
 	@DeleteMapping("remove-document")
 	public ResponseEntity<String> removeDocument(@RequestParam String uid, @RequestParam String docId) {
 		try {
+			logger.info("YUP");
 			service.removeDocument(uid, docId);
 			return ResponseEntity.ok("Document removed");
 		} catch (Exception e) {
@@ -140,6 +141,17 @@ public class FirestoreController {
 			@RequestParam String subColId, @RequestParam String subDocId) {
 		try {
 			service.removeSubCollection(uid, docId, subColId, subDocId);
+			return ResponseEntity.ok("SubDocument removed");
+		} catch (Exception e) {
+			logger.log(Level.INFO, "Napaka pri odstrnajevanju pod dokumenta.", e);
+			return ResponseEntity.badRequest().build();
+		}
+	}
+
+	@DeleteMapping("remove")
+	public ResponseEntity<String> semove(@RequestParam String uid, @RequestParam String docId) {
+		try {
+			service.removeDocumentAndSubcollections(uid, docId);
 			return ResponseEntity.ok("SubDocument removed");
 		} catch (Exception e) {
 			logger.log(Level.INFO, "Napaka pri odstrnajevanju pod dokumenta.", e);
