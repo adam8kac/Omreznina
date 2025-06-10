@@ -517,4 +517,53 @@ public class FirestoreServiceTest {
 		assertTrue(currentThread.isInterrupted());
 	}
 
+	@Test
+	void testRemoveDocumentAndSubcollections() throws Exception {
+		String uid = "users";
+		String docId = "doc1";
+
+		CollectionReference mockUserCol = mock(CollectionReference.class);
+		DocumentReference mockDocRef = mock(DocumentReference.class);
+		CollectionReference mockSubCol = mock(CollectionReference.class);
+		QueryDocumentSnapshot mockSubDoc1 = mock(QueryDocumentSnapshot.class);
+		QueryDocumentSnapshot mockSubDoc2 = mock(QueryDocumentSnapshot.class);
+		DocumentReference mockSubDocRef1 = mock(DocumentReference.class);
+		DocumentReference mockSubDocRef2 = mock(DocumentReference.class);
+		ApiFuture<QuerySnapshot> mockFuture = mock(ApiFuture.class);
+		QuerySnapshot mockQuerySnapshot = mock(QuerySnapshot.class);
+
+		when(db.collection(uid)).thenReturn(mockUserCol);
+		when(mockUserCol.document(docId)).thenReturn(mockDocRef);
+		when(mockDocRef.listCollections()).thenReturn(List.of(mockSubCol));
+		when(mockSubCol.get()).thenReturn(mockFuture);
+		when(mockFuture.get()).thenReturn(mockQuerySnapshot);
+
+		List<QueryDocumentSnapshot> docs = List.of(mockSubDoc1, mockSubDoc2);
+		when(mockQuerySnapshot.getDocuments()).thenReturn(docs);
+
+		when(mockSubDoc1.getReference()).thenReturn(mockSubDocRef1);
+		when(mockSubDoc2.getReference()).thenReturn(mockSubDocRef2);
+
+		firestoreService.removeDocumentAndSubcollections(uid, docId);
+
+		verify(mockSubDocRef1, times(1)).delete();
+		verify(mockSubDocRef2, times(1)).delete();
+		verify(mockDocRef, times(1)).delete();
+	}
+
+	@Test
+	void testRemoveDocumentAndSubcollectionsException() {
+		String uid = "users";
+		String docId = "doc1";
+
+		CollectionReference mockUserCol = mock(CollectionReference.class);
+		DocumentReference mockDocRef = mock(DocumentReference.class);
+
+		when(db.collection(uid)).thenReturn(mockUserCol);
+		when(mockUserCol.document(docId)).thenReturn(mockDocRef);
+		when(mockDocRef.listCollections()).thenThrow(new RuntimeException("Testna napaka"));
+
+		assertThrows(RuntimeException.class, () -> firestoreService.removeDocumentAndSubcollections(uid, docId));
+		verify(mockDocRef, never()).delete();
+	}
 }

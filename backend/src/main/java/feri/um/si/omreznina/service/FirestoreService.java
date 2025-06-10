@@ -338,4 +338,26 @@ public class FirestoreService {
 		}
 	}
 
+	public void removeDocumentAndSubcollections(String uid, String docId) {
+		try {
+			DocumentReference docRef = db.collection(uid).document(docId);
+
+			for (CollectionReference subCol : docRef.listCollections()) {
+				ApiFuture<QuerySnapshot> future = subCol.get();
+				List<QueryDocumentSnapshot> docs = future.get().getDocuments();
+
+				for (QueryDocumentSnapshot subDoc : docs) {
+					subDoc.getReference().delete();
+				}
+			}
+
+			docRef.delete();
+
+		} catch (InterruptedException | ExecutionException e) {
+			if (e instanceof InterruptedException)
+				Thread.currentThread().interrupt();
+			logger.warning("Napaka pri brisanju dokumenta " + e.getMessage());
+		}
+	}
+
 }
