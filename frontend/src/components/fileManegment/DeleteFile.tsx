@@ -8,14 +8,17 @@ import {
   getUserDocIds,
 } from 'src/index';
 import { DocDataPopUp } from './PopUpDocData';
+import React from 'react';
 
 const DeleteFile = () => {
   const [years, setYears] = useState<string[] | null>(null);
   const [months, setMonths] = useState<string[] | null>(null);
   const [docs, setDocs] = useState<string[] | null>(null);
+
   const [selectedYear, setSelectedYear] = useState<string>();
   const [selectedMonth, setSelectedMonth] = useState<string>();
-  const [selectedDocId, setSelectedDocId] = useState<string>('optiumum');
+  const [selectedDocId, setSelectedDocId] = useState<string>();
+
   const [uid, setUid] = useState<string>();
   const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | '' }>({ message: '', type: '' });
   const [showDeleteModal, setShowDeleteModal] = useState<string | boolean>(false);
@@ -37,6 +40,15 @@ const DeleteFile = () => {
         );
         const unique = Array.from(new Set(filtered));
         setDocs(unique);
+        if (unique.length > 0 && (!selectedDocId || !unique.includes(selectedDocId))) {
+          setSelectedDocId(unique[0]);
+        }
+        if (unique.length === 0) {
+          setSelectedDocId(undefined);
+        }
+      } else {
+        setDocs(null);
+        setSelectedDocId(undefined);
       }
     });
   }, [uid]);
@@ -49,26 +61,42 @@ const DeleteFile = () => {
   }, [selectedDocId]);
 
   useEffect(() => {
-    if (!uid) return;
+    if (!uid || !selectedDocId) {
+      setYears(null);
+      return;
+    }
     getSubcollectionsConsumption(uid, selectedDocId).then(setYears);
   }, [uid, selectedDocId]);
 
   useEffect(() => {
-    if (years?.length && !selectedYear) {
-      setSelectedYear(years[0]);
+    if (years && years.length) {
+      if (!selectedYear || !years.includes(selectedYear)) {
+        setSelectedYear(years[0]);
+      }
+    } else {
+      setSelectedYear(undefined);
     }
-  }, [years, selectedYear]);
+  }, [years]);
 
   useEffect(() => {
-    if (!uid || !selectedYear) return;
+    if (!uid || !selectedDocId || !selectedYear) {
+      setMonths(null);
+      return;
+    }
     getSubcollectionDocsConsumption(uid, selectedDocId, selectedYear).then((monthsArr) => {
       setMonths(monthsArr?.sort() || null);
     });
-  }, [selectedDocId, selectedYear, uid]);
+  }, [uid, selectedDocId, selectedYear]);
 
   useEffect(() => {
-    if (months?.length && !selectedMonth) setSelectedMonth(months[0]);
-  }, [months, selectedMonth]);
+    if (months && months.length) {
+      if (!selectedMonth || !months.includes(selectedMonth)) {
+        setSelectedMonth(months[0]);
+      }
+    } else {
+      setSelectedMonth(undefined);
+    }
+  }, [months]);
 
   const deleteDoc = async () => {
     if (!uid || !selectedDocId) return;
@@ -77,10 +105,10 @@ const DeleteFile = () => {
 
   const confirmDeleteAll = async () => {
     setDeleteLoading(true);
-    if (!uid) return;
+    if (!uid || !selectedDocId) return;
 
     try {
-      await deleteData(uid, selectedDocId!);
+      await deleteData(uid, selectedDocId);
 
       const refreshedDocs = await getUserDocIds(uid);
       const filtered = Object.values(refreshedDocs).filter(
@@ -89,14 +117,11 @@ const DeleteFile = () => {
       const unique = Array.from(new Set(filtered));
       setDocs(unique);
 
-      const newSelected = unique.length ? unique[0] : undefined;
-
-      if (newSelected) {
-        setSelectedDocId(newSelected);
+      if (unique.length) {
+        setSelectedDocId(unique[0]);
       } else {
-        setSelectedDocId('');
+        setSelectedDocId(undefined);
       }
-
 
       setStatus({ message: 'Vsi podatki uspešno izbrisani.', type: 'success' });
     } catch {
@@ -129,42 +154,55 @@ const DeleteFile = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-4">Upravljanje podatkov</h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Upravljaj svoje naložene podatke o računih, dnevnih stanjih in 15-minutnih intervalih za boljši pregled in
-            prikaz porabe. Izberi ustrezno možnost glede na to, kaj želiš pregledati ali izbrisati.
+            Upravljaj svoje naložene podatke o računih, dnevnih stanjih in 15-minutnih intervalih za boljši pregled in prikaz porabe. Izberi ustrezno možnost glede na to, kaj želiš pregledati ali izbrisati.
           </p>
         </div>
         <div className="flex flex-wrap gap-4 justify-center sm:justify-start items-end mb-8">
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Izberi tip podatkov</label>
             <select
-              value={selectedDocId}
+              value={selectedDocId || ''}
               onChange={(e) => setSelectedDocId(e.target.value)}
               className="rounded-lg border border-primary px-3 py-2 bg-gray-50 text-sm focus:ring-2 focus:ring-primary focus:outline-none transition min-w-[120px]"
             >
-              {docs?.map((doc: string) => (
-                <option key={doc} value={doc}>
-                  {doc}
+              {docs && docs.length ? (
+                docs.map((doc: string) => (
+                  <option key={doc} value={doc}>
+                    {doc}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  Ni podatkov
                 </option>
-              ))}
+              )}
             </select>
           </div>
           <div>
             <label className="block mb-1 text-sm font-medium text-gray-700">Izberi leto</label>
             <select
-              value={selectedYear}
+              value={selectedYear || ''}
               onChange={(e) => setSelectedYear(e.target.value)}
               className="rounded-lg border border-primary px-3 py-2 bg-gray-50 text-sm focus:ring-2 focus:ring-primary focus:outline-none transition min-w-[120px]"
+              disabled={!years || years.length === 0}
             >
-              {years?.map((year: string) => (
-                <option key={year} value={year}>
-                  {year}
+              {years && years.length ? (
+                years.map((year: string) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  Ni podatkov
                 </option>
-              ))}
+              )}
             </select>
           </div>
           <button
             onClick={deleteDoc}
             className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-lg shadow-sm ml-2 font-semibold"
+            disabled={!selectedDocId}
           >
             Izbriši vse
           </button>
@@ -190,7 +228,7 @@ const DeleteFile = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {months?.map((id) => (
-                <>
+                <React.Fragment key={id}>
                   <tr key={id} className="hover:bg-gray-50 transition-colors hidden md:table-row">
                     <td className="px-3 py-3 font-medium text-gray-800 text-center">{id}</td>
                     <td className="px-3 py-3 text-center">
@@ -225,7 +263,7 @@ const DeleteFile = () => {
                     </td>
                   </tr>
                   {expandedRow === id && (
-                    <tr className="md:hidden">
+                    <tr key={id + '-expanded'} className="md:hidden">
                       <td colSpan={3} className="px-3 pb-3 pt-0 text-center">
                         <div className="flex flex-col items-center gap-2">
                           {uid && selectedDocId && selectedYear && isValidMonth(id) && (
@@ -252,7 +290,7 @@ const DeleteFile = () => {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
