@@ -2,19 +2,9 @@ import { Card } from "flowbite-react";
 import { motion } from "framer-motion";
 import { LucideHome, FileUp, FileText, Calculator, BarChart, PieChart, LucideZap, Heart, FileKey2Icon } from "lucide-react";
 import { Link } from "react-router";
-import { useEffect, useState } from "react";
 import ChatbotPopup from '../../components/chatbot/ChatbotComponent';
 
 const DashboardGuide = () => {
-	const [isChatbotFocus, setIsChatbotFocus] = useState(false);
-
-	
-	useEffect(() => {
-		document.body.style.overflow = isChatbotFocus ? 'hidden' : '';
-		return () => {
-		document.body.style.overflow = '';
-		};
-	}, [isChatbotFocus]);
 
 	const pages = [
 		{
