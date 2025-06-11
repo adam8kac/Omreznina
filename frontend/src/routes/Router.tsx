@@ -26,6 +26,9 @@ const DashboardGuide = Loadable(lazy(() => import('../views/dashboards/Dashboard
 const Prediction = Loadable(lazy(() => import('../views/tables/PredictionView')));
 const DeleteFile = Loadable(lazy(() => import('../components/fileManegment/DeleteFile')));
 
+//easteregg
+const EasterEgg = Loadable(lazy(() => import('../views/easteregg/Tina')));
+
 // authentication
 const Login = Loadable(lazy(() => import('../views/auth/login/Login')));
 const Register = Loadable(lazy(() => import('../views/auth/register/Register')));
@@ -59,6 +62,7 @@ const Router = [
       { path: '/about-us', exact: true, element: <AboutUs /> },
       { path: '/prediction', exact: true, element: <Prediction /> },
       { path: '/delete-files', exact: true, element: <DeleteFile /> },
+      { path: '/easteregg', exact: true, element: <EasterEgg /> },
     ],
   },
   {

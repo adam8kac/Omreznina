@@ -4,8 +4,12 @@ const AboutUs = () => {
   return (
     <div className="max-w-5xl mx-auto px-6 py-12 space-y-14">
       <div className="flex flex-col items-center space-y-4 text-center">
-        <div className="bg-gradient-to-br from-violet-200 to-indigo-300 rounded-full p-4 mb-2 shadow-lg animate-pulse">
-          <Icon icon="solar:flash-bolt-circle-bold" className="text-indigo-600" height={48} />
+        <div
+          className="bg-gradient-to-br from-violet-200 to-indigo-300 rounded-full p-4 mb-2 shadow-lg animate-pulse cursor-pointer relative"
+          onClick={() => window.location.href = '/Omreznina/easteregg'}
+          title="Easter Egg"
+        >
+          <Icon icon="solar:flash-bolt-circle-bold" className="text-indigo-600 relative z-10" height={48} />
         </div>
         <h1 className="text-4xl font-bold tracking-tight text-black">O nas – Omrežnina+</h1>
         <p className="text-black/70 text-lg max-w-2xl">
