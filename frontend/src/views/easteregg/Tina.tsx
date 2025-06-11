@@ -1,4 +1,4 @@
-import easterEggBg from '/Users/gajagujt/Documents/Omreznina/frontend/src/assets/images/backgrounds/easteregg.png';
+import easterEggBg from '../../../src/assets/images/backgrounds/easteregg.png';
 
 const Tina = () => {
   return (
