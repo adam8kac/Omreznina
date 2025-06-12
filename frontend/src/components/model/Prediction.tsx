@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Spinner, Button, Alert, Accordion } from 'flowbite-react';
 import { getAuth } from 'firebase/auth';
 import { predictMonthlyOverrun, PredictionResponse } from 'src/index';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+// import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import '../../css/theme/accordion.css';
 
 const monthsList = [
@@ -34,7 +34,7 @@ const getNextMonthYear = () => {
   };
 };
 
-const dayMap = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
+// const dayMap = ['Pon', 'Tor', 'Sre', 'Čet', 'Pet', 'Sob', 'Ned'];
 
 
 const StatWithTooltip: React.FC<{ label: string; value: any; tooltip: string }> = ({ label, value, tooltip }) => {
@@ -99,12 +99,12 @@ const PredictionStats: React.FC = () => {
     }
   };
 
-  const overrunsByDayData = result
-    ? Object.entries(result.overruns_by_day).map(([k, v]) => ({
-        name: dayMap[parseInt(k)],
-        count: v
-      }))
-    : [];
+  // const overrunsByDayData = result
+  //   ? Object.entries(result.overruns_by_day).map(([k, v]) => ({
+  //       name: dayMap[parseInt(k)],
+  //       count: v
+  //     }))
+  //   : [];
 
   return (
     <div className="w-full max-w-5xl mx-auto mt-10 px-4">
@@ -254,7 +254,7 @@ const PredictionStats: React.FC = () => {
               </div>
             ))}
           </div>
-          {result.stats.overruns_count > 0 && (
+          {/* {result.stats.overruns_count > 0 && (
             <div className="my-6">
               <h5 className="mb-2 font-semibold text-indigo-600">Prekoračitve po dnevih v tednu</h5>
               <div className="w-full">
@@ -270,7 +270,7 @@ const PredictionStats: React.FC = () => {
             </div>
             </div>
             </div>
-          )}
+          )} */}
 
     </>
       )}

@@ -88,11 +88,11 @@ const PowerComparisonTable = ({
     <div className="rounded-2xl bg-white border border-gray-200 text-sm overflow-hidden divide-y divide-gray-100">
       <div className="sm:grid sm:grid-cols-2 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
         <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3 border-b sm:border-b-0">
-          <span>Skupna prekoračitev</span>
+          <span>Skupen znesek</span>
           <span className="sm:hidden font-medium">{formatKW(totalExcess)}</span>
         </div>
         <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3 border-b sm:border-b-0">
-          <span>Plačano</span>
+          <span>Preplačano</span>
           <span className="sm:hidden font-medium">{formatEUR(paid)}</span>
         </div>
       </div>
@@ -102,7 +102,7 @@ const PowerComparisonTable = ({
       </div>
       <div className="sm:grid sm:grid-cols-2 bg-blue-500/10 text-gray-700 font-medium flex flex-col">
         <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3">
-        <span>Možni prihranek</span>
+        <span>Skupna prekoračitev</span>
           <span className="sm:hidden font-semibold text-rose-600">{formatEUR(overpaid)}</span>
         </div>
         <div className="flex justify-between sm:justify-center sm:p-4 px-4 py-3">
