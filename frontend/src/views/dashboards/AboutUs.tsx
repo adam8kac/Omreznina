@@ -6,7 +6,7 @@ const AboutUs = () => {
       <div className="flex flex-col items-center space-y-4 text-center">
         <div
           className="bg-gradient-to-br from-violet-200 to-indigo-300 rounded-full p-4 mb-2 shadow-lg animate-pulse cursor-pointer relative"
-          onClick={() => window.location.href = '/Omreznina/easteregg'}
+          onClick={() => window.location.href = '/easteregg'}
           title="Easter Egg"
         >
           <Icon icon="solar:flash-bolt-circle-bold" className="text-indigo-600 relative z-10" height={48} />
